@@ -11,6 +11,15 @@ Lobster Intel turns messy scripts and one-off fixes into a real system:
 - delivery through heartbeat, cron, and chat
 - plugin hooks for other lobster agents
 
+## Installation
+
+If you want to run this on another OpenClaw instance, start with:
+
+- `../docs/INSTALL_OPENCLAW.md`
+- `../.env.example`
+
+That guide explains current v0 setup, package paths, Firehose expectations, and what is still manual.
+
 ## Product goal
 
 Build an intelligence operating system that is:

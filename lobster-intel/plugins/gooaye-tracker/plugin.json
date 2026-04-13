@@ -11,6 +11,8 @@
     "ocr",
     "image_understanding"
   ],
+  "required_env": [],
+  "recommended_schedule": "every 5m",
   "produces": [
     "evidence.telegram_post",
     "compiled.channel_summary",

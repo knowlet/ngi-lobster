@@ -4,7 +4,7 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 LOBSTER_DIR="$ROOT/lobster-intel"
 
-export PYTHONPATH="$LOBSTER_DIR/packages/lobster-core:$LOBSTER_DIR/packages/lobster-plugins:$LOBSTER_DIR/packages/lobster-runtime:$LOBSTER_DIR/packages/lobster-delivery"
+export PYTHONPATH="$LOBSTER_DIR/packages/lobster-core:$LOBSTER_DIR/packages/lobster-plugins:$LOBSTER_DIR/packages/lobster-runtime:$LOBSTER_DIR/packages/lobster-delivery:$LOBSTER_DIR/packages/lobster-ingest"
 
 if [ -x "$ROOT/.venv/bin/python" ]; then
   PY="$ROOT/.venv/bin/python"
@@ -18,4 +18,3 @@ if [ -z "$PY" ]; then
 fi
 
 "$PY" "$LOBSTER_DIR/scripts/process_gooaye_channel.py"
-

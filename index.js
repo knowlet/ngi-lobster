@@ -48,22 +48,37 @@ export default definePluginEntry({
           const preflight = await ensureRuntimeReady();
           if (preflight) return preflight;
 
-          const scriptPath = path.join(rootDir, 'scripts', 'demo_run_gooaye.sh');
+          const scriptPath = path.join(rootDir, 'scripts', 'run_default_workflow.sh');
           const { stdout, stderr } = await execFileAsync(scriptPath, [], {
             cwd: rootDir,
             env: process.env
           });
-          const text = (stdout || stderr || '').trim();
+          const runtimePath = path.join(rootDir, 'lobster-intel', 'data', 'runtime', 'gooaye', 'latest.json');
+          let runtime = {};
+          if (fs.existsSync(runtimePath)) {
+            runtime = JSON.parse(fs.readFileSync(runtimePath, 'utf8'));
+          }
+          const result = {
+            plugin: 'gooaye-tracker',
+            version: '0.1.0',
+            new_count: runtime.new_count ?? 0,
+            channel: runtime.channel ?? '@Gooaye',
+            run_id: runtime.run_id ?? null,
+            digest_path: runtime.digest_path ?? null
+          };
+          const text = JSON.stringify(result);
           return {
             content: [
               {
                 type: 'text',
-                text: text || 'NGI Lobster demo ran with no output.'
+                text
               }
             ],
             details: {
+              runtimePath,
               stdout: stdout?.trim() || '',
-              stderr: stderr?.trim() || ''
+              stderr: stderr?.trim() || '',
+              ...result
             }
           };
         }

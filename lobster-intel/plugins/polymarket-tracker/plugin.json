@@ -1,0 +1,16 @@
+{
+  "id": "polymarket-tracker",
+  "name": "Polymarket Tracker",
+  "version": "0.1.0",
+  "type": "ingest",
+  "entrypoints": {
+    "ingest": "plugin.py:ingest"
+  },
+  "capabilities": [],
+  "required_env": ["POLYMARKET_MARKETS_JSON"],
+  "recommended_schedule": "every 5m",
+  "produces": [
+    "evidence.prediction_market_snapshot"
+  ],
+  "notes": "Silent ingest only. Provide POLYMARKET_MARKETS_JSON as a JSON array of market ids or slugs."
+}

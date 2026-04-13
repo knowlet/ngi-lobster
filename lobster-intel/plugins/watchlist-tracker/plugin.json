@@ -1,0 +1,16 @@
+{
+  "id": "watchlist-tracker",
+  "name": "Watchlist Tracker",
+  "version": "0.1.0",
+  "type": "ingest",
+  "entrypoints": {
+    "ingest": "plugin.py:ingest"
+  },
+  "capabilities": [],
+  "required_env": ["WATCHLIST_FEEDS_JSON"],
+  "recommended_schedule": "every 10m",
+  "produces": [
+    "evidence.watchlist_signal"
+  ],
+  "notes": "Silent ingest only. Provide WATCHLIST_FEEDS_JSON as a JSON array of curated feeds."
+}

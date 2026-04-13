@@ -1,0 +1,13 @@
+{
+  "name": "@knowlet/openclaw-ngi-lobster",
+  "version": "0.1.0",
+  "private": true,
+  "description": "NGI Lobster native OpenClaw plugin wrapper",
+  "type": "module",
+  "openclaw": {
+    "extensions": [
+      "./index.js"
+    ]
+  }
+}
+

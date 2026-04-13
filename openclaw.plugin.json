@@ -1,0 +1,31 @@
+{
+  "id": "ngi-lobster",
+  "name": "NGI Lobster",
+  "description": "Open intelligence plugin framework for OpenClaw. NGI stands for Narrative Gap Index, measuring the gap between market pricing and first-principles reality.",
+  "skills": [
+    "./skills"
+  ],
+  "configSchema": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+      "workspaceRoot": {
+        "type": "string",
+        "description": "Optional workspace root for local NGI Lobster artifacts"
+      },
+      "firehoseEventsPath": {
+        "type": "string",
+        "description": "Optional local path to Firehose events.jsonl"
+      },
+      "firehoseTapToken": {
+        "type": "string",
+        "description": "Optional Firehose tap token"
+      },
+      "firehoseManagementKey": {
+        "type": "string",
+        "description": "Optional Firehose management key"
+      }
+    }
+  }
+}
+

@@ -28,6 +28,23 @@ This repo is not just research notes. It is the productization track.
 - OpenClaw install + config guide: `docs/INSTALL_OPENCLAW.md`
 - Example environment variables: `.env.example`
 
+## Native OpenClaw install surface
+
+This repo now includes a **native OpenClaw plugin wrapper** so the install path can converge on:
+
+```bash
+openclaw plugins install ./path/to/ngi-lobster
+```
+
+Current status:
+
+- `openclaw.plugin.json` exists
+- `package.json` exists
+- `index.js` native wrapper entry exists
+- the heavy NGI runtime is still being migrated from `lobster-intel/` Python code into a fuller native OpenClaw plugin surface
+
+So the install surface is starting to look right, but runtime feature parity is not finished yet.
+
 ## Current state
 
 The repo already contains:

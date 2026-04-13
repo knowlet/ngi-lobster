@@ -1,25 +1,42 @@
 from __future__ import annotations
 
-from dataclasses import asdict
 from pathlib import Path
 import json
 import subprocess
 
-STATE_PATH = Path("/Users/knowlet/.openclaw/workspace/memory/gooaye-channel-state.json")
-SCRIPT_PATH = Path("/Users/knowlet/.openclaw/workspace/scripts/track_telegram_channel.py")
 CHANNEL = "@Gooaye"
-EVIDENCE_DIR = Path("/Users/knowlet/.openclaw/workspace/lobster-intel/data/evidence/gooaye")
-COMPILED_DIR = Path("/Users/knowlet/.openclaw/workspace/lobster-intel/data/compiled/gooaye")
+
+
+def _repo_root(ctx=None) -> Path:
+    if ctx is not None:
+        return Path(ctx.workspace_dir) / "lobster-intel"
+    return Path(__file__).resolve().parents[2]
+
+
+def _state_path(ctx=None) -> Path:
+    return _repo_root(ctx) / "data" / "runtime" / "gooaye" / "channel-state.json"
+
+
+def _script_path(ctx=None) -> Path:
+    return _repo_root(ctx) / "scripts" / "track_telegram_channel.py"
+
+
+def _evidence_dir(ctx=None) -> Path:
+    return _repo_root(ctx) / "data" / "evidence" / "gooaye"
+
+
+def _compiled_dir(ctx=None) -> Path:
+    return _repo_root(ctx) / "data" / "compiled" / "gooaye"
 
 
 def ingest(_ctx=None) -> dict:
     result = subprocess.run(
         [
             "python3",
-            str(SCRIPT_PATH),
+            str(_script_path(_ctx)),
             CHANNEL,
             "--state",
-            str(STATE_PATH),
+            str(_state_path(_ctx)),
         ],
         capture_output=True,
         text=True,
@@ -47,8 +64,8 @@ def summarize(payload: dict) -> dict:
             }
             for item in items
         ],
-        "evidence_dir": str(EVIDENCE_DIR),
-        "compiled_dir": str(COMPILED_DIR),
+        "evidence_dir": str(_evidence_dir()),
+        "compiled_dir": str(_compiled_dir()),
     }
 
 

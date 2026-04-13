@@ -133,6 +133,14 @@ PY
 
 This should load the plugin manifest, resolve the entrypoint, and run one ingest cycle.
 
+Or use the repo's demo script:
+
+```bash
+./scripts/demo_run_gooaye.sh
+```
+
+That is the current fastest smoke test for "is this actually runnable locally?"
+
 ## 7. OpenClaw-specific notes
 
 For OpenClaw integration, keep the boundary clean:

@@ -26,6 +26,7 @@ This repo is not just research notes. It is the productization track.
 
 - Product / plugin architecture: `lobster-intel/README.md`
 - OpenClaw install + config guide: `docs/INSTALL_OPENCLAW.md`
+- Product cut: `docs/PRODUCT_CUT_V0.md`
 - Example environment variables: `.env.example`
 
 ## Native OpenClaw install surface
@@ -41,6 +42,7 @@ Current status:
 - `openclaw.plugin.json` exists
 - `package.json` exists
 - `index.js` native wrapper entry exists
+- native tool `ngi_lobster_demo` exists for local smoke testing
 - the heavy NGI runtime is still being migrated from `lobster-intel/` Python code into a fuller native OpenClaw plugin surface
 
 So the install surface is starting to look right, but runtime feature parity is not finished yet.

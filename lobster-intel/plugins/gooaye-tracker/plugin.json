@@ -1,0 +1,21 @@
+{
+  "id": "gooaye-tracker",
+  "name": "Gooaye Channel Tracker",
+  "version": "0.1.0",
+  "type": "ingest",
+  "entrypoints": {
+    "ingest": "plugin.py:ingest"
+  },
+  "capabilities": [
+    "web_fetch",
+    "ocr",
+    "image_understanding"
+  ],
+  "produces": [
+    "evidence.telegram_post",
+    "compiled.channel_summary",
+    "runtime.linked_content_queue",
+    "runtime.image_analysis_queue"
+  ],
+  "notes": "Delivery is downstream. This plugin only extracts and normalizes source artifacts."
+}

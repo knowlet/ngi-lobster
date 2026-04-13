@@ -1,0 +1,50 @@
+{
+  "version": "v1",
+  "current_state": "ACTIVE_TRUCE",
+  "states": {
+    "PRE_AGREEMENT": {
+      "logic_summary": "Pre-ceasefire negotiation phase. Use explicit ceasefire outcome markets.",
+      "target": {
+        "type": "polymarket",
+        "topic_slug": "us_iran_ceasefire",
+        "market_id": "1466016",
+        "market_slug": "us-x-iran-ceasefire-by-april-30",
+        "market_name": "US x Iran ceasefire by April 30",
+        "probability_mode": "yes_is_peace"
+      }
+    },
+    "ACTIVE_TRUCE": {
+      "logic_summary": "Post-agreement monitoring. Track escalation proxies instead of pre-deadline ceasefire formation markets.",
+      "target": {
+        "type": "polymarket",
+        "topic_slug": "us_iran_escalation",
+        "market_id": "1517836",
+        "market_slug": "trump-announces-end-of-military-operations-against-iran-by-june-30th-566-326-653-781-167-426-752-225",
+        "market_name": "Trump announces end of military operations against Iran by June 30th",
+        "probability_mode": "yes_is_peace"
+      },
+      "fallback_target": {
+        "type": "polymarket",
+        "topic_slug": "us_iran_escalation",
+        "market_id": "1517835",
+        "market_slug": "trump-announces-end-of-military-operations-against-iran-by-april-30th-753-882-164-769-641-926",
+        "market_name": "Trump announces end of military operations against Iran by April 30th",
+        "probability_mode": "yes_is_peace"
+      }
+    },
+    "ESCALATION": {
+      "logic_summary": "Escalation regime. Prioritize direct-action and chokepoint disruption markets.",
+      "target": {
+        "type": "macro_proxy",
+        "proxy_key": "crude_oil_intraday_escalation_proxy",
+        "market_name": "Crude Oil escalation proxy (24h change)",
+        "source_symbol": "Crude Oil",
+        "probability_mode": "higher_change_is_higher_escalation",
+        "normalization": {
+          "change_pct_floor": 0.0,
+          "change_pct_ceiling": 12.0
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,44 @@
+{
+  "timestamp_utc": "2026-04-11T14:34:58.547684+00:00",
+  "state": "ACTIVE_TRUCE",
+  "logic_summary": "Post-agreement monitoring. Track escalation proxies instead of pre-deadline ceasefire formation markets.",
+  "target_resolution_mode": "active_target",
+  "market_target": {
+    "type": "polymarket",
+    "market_id": "1517836",
+    "market_slug": "trump-announces-end-of-military-operations-against-iran-by-june-30th-566-326-653-781-167-426-752-225",
+    "market_name": "Trump announces end of military operations against Iran by June 30th"
+  },
+  "adsb": {
+    "count": 10,
+    "peace_score": 0.6000000000000001,
+    "used": true
+  },
+  "firehose": {
+    "events_analyzed": 1,
+    "peace_score": 0.8888888888888888
+  },
+  "weights": {
+    "adsb": 0.4,
+    "firehose": 0.6
+  },
+  "first_principles_probability": 0.7733333333333334,
+  "first_principles_escalation_probability": 0.22666666666666657,
+  "market_escalation_probability": 0.19499999999999995,
+  "target_detail": {
+    "platform": "polymarket",
+    "market_id": "1517836",
+    "market_slug": "trump-announces-end-of-military-operations-against-iran-by-june-30th-566-326-653-781-167-426-752-225",
+    "market_question": "Trump announces end of military operations against Iran by June 30th?",
+    "market_yes_probability": 0.805,
+    "market_closed": false,
+    "market_active": true,
+    "market_accepting_orders": true,
+    "probability_mode": "yes_is_peace"
+  },
+  "ngi": 0.03166666666666662,
+  "ngi_percentage": 3.166666666666662,
+  "gap_triggered": false,
+  "gap_reason": null,
+  "decision": "hold"
+}

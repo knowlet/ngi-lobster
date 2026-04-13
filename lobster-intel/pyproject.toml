@@ -1,0 +1,20 @@
+[project]
+name = "lobster-intel"
+version = "0.1.0"
+description = "Maintainable intelligence platform for OpenClaw agents and lobster plugins"
+requires-python = ">=3.11"
+readme = "README.md"
+authors = [
+  { name = "OpenClaw / Knowlet" }
+]
+dependencies = []
+
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+package-dir = {"" = "packages"}
+
+[tool.setuptools.packages.find]
+where = ["packages"]

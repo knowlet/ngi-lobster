@@ -1,0 +1,10 @@
+NGI Monitor Summary
+===================
+Timestamp (UTC): 2026-03-21 03:00:42
+Timestamp (Asia/Taipei): 2026-03-21 11:00:42
+NGI: 0.1980 (19.80%)
+Polymarket (Yes): 0.0750 (7.50%)
+First Principles: 0.2730 (27.30%)
+ADS-B: 7 flights, peace score 0.6818 (68.18%)
+Firehose: 19994 events analyzed, peace score 0.0005 (0.05%)
+Weights: ADS-B 0.4, Firehose 0.6

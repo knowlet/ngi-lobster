@@ -2,6 +2,7 @@ import { definePluginEntry } from "openclaw/plugin-sdk/plugin-entry";
 import { execFile } from "node:child_process";
 import { promisify } from "node:util";
 import path from "node:path";
+import fs from "node:fs";
 
 const execFileAsync = promisify(execFile);
 
@@ -11,6 +12,27 @@ export default definePluginEntry({
   description:
     "Open intelligence plugin framework for OpenClaw. NGI stands for Narrative Gap Index.",
   register(api) {
+    const rootDir = api.pluginRootDir ?? path.dirname(new URL(import.meta.url).pathname);
+    const venvPython = path.join(rootDir, '.venv', 'bin', 'python');
+    const bootstrap = path.join(rootDir, 'scripts', 'bootstrap_runtime.sh');
+
+    async function ensureRuntimeReady() {
+      try {
+        await execFileAsync(venvPython, ['-V'], { cwd: rootDir });
+        return null;
+      } catch (err) {
+        return {
+          content: [
+            {
+              type: 'text',
+              text: `NGI Lobster runtime not ready. Run:\n\ncd ${rootDir} && ./scripts/bootstrap_runtime.sh\n\nThen retry.`
+            }
+          ],
+          details: { error: (err && err.message) || 'venv check failed', bootstrap }
+        };
+      }
+    }
+
     api.registerTool(
       {
         name: "ngi_lobster_demo",
@@ -23,25 +45,8 @@ export default definePluginEntry({
           properties: {}
         },
         async execute() {
-          const rootDir = api.pluginRootDir ?? path.dirname(new URL(import.meta.url).pathname);
-          const venvPython = path.join(rootDir, '.venv', 'bin', 'python');
-          const bootstrap = path.join(rootDir, 'scripts', 'bootstrap_runtime.sh');
-          // Check venv
-          try {
-            const which = await execFileAsync(venvPython, ['-V'], { cwd: rootDir });
-          } catch (err) {
-            // venv missing or invalid - return repair instructions instead of throwing
-            return {
-              content: [
-                {
-                  type: 'text',
-                  text: `NGI Lobster runtime not ready. Run the bootstrap to create a compatible Python environment:\n
-cd ${rootDir} && ./scripts/bootstrap_runtime.sh\n\nAfter bootstrap completes, run the demo tool again.`
-                }
-              ],
-              details: { error: (err && err.message) || 'venv check failed' }
-            };
-          }
+          const preflight = await ensureRuntimeReady();
+          if (preflight) return preflight;
 
           const scriptPath = path.join(rootDir, 'scripts', 'demo_run_gooaye.sh');
           const { stdout, stderr } = await execFileAsync(scriptPath, [], {
@@ -64,6 +69,48 @@ cd ${rootDir} && ./scripts/bootstrap_runtime.sh\n\nAfter bootstrap completes, ru
         }
       },
       { name: "ngi_lobster_demo" }
+    );
+
+    api.registerTool(
+      {
+        name: "ngi_lobster_run_default_workflow",
+        label: "NGI Lobster Run Default Workflow",
+        description:
+          "Run the default installed workflow: ingest Gooaye, write evidence/compiled/runtime artifacts, and return the latest digest path.",
+        parameters: {
+          type: "object",
+          additionalProperties: false,
+          properties: {}
+        },
+        async execute() {
+          const preflight = await ensureRuntimeReady();
+          if (preflight) return preflight;
+
+          const scriptPath = path.join(rootDir, 'scripts', 'run_default_workflow.sh');
+          const { stdout, stderr } = await execFileAsync(scriptPath, [], {
+            cwd: rootDir,
+            env: process.env
+          });
+          const runtimePath = path.join(rootDir, 'lobster-intel', 'data', 'runtime', 'gooaye', 'latest.json');
+          let runtime = {};
+          if (fs.existsSync(runtimePath)) {
+            runtime = JSON.parse(fs.readFileSync(runtimePath, 'utf8'));
+          }
+          const digestPath = runtime.digest_path || path.join(rootDir, 'lobster-intel', 'data', 'compiled', 'gooaye', 'latest_digest.md');
+          const text = (stdout || stderr || '').trim() || `Workflow ran. Digest: ${digestPath}`;
+          return {
+            content: [{ type: 'text', text }],
+            details: {
+              digestPath,
+              runtimePath,
+              newCount: runtime.new_count ?? null,
+              stdout: stdout?.trim() || '',
+              stderr: stderr?.trim() || ''
+            }
+          };
+        }
+      },
+      { name: "ngi_lobster_run_default_workflow" }
     );
   },
 });

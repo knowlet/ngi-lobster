@@ -171,6 +171,33 @@ Their jobs are:
 - `ngi_lobster_demo`: smoke-test the local runtime path
 - `ngi_lobster_run_default_workflow`: run the default installed workflow and write artifacts/digest
 
+## 7.2 First batch source trackers
+
+The repo now includes these installable ingest plugins:
+
+- `gooaye-tracker`
+- `polymarket-tracker`
+- `official-statements-tracker`
+- `watchlist-tracker`
+
+Example config packs live under:
+
+```text
+lobster-intel/examples/source-packs/
+```
+
+Use them as the starting point for environment or runtime config wiring.
+
+### Example env wiring
+
+```bash
+export OFFICIAL_STATEMENTS_FEEDS_JSON="$(cat lobster-intel/examples/source-packs/official-statements.json)"
+export WATCHLIST_FEEDS_JSON="$(cat lobster-intel/examples/source-packs/watchlist.json)"
+export POLYMARKET_MARKETS_JSON="$(cat lobster-intel/examples/source-packs/polymarket.json)"
+```
+
+These trackers are still **silent-ingest only**. They are source plugins, not alerting systems.
+
 ## 8. Current expected local artifacts
 
 The first example plugin currently writes artifacts under:
@@ -201,6 +228,7 @@ Before this becomes a smooth installable plugin for everyone, these still need w
 3. Firehose junk suppression / ranking
 4. reusable cron recipes
 5. a cleaner setup command
+6. source cursor persistence wired into default runtime storage
 
 ## Bottom line
 

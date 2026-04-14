@@ -1,0 +1,14 @@
+[
+  {
+    "source_id": "whitehouse",
+    "url": "https://www.whitehouse.gov/briefing-room/feed/"
+  },
+  {
+    "source_id": "state-dept",
+    "url": "https://www.state.gov/press-releases/feed/"
+  },
+  {
+    "source_id": "mofa-taiwan",
+    "url": "https://www.mofa.gov.tw/News_Content.aspx?n=95&s=0&sms=73"
+  }
+]

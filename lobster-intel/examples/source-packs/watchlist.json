@@ -1,0 +1,12 @@
+[
+  {
+    "source_id": "high-signal-substack",
+    "url": "https://example.com/feed.xml",
+    "source_type": "analyst_feed"
+  },
+  {
+    "source_id": "sector-reporter",
+    "url": "https://example.com/rss",
+    "source_type": "reporter_feed"
+  }
+]

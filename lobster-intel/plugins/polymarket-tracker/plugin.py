@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import os
+from dataclasses import asdict
 from datetime import datetime, timezone
 
 from lobster_ingest.adapters import PolymarketAdapter
@@ -36,6 +37,6 @@ def ingest(ctx=None) -> dict:
         "new_count": len(result.items),
         "cursor": result.next_cursor,
         "cursor_state": cursor_state,
-        "items": [item.__dict__ for item in result.items],
+        "items": [asdict(item) for item in result.items],
         "metadata": result.metadata,
     }

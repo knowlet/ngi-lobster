@@ -194,9 +194,12 @@ Use them as the starting point for environment or runtime config wiring.
 export OFFICIAL_STATEMENTS_FEEDS_JSON="$(cat lobster-intel/examples/source-packs/official-statements.json)"
 export WATCHLIST_FEEDS_JSON="$(cat lobster-intel/examples/source-packs/watchlist.json)"
 export POLYMARKET_MARKETS_JSON="$(cat lobster-intel/examples/source-packs/polymarket.json)"
+export OFFICIAL_STATEMENTS_STATE_PATH="$PWD/lobster-intel/data/runtime/sources/official-statements.json"
 ```
 
 These trackers are still **silent-ingest only**. They are source plugins, not alerting systems.
+
+`official-statements-tracker` now supports cursor persistence via `OFFICIAL_STATEMENTS_STATE_PATH`.
 
 ## 8. Current expected local artifacts
 

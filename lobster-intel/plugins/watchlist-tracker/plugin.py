@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import os
+from dataclasses import asdict
 from datetime import datetime, timezone
 
 from lobster_ingest.adapters import RssFeedAdapter
@@ -30,7 +31,7 @@ def ingest(ctx=None) -> dict:
             url=feed["url"],
         )
         result = adapter.fetch(feed.get("since_cursor"))
-        items.extend(item.__dict__ for item in result.items)
+        items.extend(asdict(item) for item in result.items)
         cursors[feed["source_id"]] = result.next_cursor
         cursor_state["cursors"][feed["source_id"]] = {
             "source_id": feed["source_id"],

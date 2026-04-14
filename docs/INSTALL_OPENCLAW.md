@@ -195,11 +195,14 @@ export OFFICIAL_STATEMENTS_FEEDS_JSON="$(cat lobster-intel/examples/source-packs
 export WATCHLIST_FEEDS_JSON="$(cat lobster-intel/examples/source-packs/watchlist.json)"
 export POLYMARKET_MARKETS_JSON="$(cat lobster-intel/examples/source-packs/polymarket.json)"
 export OFFICIAL_STATEMENTS_STATE_PATH="$PWD/lobster-intel/data/runtime/sources/official-statements.json"
+export WATCHLIST_STATE_PATH="$PWD/lobster-intel/data/runtime/sources/watchlist.json"
+export POLYMARKET_STATE_PATH="$PWD/lobster-intel/data/runtime/sources/polymarket.json"
 ```
 
 These trackers are still **silent-ingest only**. They are source plugins, not alerting systems.
 
 `official-statements-tracker` now supports cursor persistence via `OFFICIAL_STATEMENTS_STATE_PATH`.
+`watchlist-tracker` and `polymarket-tracker` now support the same pattern via their respective `*_STATE_PATH` variables.
 
 ## 8. Current expected local artifacts
 

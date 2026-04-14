@@ -14,3 +14,11 @@ Pass `POLYMARKET_MARKETS_JSON` as a JSON array, for example:
 ```
 
 The plugin returns normalized market snapshot evidence. No delivery logic is included.
+
+Optional persistence path:
+
+```bash
+export POLYMARKET_STATE_PATH="$PWD/lobster-intel/data/runtime/sources/polymarket.json"
+```
+
+When set, the plugin will save per-market cursor/state metadata there.

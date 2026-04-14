@@ -14,3 +14,11 @@ Set `WATCHLIST_FEEDS_JSON` to a JSON array like:
 ```
 
 Keep it curated. This is not a generic news firehose.
+
+Optional persistence path:
+
+```bash
+export WATCHLIST_STATE_PATH="$PWD/lobster-intel/data/runtime/sources/watchlist.json"
+```
+
+When set, the plugin will load/save per-feed cursors there.

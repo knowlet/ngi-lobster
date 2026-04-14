@@ -11,14 +11,14 @@ from lobster_runtime import load_source_state, save_source_state
 
 
 def _config(ctx=None) -> list[dict]:
-    if ctx and ctx.config.get("markets"):
+    if ctx and isinstance(ctx.config, dict) and ctx.config.get("markets"):
         return ctx.config["markets"]
     raw = os.environ.get("POLYMARKET_MARKETS_JSON", "[]")
     return json.loads(raw)
 
 
 def _state_path(ctx=None) -> Path | None:
-    if ctx and ctx.config.get("state_path"):
+    if ctx and isinstance(ctx.config, dict) and ctx.config.get("state_path"):
         return Path(ctx.config["state_path"])
     raw = os.environ.get("POLYMARKET_STATE_PATH")
     if raw:

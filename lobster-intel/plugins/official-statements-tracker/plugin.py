@@ -11,14 +11,14 @@ from lobster_runtime import load_source_state, save_source_state
 
 
 def _feeds(ctx=None) -> list[dict]:
-    if ctx and ctx.config.get("feeds"):
+    if ctx and isinstance(ctx.config, dict) and ctx.config.get("feeds"):
         return ctx.config["feeds"]
     raw = os.environ.get("OFFICIAL_STATEMENTS_FEEDS_JSON", "[]")
     return json.loads(raw)
 
 
 def _state_path(ctx=None) -> Path | None:
-    if ctx and ctx.config.get("state_path"):
+    if ctx and isinstance(ctx.config, dict) and ctx.config.get("state_path"):
         return Path(ctx.config["state_path"])
     raw = os.environ.get("OFFICIAL_STATEMENTS_STATE_PATH")
     if raw:

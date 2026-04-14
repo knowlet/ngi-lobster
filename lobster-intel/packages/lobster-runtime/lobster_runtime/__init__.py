@@ -17,9 +17,14 @@ __all__ = [
     "StateMachine",
     "should_send_alert",
 ]
+from .run_once import run_plugin_once, run_plugin_once_with_config
+from .source_runner import run_source_plugin
 from .source_state import SourceCursor, SourceState, load_source_state, save_source_state
 
 __all__ = [
+    "run_plugin_once",
+    "run_plugin_once_with_config",
+    "run_source_plugin",
     "SourceCursor",
     "SourceState",
     "load_source_state",

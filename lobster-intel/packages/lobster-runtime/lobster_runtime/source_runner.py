@@ -8,6 +8,22 @@ from typing import Any
 from .run_once import run_plugin_once_with_config
 
 
+def normalize_source_plugin_config(plugin_dir: str | Path, config: Any) -> dict[str, Any] | None:
+    if config is None:
+        return None
+    if isinstance(config, dict):
+        return config
+    if not isinstance(config, list):
+        raise TypeError(f"unsupported source plugin config type: {type(config).__name__}")
+
+    plugin_id = Path(plugin_dir).resolve().parent.name if Path(plugin_dir).name == "plugin.py" else Path(plugin_dir).name
+    if plugin_id in {"official-statements-tracker", "watchlist-tracker"}:
+        return {"feeds": config}
+    if plugin_id == "polymarket-tracker":
+        return {"markets": config}
+    return {"items": config}
+
+
 def _runtime_dir(workspace_dir: str | Path, plugin_id: str) -> Path:
     return Path(workspace_dir) / "lobster-intel" / "data" / "runtime" / "sources" / plugin_id
 
@@ -18,7 +34,8 @@ def run_source_plugin(
     *,
     config: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
-    result = run_plugin_once_with_config(plugin_dir, workspace_dir, config=config)
+    normalized_config = normalize_source_plugin_config(plugin_dir, config)
+    result = run_plugin_once_with_config(plugin_dir, workspace_dir, config=normalized_config)
     plugin_id = result["plugin"]
     runtime_dir = _runtime_dir(workspace_dir, plugin_id)
     runtime_dir.mkdir(parents=True, exist_ok=True)
@@ -32,4 +49,5 @@ def run_source_plugin(
     }
     latest_path.write_text(json.dumps(snapshot, ensure_ascii=False, indent=2))
     result["runtime_artifact_path"] = str(latest_path)
+    result["normalized_config"] = normalized_config
     return result

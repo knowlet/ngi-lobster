@@ -37,6 +37,7 @@ def main() -> None:
                 "new_count": (result.get("evidence") or {}).get("new_count"),
                 "runtime_artifact_path": result.get("runtime_artifact_path"),
                 "state_path": (result.get("evidence") or {}).get("state_path"),
+                "normalized_config": result.get("normalized_config"),
             },
             ensure_ascii=False,
         )

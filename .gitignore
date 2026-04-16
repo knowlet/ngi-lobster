@@ -13,3 +13,6 @@ venv/
 *.db
 *.log
 .DS_Store
+*.egg-info/
+tmp-*.json
+tmp-*.xml

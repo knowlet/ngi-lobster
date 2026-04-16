@@ -1,0 +1,54 @@
+{
+  "schema_version": "v1",
+  "plugin": "polymarket-tracker",
+  "version": "0.1.0",
+  "ran_at_utc": "2026-04-14T12:53:36.530702+00:00",
+  "evidence": {
+    "source": "polymarket",
+    "new_count": 1,
+    "cursor": "2026-04-14T12:53:36.530942+00:00",
+    "cursor_state": {
+      "schema_version": "v1",
+      "updated_at_utc": "2026-04-14T12:53:36.603210+00:00",
+      "cursors": {
+        "1517836": {
+          "source_id": "1517836",
+          "cursor": "2026-04-14T12:53:36.530942+00:00",
+          "updated_at_utc": "2026-04-14T12:53:36.603221+00:00",
+          "metadata": {
+            "slug": "trump-announces-end-of-military-operations-against-iran-by-june-30th-566-326-653-781-167-426-752-225"
+          }
+        }
+      }
+    },
+    "items": [
+      {
+        "source_id": "polymarket",
+        "source_type": "prediction_market",
+        "external_id": "1517836",
+        "title": "Trump announces end of military operations against Iran by June 30th?",
+        "url": "trump-announces-end-of-military-operations-against-iran-by-june-30th-566-326-653-781-167-426-752-225",
+        "collected_at_utc": "2026-04-14T12:53:36.530942+00:00",
+        "published_at_utc": "2026-06-30T23:55:00Z",
+        "summary": "Trump announces end of military operations against Iran by June 30th?",
+        "content": null,
+        "metadata": {
+          "market_id": "1517836",
+          "slug": "trump-announces-end-of-military-operations-against-iran-by-june-30th-566-326-653-781-167-426-752-225",
+          "yes_probability": null,
+          "active": true,
+          "closed": false,
+          "source_config": {
+            "id": "1517836",
+            "label": "Trump announces end of military operations against Iran by June 30th"
+          }
+        }
+      }
+    ],
+    "metadata": {
+      "endpoint": "https://gamma-api.polymarket.com/markets",
+      "market_count": 1
+    },
+    "state_path": null
+  }
+}

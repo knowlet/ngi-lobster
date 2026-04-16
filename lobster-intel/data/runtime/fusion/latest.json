@@ -1,0 +1,43 @@
+{
+  "timestamp_utc": "2026-04-15T01:30:20.206192+00:00",
+  "state": "ACTIVE_TRUCE",
+  "logic_summary": "Cross-source fusion from source runtime artifacts",
+  "target_resolution_mode": "source_runtime_fusion",
+  "market_target": {
+    "type": "polymarket",
+    "market_id": "1517836",
+    "market_slug": "trump-announces-end-of-military-operations-against-iran-by-june-30th-566-326-653-781-167-426-752-225",
+    "market_name": "Trump announces end of military operations against Iran by June 30th"
+  },
+  "adsb": {
+    "count": 1,
+    "peace_score": null,
+    "used": false
+  },
+  "firehose": {
+    "events_analyzed": 1,
+    "peace_score": 0.0
+  },
+  "weights": {
+    "adsb": 0.5,
+    "firehose": 0.5
+  },
+  "first_principles_probability": 0.30000000000000004,
+  "first_principles_escalation_probability": 0.7,
+  "market_escalation_probability": null,
+  "target_detail": {
+    "platform": "polymarket",
+    "market_id": "1517836",
+    "market_slug": "trump-announces-end-of-military-operations-against-iran-by-june-30th-566-326-653-781-167-426-752-225",
+    "market_question": "Trump announces end of military operations against Iran by June 30th?",
+    "market_yes_probability": null,
+    "market_closed": false,
+    "market_active": true,
+    "probability_mode": "yes_is_peace"
+  },
+  "ngi": null,
+  "ngi_percentage": null,
+  "gap_triggered": false,
+  "gap_reason": null,
+  "decision": "hold"
+}

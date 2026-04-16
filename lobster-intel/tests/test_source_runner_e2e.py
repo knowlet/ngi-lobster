@@ -11,6 +11,7 @@ class SourceRunnerE2E(unittest.TestCase):
         feed_path = repo / "tmp-test-watch-feed.xml"
         config_path = repo / "tmp-test-watch-pack.json"
         runtime_path = repo / "lobster-intel" / "data" / "runtime" / "sources" / "watchlist-tracker" / "latest.json"
+        runtime_runs_dir = repo / "lobster-intel" / "data" / "runtime" / "sources" / "watchlist-tracker" / "runs"
         try:
             feed_path.write_text(
                 """<rss version=\"2.0\"><channel>
@@ -54,6 +55,10 @@ class SourceRunnerE2E(unittest.TestCase):
             self.assertEqual(payload["new_count"], 1)
             self.assertIn("feeds", payload["normalized_config"])
             self.assertTrue(runtime_path.exists())
+            self.assertTrue(runtime_runs_dir.exists())
+            self.assertTrue(payload["run_id"])
+            self.assertTrue((repo / Path(payload["runtime_artifact_path"])).exists())
+            self.assertEqual((repo / Path(payload["latest_runtime_artifact_path"])).resolve(), runtime_path.resolve())
         finally:
             if feed_path.exists():
                 feed_path.unlink()

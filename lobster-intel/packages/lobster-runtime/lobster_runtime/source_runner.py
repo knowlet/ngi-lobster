@@ -28,6 +28,10 @@ def _runtime_dir(workspace_dir: str | Path, plugin_id: str) -> Path:
     return Path(workspace_dir) / "lobster-intel" / "data" / "runtime" / "sources" / plugin_id
 
 
+def _run_id(ran_at_utc: str) -> str:
+    return datetime.fromisoformat(ran_at_utc.replace("Z", "+00:00")).strftime("%Y%m%dT%H%M%SZ")
+
+
 def run_source_plugin(
     plugin_dir: str | Path,
     workspace_dir: str | Path,
@@ -39,15 +43,25 @@ def run_source_plugin(
     plugin_id = result["plugin"]
     runtime_dir = _runtime_dir(workspace_dir, plugin_id)
     runtime_dir.mkdir(parents=True, exist_ok=True)
+    runs_dir = runtime_dir / "runs"
+    runs_dir.mkdir(parents=True, exist_ok=True)
     latest_path = runtime_dir / "latest.json"
+    ran_at_utc = result.get("ran_at_utc") or datetime.now(timezone.utc).isoformat()
+    run_id = _run_id(ran_at_utc)
+    run_path = runs_dir / f"{run_id}.json"
     snapshot = {
         "schema_version": "v1",
         "plugin": plugin_id,
         "version": result.get("version"),
-        "ran_at_utc": result.get("ran_at_utc") or datetime.now(timezone.utc).isoformat(),
+        "run_id": run_id,
+        "ran_at_utc": ran_at_utc,
         "evidence": result.get("evidence"),
     }
-    latest_path.write_text(json.dumps(snapshot, ensure_ascii=False, indent=2))
-    result["runtime_artifact_path"] = str(latest_path)
+    payload = json.dumps(snapshot, ensure_ascii=False, indent=2)
+    run_path.write_text(payload)
+    latest_path.write_text(payload)
+    result["run_id"] = run_id
+    result["runtime_artifact_path"] = str(run_path)
+    result["latest_runtime_artifact_path"] = str(latest_path)
     result["normalized_config"] = normalized_config
     return result

@@ -4,6 +4,10 @@ from dataclasses import dataclass
 from datetime import datetime
 from typing import Any
 
+TARGET_CONTRACT_MISMATCH_REASON = "legacy_target_mismatch"
+TARGET_CONTRACT_MISSING_REASON = "suppressed_runtime_target_missing"
+TARGET_CONTRACT_OK_REASON = "active_target_contract_ok"
+
 
 NOVELTY_MIN_NGI_DELTA = 0.10
 NOVELTY_COOLDOWN_HOURS = 24
@@ -49,6 +53,43 @@ def build_signature(data: dict[str, Any], expl: dict[str, Any] | None) -> dict[s
         "watch_keys": (expl or {}).get("watch_keys", []),
         "timestamp_utc": data.get("timestamp_utc"),
     }
+
+
+def _target_identity(payload: dict[str, Any] | None) -> tuple[str | None, str | None, str | None]:
+    target = payload or {}
+    return (
+        target.get("market_id"),
+        target.get("market_slug"),
+        target.get("market_name") or target.get("market_question"),
+    )
+
+
+def validate_alert_target_contract(
+    runtime_data: dict[str, Any],
+    alert_target: dict[str, Any] | None,
+) -> AlertDecision:
+    runtime_target = runtime_data.get("market_target") or {}
+    runtime_identity = _target_identity(runtime_target)
+    alert_identity = _target_identity(alert_target)
+
+    if not any(runtime_identity):
+        return AlertDecision(False, TARGET_CONTRACT_MISSING_REASON)
+
+    runtime_id, runtime_slug, runtime_name = runtime_identity
+    alert_id, alert_slug, alert_name = alert_identity
+
+    matched = False
+    if runtime_id and alert_id:
+        matched = runtime_id == alert_id
+    elif runtime_slug and alert_slug:
+        matched = runtime_slug == alert_slug
+    elif runtime_name and alert_name:
+        matched = runtime_name == alert_name
+
+    if not matched:
+        return AlertDecision(False, TARGET_CONTRACT_MISMATCH_REASON)
+
+    return AlertDecision(True, TARGET_CONTRACT_OK_REASON)
 
 
 def should_send_alert(

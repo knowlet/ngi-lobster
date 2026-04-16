@@ -35,7 +35,9 @@ def main() -> None:
             {
                 "plugin": result.get("plugin"),
                 "new_count": (result.get("evidence") or {}).get("new_count"),
+                "run_id": result.get("run_id"),
                 "runtime_artifact_path": result.get("runtime_artifact_path"),
+                "latest_runtime_artifact_path": result.get("latest_runtime_artifact_path"),
                 "state_path": (result.get("evidence") or {}).get("state_path"),
                 "normalized_config": result.get("normalized_config"),
             },

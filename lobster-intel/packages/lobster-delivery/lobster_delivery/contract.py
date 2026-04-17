@@ -19,6 +19,11 @@ E2E_RUN_ID_ALIASES = (
     "e2e_bundle_id",
 )
 
+REQUIRED_BUNDLE_DECISIONS = (
+    "suppressed",
+    "would_send",
+)
+
 
 def _missing(value: Any) -> bool:
     return value is None or value == ""
@@ -72,4 +77,48 @@ def build_alert_contract_view(runtime_data: dict[str, Any]) -> dict[str, Any]:
     return {
         "status": "ok",
         "view": view,
+    }
+
+
+def build_e2e_contract_bundle_view(runtime_payloads: list[dict[str, Any]]) -> dict[str, Any]:
+    fixtures = [build_alert_contract_view(payload) for payload in runtime_payloads]
+    issues: list[str] = []
+
+    if len(fixtures) != len(REQUIRED_BUNDLE_DECISIONS):
+        issues.append("bundle_size_mismatch")
+
+    ok_views = [fixture["view"] for fixture in fixtures if fixture["status"] == "ok"]
+    decisions = {view.get("decision") for view in ok_views}
+
+    for decision in REQUIRED_BUNDLE_DECISIONS:
+        if decision not in decisions:
+            issues.append(f"missing_decision:{decision}")
+
+    shared_values = {
+        "contract_version": {view.get("contract_version") for view in ok_views},
+        "e2e_run_id": {view.get("e2e_run_id") for view in ok_views},
+    }
+    for field, values in shared_values.items():
+        present_values = {value for value in values if not _missing(value)}
+        if len(present_values) > 1:
+            issues.append(f"shared_field_mismatch:{field}")
+
+    incomplete_indexes = [index for index, fixture in enumerate(fixtures) if fixture["status"] != "ok"]
+    if incomplete_indexes:
+        issues.append("incomplete_fixture")
+
+    if issues:
+        return {
+            "status": "bundle_incomplete",
+            "issues": issues,
+            "fixtures": fixtures,
+        }
+
+    return {
+        "status": "ok",
+        "bundle": {
+            "contract_version": ok_views[0]["contract_version"],
+            "e2e_run_id": ok_views[0]["e2e_run_id"],
+            "fixtures": ok_views,
+        },
     }

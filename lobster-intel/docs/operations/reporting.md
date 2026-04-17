@@ -75,6 +75,21 @@ Current P0 suppression reasons to preserve verbatim:
 
 This is the product seam that makes active-target guardrails visible to users and reviewable by PO, instead of being buried in logs.
 
+## P0 acceptance bundle verification
+
+Use the bundle verifier to review the current highest-priority cut from raw runtime payloads instead of manual log reading:
+
+```bash
+cd lobster-intel
+python scripts/verify_alert_contract_bundle.py path/to/suppressed.json path/to/would-send.json
+```
+
+Behavior:
+- accepts either multiple runtime payload files or one JSON file containing a list
+- prints the machine-readable bundle view to stdout
+- exits `0` only when the bundle contains both `suppressed` and `would_send` fixtures with matching `contract_version` and `e2e_run_id`
+- exits non-zero when the bundle is incomplete, so CI or review scripts can fail closed
+
 ## Recommended pipeline
 
 1. gather runtime state

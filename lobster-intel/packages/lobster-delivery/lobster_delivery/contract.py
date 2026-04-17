@@ -14,9 +14,22 @@ REQUIRED_BASE_FIELDS = (
     "e2e_run_id",
 )
 
+E2E_RUN_ID_ALIASES = (
+    "e2e_run_id",
+    "e2e_bundle_id",
+)
+
 
 def _missing(value: Any) -> bool:
     return value is None or value == ""
+
+
+def _first_present(mapping: dict[str, Any], *keys: str) -> Any:
+    for key in keys:
+        value = mapping.get(key)
+        if not _missing(value):
+            return value
+    return None
 
 
 def build_alert_contract_view(runtime_data: dict[str, Any]) -> dict[str, Any]:
@@ -36,7 +49,7 @@ def build_alert_contract_view(runtime_data: dict[str, Any]) -> dict[str, Any]:
         or market_target.get("market_question"),
         "alert_target_id": alert_disposition.get("alert_target_id"),
         "contract_version": alert_disposition.get("contract_version"),
-        "e2e_run_id": alert_disposition.get("e2e_run_id"),
+        "e2e_run_id": _first_present(alert_disposition, *E2E_RUN_ID_ALIASES),
         "p_ai": runtime_data.get("first_principles_probability"),
         "market_yes_probability": target_detail.get("market_yes_probability"),
     }

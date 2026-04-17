@@ -13,8 +13,26 @@ dependencies = []
 requires = ["setuptools>=68", "wheel"]
 build-backend = "setuptools.build_meta"
 
-[tool.setuptools]
-package-dir = {"" = "packages"}
+[tool.setuptools.package-dir]
+"" = "packages/lobster-core"
+lobster_delivery = "packages/lobster-delivery/lobster_delivery"
+lobster_ingest = "packages/lobster-ingest/lobster_ingest"
+lobster_plugins = "packages/lobster-plugins/lobster_plugins"
+lobster_runtime = "packages/lobster-runtime/lobster_runtime"
 
 [tool.setuptools.packages.find]
-where = ["packages"]
+where = [
+  "packages/lobster-core",
+  "packages/lobster-delivery",
+  "packages/lobster-ingest",
+  "packages/lobster-plugins",
+  "packages/lobster-runtime",
+]
+include = [
+  "lobster_core",
+  "lobster_delivery",
+  "lobster_ingest",
+  "lobster_ingest.*",
+  "lobster_plugins",
+  "lobster_runtime",
+]

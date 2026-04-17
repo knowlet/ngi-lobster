@@ -24,6 +24,12 @@ REQUIRED_BUNDLE_DECISIONS = (
     "would_send",
 )
 
+DELIVERY_PROOF_ID_FIELDS = (
+    "sink_message_id",
+    "delivery_event_id",
+    "external_receipt_id",
+)
+
 
 def _missing(value: Any) -> bool:
     return value is None or value == ""
@@ -35,6 +41,23 @@ def _first_present(mapping: dict[str, Any], *keys: str) -> Any:
         if not _missing(value):
             return value
     return None
+
+
+def _validate_delivery_proof(delivery_proof: Any) -> list[str]:
+    if _missing(delivery_proof):
+        return ["delivery_proof"]
+    if not isinstance(delivery_proof, dict):
+        return ["delivery_proof.boundary", "delivery_proof.proof_id"]
+
+    missing_fields: list[str] = []
+    if _missing(delivery_proof.get("boundary")):
+        missing_fields.append("delivery_proof.boundary")
+
+    proof_ids = [_first_present(delivery_proof, *DELIVERY_PROOF_ID_FIELDS)]
+    if all(_missing(value) for value in proof_ids):
+        missing_fields.append("delivery_proof.proof_id")
+
+    return missing_fields
 
 
 def build_alert_contract_view(runtime_data: dict[str, Any]) -> dict[str, Any]:
@@ -61,8 +84,8 @@ def build_alert_contract_view(runtime_data: dict[str, Any]) -> dict[str, Any]:
 
     missing_fields = [field for field in REQUIRED_BASE_FIELDS if _missing(view[field])]
 
-    if view["decision"] == "would_send" and _missing(alert_disposition.get("delivery_proof")):
-        missing_fields.append("delivery_proof")
+    if view["decision"] == "would_send":
+        missing_fields.extend(_validate_delivery_proof(alert_disposition.get("delivery_proof")))
 
     if missing_fields:
         return {

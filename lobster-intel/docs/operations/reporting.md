@@ -84,6 +84,18 @@ cd lobster-intel
 python scripts/verify_alert_contract_bundle.py path/to/suppressed.json path/to/would-send.json
 ```
 
+Canonical example bundle for the current P0 cut:
+
+```bash
+cd lobster-intel
+python scripts/verify_alert_contract_bundle.py examples/e2e_alert_contract_bundle.json
+```
+
+The example file shows the exact minimum machine-readable shape PO expects from one shared E2E run record:
+- one `suppressed` legacy fixture with `reason_code=legacy_target_mismatch`
+- one `would_send` positive-control fixture with `delivery_proof`
+- matching `contract_version` and `e2e_run_id` across both fixtures
+
 Behavior:
 - accepts either multiple runtime payload files or one JSON file containing a list
 - prints the machine-readable bundle view to stdout

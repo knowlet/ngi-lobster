@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import re
 import sqlite3
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
@@ -52,8 +53,8 @@ def _parse_iso(value: str | None) -> datetime | None:
     if not value:
         return None
     try:
-        normalized = value[:-1] + "+00:00" if value.endswith("Z") else value
-        return datetime.fromisoformat(normalized)
+        parsed = datetime.fromisoformat(value)
+        return parsed if parsed.tzinfo else parsed.replace(tzinfo=timezone.utc)
     except ValueError:
         return None
 
@@ -400,6 +401,18 @@ def _registry_aliases(entry: dict[str, Any]) -> list[str]:
     return [str(alias).lower() for alias in aliases]
 
 
+def _normalize_match_text(value: str) -> str:
+    return re.sub(r"[^a-z0-9]+", " ", value.lower()).strip()
+
+
+def _alias_matches_candidate(alias: str, candidate_name: str) -> bool:
+    normalized_alias = _normalize_match_text(alias)
+    normalized_candidate = _normalize_match_text(candidate_name)
+    if not normalized_alias or not normalized_candidate:
+        return False
+    return normalized_alias == normalized_candidate or f" {normalized_alias} " in f" {normalized_candidate} "
+
+
 def resolve_active_target(inp: ThesisRuntimeInput, observations: list[dict[str, Any]]) -> tuple[dict[str, Any] | None, dict[str, Any] | None]:
     market_candidates = _market_candidates(observations)
     if not market_candidates and not inp.target_registry:
@@ -421,7 +434,7 @@ def resolve_active_target(inp: ThesisRuntimeInput, observations: list[dict[str, 
                 return resolved, candidate
 
             candidate_name = (candidate.get("market_question") or "").lower()
-            alias_match = any(alias in candidate_name for alias in _registry_aliases(entry))
+            alias_match = any(_alias_matches_candidate(alias, candidate_name) for alias in _registry_aliases(entry))
             if alias_match:
                 resolved = {
                     "market_id": candidate.get("market_id") or entry.get("market_id"),
@@ -934,38 +947,41 @@ def rebuild_runtime_index(workspace_dir: str | Path, thesis_id: str) -> Path:
     index_path = runtime_dir / "index" / "runtime_spine.sqlite3"
     index_path.parent.mkdir(parents=True, exist_ok=True)
 
-    with sqlite3.connect(index_path) as conn:
-        conn.execute("drop table if exists runtime_runs")
-        conn.execute(
-            """
-            create table runtime_runs (
-                run_id text primary key,
-                thesis_id text not null,
-                compare_mode text,
-                should_send integer not null,
-                runtime_path text not null,
-                alert_path text not null
-            )
-            """
-        )
-        for runtime_path in sorted(runs_dir.glob("*.json")):
-            runtime_snapshot = _load_json(runtime_path)
-            run_id = runtime_snapshot["run_id"]
-            alert_path = alerts_dir / f"{run_id}.json"
-            alert = _load_json(alert_path) if alert_path.exists() else {"should_send": False}
+    conn = sqlite3.connect(index_path)
+    try:
+        with conn:
+            conn.execute("drop table if exists runtime_runs")
             conn.execute(
                 """
-                insert into runtime_runs (run_id, thesis_id, compare_mode, should_send, runtime_path, alert_path)
-                values (?, ?, ?, ?, ?, ?)
-                """,
-                (
-                    run_id,
-                    thesis_id,
-                    runtime_snapshot.get("compare_mode"),
-                    1 if alert.get("should_send") else 0,
-                    str(runtime_path),
-                    str(alert_path),
-                ),
+                create table runtime_runs (
+                    run_id text primary key,
+                    thesis_id text not null,
+                    compare_mode text,
+                    should_send integer not null,
+                    runtime_path text not null,
+                    alert_path text not null
+                )
+                """
             )
-        conn.commit()
+            for runtime_path in sorted(runs_dir.glob("*.json")):
+                runtime_snapshot = _load_json(runtime_path)
+                run_id = runtime_snapshot["run_id"]
+                alert_path = alerts_dir / f"{run_id}.json"
+                alert = _load_json(alert_path) if alert_path.exists() else {"should_send": False}
+                conn.execute(
+                    """
+                    insert into runtime_runs (run_id, thesis_id, compare_mode, should_send, runtime_path, alert_path)
+                    values (?, ?, ?, ?, ?, ?)
+                    """,
+                    (
+                        run_id,
+                        thesis_id,
+                        runtime_snapshot.get("compare_mode"),
+                        1 if alert.get("should_send") else 0,
+                        str(runtime_path),
+                        str(alert_path),
+                    ),
+                )
+    finally:
+        conn.close()
     return index_path

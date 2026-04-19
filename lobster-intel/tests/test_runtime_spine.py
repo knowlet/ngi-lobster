@@ -4,6 +4,7 @@ import json
 import sqlite3
 import subprocess
 import sys
+from datetime import datetime, timezone
 from pathlib import Path
 
 import pytest
@@ -28,6 +29,7 @@ from lobster_runtime import (
     run_thesis_runtime,
     trace_run_lineage,
 )
+from lobster_runtime import runtime_spine
 
 
 def _source_payloads() -> tuple[dict, dict, dict]:
@@ -233,6 +235,57 @@ def test_compare_engine_routes_full_degraded_and_suppressed():
     assert "target_identity_mismatch" in suppressed_compare["fallback_reason_codes"]
 
 
+def test_parse_iso_returns_offset_aware_datetimes_for_z_and_naive_inputs():
+    zulu = runtime_spine._parse_iso("2026-04-19T12:30:00Z")
+    naive = runtime_spine._parse_iso("2026-04-19T12:30:00")
+
+    assert zulu == datetime(2026, 4, 19, 12, 30, tzinfo=timezone.utc)
+    assert zulu.tzinfo == timezone.utc
+    assert naive == datetime(2026, 4, 19, 12, 30, tzinfo=timezone.utc)
+    assert naive.tzinfo == timezone.utc
+
+
+def test_resolve_active_target_avoids_alias_substring_false_positive():
+    inp = ThesisRuntimeInput(
+        thesis_id="gooaye",
+        workspace_dir=".",
+        target_registry=[
+            {
+                "market_id": "registry-war-target",
+                "market_question": "War by June?",
+                "semantic_frame": "war_by_deadline",
+                "probability_direction": "yes_is_peace",
+                "aliases": ["war"],
+            }
+        ],
+        semantic_frame="war_by_deadline",
+        probability_direction="yes_is_peace",
+    )
+    observations = [
+        {
+            "artifact_id": "observation:market:software",
+            "event_type": "market_candidate",
+            "extractive_rationale": "Software platform launches by June?",
+            "metadata": {
+                "market_id": "software-1",
+                "market_slug": "software-platform-launches-by-june",
+                "market_question": "Software platform launches by June?",
+                "semantic_frame": "software_release",
+                "probability_direction": "yes_is_peace",
+                "yes_probability": 0.55,
+                "active": True,
+                "closed": False,
+            },
+        }
+    ]
+
+    active_target, _market_candidate = runtime_spine.resolve_active_target(inp, observations)
+
+    assert active_target is not None
+    assert active_target["resolution_mode"] == "live_search_fallback"
+    assert active_target["market_id"] == "software-1"
+
+
 def test_runtime_index_can_be_rebuilt_from_artifacts(tmp_path: Path):
     official, watchlist, polymarket = _source_payloads()
     result = run_thesis_runtime(
@@ -261,6 +314,58 @@ def test_runtime_index_can_be_rebuilt_from_artifacts(tmp_path: Path):
     db_path.unlink()
     rebuilt_path = rebuild_runtime_index(tmp_path, "gooaye")
     assert rebuilt_path.exists()
+
+
+def test_rebuild_runtime_index_closes_sqlite_connection(tmp_path: Path, monkeypatch: pytest.MonkeyPatch):
+    official, watchlist, polymarket = _source_payloads()
+    run_thesis_runtime(
+        ThesisRuntimeInput(
+            thesis_id="gooaye",
+            workspace_dir=tmp_path,
+            official_statements=official,
+            watchlist=watchlist,
+            polymarket=polymarket,
+            target_registry=_target_registry(),
+            semantic_frame="military_operations_end_by_deadline",
+            probability_direction="yes_is_peace",
+            state="ACTIVE_TRUCE",
+            now_utc="2026-04-19T12:30:00+00:00",
+        )
+    )
+
+    real_connect = runtime_spine.sqlite3.connect
+    recorded: dict[str, object] = {}
+
+    class RecordingConnection:
+        def __init__(self, *args, **kwargs):
+            self._inner = real_connect(*args, **kwargs)
+            self.closed = False
+
+        def __getattr__(self, name: str):
+            return getattr(self._inner, name)
+
+        def __enter__(self):
+            self._inner.__enter__()
+            return self
+
+        def __exit__(self, exc_type, exc, tb):
+            return self._inner.__exit__(exc_type, exc, tb)
+
+        def close(self):
+            self.closed = True
+            return self._inner.close()
+
+    def recording_connect(*args, **kwargs):
+        conn = RecordingConnection(*args, **kwargs)
+        recorded["conn"] = conn
+        return conn
+
+    monkeypatch.setattr(runtime_spine.sqlite3, "connect", recording_connect)
+
+    rebuild_runtime_index(tmp_path, "gooaye")
+
+    assert "conn" in recorded
+    assert getattr(recorded["conn"], "closed") is True
 
 
 def test_run_thesis_runtime_cli_writes_latest_runtime_snapshot(tmp_path: Path):

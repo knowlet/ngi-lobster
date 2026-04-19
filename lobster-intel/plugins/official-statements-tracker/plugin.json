@@ -1,0 +1,16 @@
+{
+  "id": "official-statements-tracker",
+  "name": "Official Statements Tracker",
+  "version": "0.1.0",
+  "type": "ingest",
+  "entrypoints": {
+    "ingest": "plugin.py:ingest"
+  },
+  "capabilities": [],
+  "required_env": ["OFFICIAL_STATEMENTS_FEEDS_JSON"],
+  "recommended_schedule": "every 15m",
+  "produces": [
+    "evidence.official_statement"
+  ],
+  "notes": "Silent ingest only. Provide OFFICIAL_STATEMENTS_FEEDS_JSON as a JSON array of feed definitions."
+}

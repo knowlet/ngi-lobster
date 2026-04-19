@@ -77,6 +77,11 @@ lobster-intel/
     lobster-plugins/
   plugins/
     gooaye-tracker/
+    polymarket-tracker/
+    official-statements-tracker/
+    watchlist-tracker/
+  examples/
+    source-packs/
   data/
     evidence/
     compiled/
@@ -113,3 +118,32 @@ This milestone establishes:
 ## Status
 
 Foundation scaffold created. Migration in progress.
+
+## Current source plugin set
+
+The current ingest family is now:
+
+- `gooaye-tracker`
+- `polymarket-tracker`
+- `official-statements-tracker`
+- `watchlist-tracker`
+
+These are intentionally **silent-ingest** plugins. They do not send delivery output themselves.
+
+## Install-ready source pack examples
+
+Example source pack configs now live under:
+
+```text
+lobster-intel/examples/source-packs/
+```
+
+- `official-statements.json`
+- `watchlist.json`
+- `polymarket.json`
+
+The product intent is:
+
+- source plugins fetch and normalize evidence
+- runtime stores cursor / source state
+- delivery remains downstream

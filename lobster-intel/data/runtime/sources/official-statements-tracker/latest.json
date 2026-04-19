@@ -1,0 +1,45 @@
+{
+  "schema_version": "v1",
+  "plugin": "official-statements-tracker",
+  "version": "0.1.0",
+  "ran_at_utc": "2026-04-14T07:30:56.310800+00:00",
+  "evidence": {
+    "source": "official_statements",
+    "new_count": 1,
+    "items": [
+      {
+        "source_id": "test-official",
+        "source_type": "official_statement",
+        "external_id": "b",
+        "title": "Statement B",
+        "url": "https://example.com/b",
+        "collected_at_utc": "2026-04-14T07:30:56.326721+00:00",
+        "published_at_utc": "2026-04-14T07:00:00+00:00",
+        "summary": "Beta",
+        "content": "Beta",
+        "metadata": {
+          "feed_url": "file:///Users/knowlet/.openclaw/workspace/projects/ngi-lobster/tmp-official-feed.xml"
+        }
+      }
+    ],
+    "cursors": {
+      "test-official": "2026-04-14T07:00:00+00:00"
+    },
+    "cursor_state": {
+      "schema_version": "v1",
+      "updated_at_utc": "2026-04-14T07:30:56.311030+00:00",
+      "cursors": {
+        "test-official": {
+          "source_id": "test-official",
+          "cursor": "2026-04-14T07:00:00+00:00",
+          "updated_at_utc": "2026-04-14T07:30:56.326756+00:00",
+          "metadata": {
+            "url": "file:///Users/knowlet/.openclaw/workspace/projects/ngi-lobster/tmp-official-feed.xml",
+            "since_cursor": null
+          }
+        }
+      }
+    },
+    "state_path": "/Users/knowlet/.openclaw/workspace/projects/ngi-lobster/tmp-official-state.json"
+  }
+}

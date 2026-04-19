@@ -19,6 +19,12 @@ def _normalize(value: Any):
 
 
 def run_plugin_once(plugin_dir: str | Path, workspace_dir: str | Path) -> dict[str, Any]:
+    return run_plugin_once_with_config(plugin_dir, workspace_dir, config=None)
+
+
+def run_plugin_once_with_config(
+    plugin_dir: str | Path, workspace_dir: str | Path, config: dict[str, Any] | None = None
+) -> dict[str, Any]:
     plugin_dir = Path(plugin_dir)
     workspace_dir = Path(workspace_dir)
     manifest, entrypoints = load_plugin(plugin_dir)
@@ -27,6 +33,7 @@ def run_plugin_once(plugin_dir: str | Path, workspace_dir: str | Path) -> dict[s
         plugin_dir=plugin_dir,
         workspace_dir=workspace_dir,
         now_utc=datetime.now(timezone.utc).isoformat(),
+        config=config or {},
     )
     evidence = _normalize(entrypoints["ingest"](ctx))
     result: dict[str, Any] = {
@@ -42,4 +49,3 @@ def run_plugin_once(plugin_dir: str | Path, workspace_dir: str | Path) -> dict[s
         runtime = _normalize(entrypoints["evaluate"](ctx, result.get("evidence"), result.get("compiled")))
         result["runtime"] = runtime
     return result
-

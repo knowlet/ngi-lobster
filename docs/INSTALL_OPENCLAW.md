@@ -4,6 +4,18 @@ This document explains how another OpenClaw instance can install and run the cur
 
 This is **v0**. It is honest about what is productized already, and what still needs manual wiring.
 
+## Project goal
+
+The goal of this repo is not only to ship a runnable intelligence script.
+
+The goal is to productize NGI as an installable OpenClaw plugin:
+
+- install through `openclaw plugins install`
+- ingest evidence through pluginized source trackers
+- compute runtime truth through the NGI runtime spine
+- compare against the active market target on the correct semantic frame
+- keep delivery downstream of runtime truth
+
 ## What you get today
 
 If you install this repo today, you get:
@@ -165,11 +177,46 @@ Current v0 wrapper also exposes a minimal tool:
 
 - `ngi_lobster_demo`
 - `ngi_lobster_run_default_workflow`
+- `ngi_lobster_run_thesis_runtime`
 
 Their jobs are:
 
 - `ngi_lobster_demo`: smoke-test the local runtime path
 - `ngi_lobster_run_default_workflow`: run the default installed workflow and write artifacts/digest
+- `ngi_lobster_run_thesis_runtime`: run the thesis runtime spine against installed source artifacts or explicit overrides
+
+## 7.2 First batch source trackers
+
+The repo now includes these installable ingest plugins:
+
+- `gooaye-tracker`
+- `polymarket-tracker`
+- `official-statements-tracker`
+- `watchlist-tracker`
+
+Example config packs live under:
+
+```text
+lobster-intel/examples/source-packs/
+```
+
+Use them as the starting point for environment or runtime config wiring.
+
+### Example env wiring
+
+```bash
+export OFFICIAL_STATEMENTS_FEEDS_JSON="$(cat lobster-intel/examples/source-packs/official-statements.json)"
+export WATCHLIST_FEEDS_JSON="$(cat lobster-intel/examples/source-packs/watchlist.json)"
+export POLYMARKET_MARKETS_JSON="$(cat lobster-intel/examples/source-packs/polymarket.json)"
+export OFFICIAL_STATEMENTS_STATE_PATH="$PWD/lobster-intel/data/runtime/sources/official-statements.json"
+export WATCHLIST_STATE_PATH="$PWD/lobster-intel/data/runtime/sources/watchlist.json"
+export POLYMARKET_STATE_PATH="$PWD/lobster-intel/data/runtime/sources/polymarket.json"
+```
+
+These trackers are still **silent-ingest only**. They are source plugins, not alerting systems.
+
+`official-statements-tracker` now supports cursor persistence via `OFFICIAL_STATEMENTS_STATE_PATH`.
+`watchlist-tracker` and `polymarket-tracker` now support the same pattern via their respective `*_STATE_PATH` variables.
 
 ## 8. Current expected local artifacts
 
@@ -201,6 +248,7 @@ Before this becomes a smooth installable plugin for everyone, these still need w
 3. Firehose junk suppression / ranking
 4. reusable cron recipes
 5. a cleaner setup command
+6. source cursor persistence wired into default runtime storage
 
 ## Bottom line
 

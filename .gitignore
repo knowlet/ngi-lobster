@@ -13,4 +13,6 @@ venv/
 *.db
 *.log
 .DS_Store
-lobster-intel/packages/*.egg-info/
+*.egg-info/
+tmp-*.json
+tmp-*.xml

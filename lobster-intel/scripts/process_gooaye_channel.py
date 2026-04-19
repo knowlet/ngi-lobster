@@ -18,17 +18,22 @@ RUNTIME_DIR = BASE_DIR / "runtime" / "gooaye"
 
 def write_digest(payload: dict, summaries: list[str]) -> Path:
     path = COMPILED_DIR / "latest_digest.md"
+    total_count = payload.get("new_count", 0)
+    shown_count = len(summaries)
     lines = [
         "# Gooaye Digest",
         "",
         f"- Recorded at: {datetime.now(timezone.utc).isoformat()}",
         f"- Channel: {payload.get('channel', CHANNEL)}",
-        f"- New count: {payload.get('new_count', 0)}",
+        f"- New count: {total_count}",
     ]
+    section_title = "## New items"
+    if shown_count and shown_count < total_count:
+        section_title = f"## New items (showing {shown_count} of {total_count})"
     if summaries:
-        lines += ["", "## New items", ""] + [f"- {summary}" for summary in summaries]
+        lines += ["", section_title, ""] + [f"- {summary}" for summary in summaries]
     else:
-        lines += ["", "## New items", "", "- No new items"]
+        lines += ["", section_title, "", "- No new items"]
     path.write_text("\n".join(lines) + "\n")
     return path
 

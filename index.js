@@ -4,6 +4,8 @@ import { promisify } from "node:util";
 import path from "node:path";
 import fs from "node:fs";
 
+import { formatDefaultWorkflowText } from "./workflow-default-tool.js";
+
 const execFileAsync = promisify(execFile);
 
 export default definePluginEntry({
@@ -97,7 +99,7 @@ export default definePluginEntry({
             runtime = JSON.parse(fs.readFileSync(runtimePath, 'utf8'));
           }
           const digestPath = runtime.digest_path || path.join(rootDir, 'lobster-intel', 'data', 'compiled', 'gooaye', 'latest_digest.md');
-          const text = (stdout || stderr || '').trim() || `Workflow ran. Digest: ${digestPath}`;
+          const text = formatDefaultWorkflowText(stdout, stderr, digestPath);
           return {
             content: [{ type: 'text', text }],
             details: {

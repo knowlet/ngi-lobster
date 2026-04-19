@@ -177,18 +177,23 @@ def write_digest(payload: dict[str, Any], summaries: list[str], *, paths: dict[s
     run_id = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
     run_path = paths["compiled_runs"] / f"{run_id}.md"
     latest_path = paths["compiled"] / "latest_digest.md"
+    total_count = payload.get("new_count", 0)
+    shown_count = len(summaries)
     lines = [
         "# Gooaye Digest",
         "",
         f"- Run id: {run_id}",
         f"- Recorded at: {recorded_at_utc}",
         f"- Channel: {payload.get('channel', CHANNEL)}",
-        f"- New count: {payload.get('new_count', 0)}",
+        f"- New count: {total_count}",
     ]
+    section_title = "## New items"
+    if shown_count and shown_count < total_count:
+        section_title = f"## New items (showing {shown_count} of {total_count})"
     if summaries:
-        lines += ["", "## New items", ""] + [f"- {summary}" for summary in summaries]
+        lines += ["", section_title, ""] + [f"- {summary}" for summary in summaries]
     else:
-        lines += ["", "## New items", "", "- No new items"]
+        lines += ["", section_title, "", "- No new items"]
     content = "\n".join(lines) + "\n"
     run_path.write_text(content)
     shutil.copyfile(run_path, latest_path)

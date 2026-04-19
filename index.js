@@ -5,6 +5,8 @@ import path from "node:path";
 import fs from "node:fs";
 import { fileURLToPath } from "node:url";
 
+import { formatDefaultWorkflowText } from "./workflow-default-tool.js";
+
 const execFileAsync = promisify(execFile);
 
 export default definePluginEntry({
@@ -14,23 +16,23 @@ export default definePluginEntry({
     "Open intelligence plugin framework for OpenClaw. NGI stands for Narrative Gap Index.",
   register(api) {
     const rootDir = api.pluginRootDir ?? path.dirname(fileURLToPath(import.meta.url));
-    const venvPython = path.join(rootDir, '.venv', 'bin', 'python');
-    const bootstrap = path.join(rootDir, 'scripts', 'bootstrap_runtime.sh');
-    const thesisRuntimeScript = path.join(rootDir, 'lobster-intel', 'scripts', 'run_thesis_runtime.py');
+    const venvPython = path.join(rootDir, ".venv", "bin", "python");
+    const bootstrap = path.join(rootDir, "scripts", "bootstrap_runtime.sh");
+    const thesisRuntimeScript = path.join(rootDir, "lobster-intel", "scripts", "run_thesis_runtime.py");
 
     async function ensureRuntimeReady() {
       try {
-        await execFileAsync(venvPython, ['-V'], { cwd: rootDir });
+        await execFileAsync(venvPython, ["-V"], { cwd: rootDir });
         return null;
       } catch (err) {
         return {
           content: [
             {
-              type: 'text',
+              type: "text",
               text: `NGI Lobster runtime not ready. Run:\n\ncd ${rootDir} && ./scripts/bootstrap_runtime.sh\n\nThen retry.`
             }
           ],
-          details: { error: (err && err.message) || 'venv check failed', bootstrap }
+          details: { error: (err && err.message) || "venv check failed", bootstrap }
         };
       }
     }
@@ -45,6 +47,17 @@ export default definePluginEntry({
         ],
         details: { missingPaths }
       };
+    }
+
+    function readRuntimeJsonSafe(runtimePath) {
+      if (!fs.existsSync(runtimePath)) {
+        return {};
+      }
+      try {
+        return JSON.parse(fs.readFileSync(runtimePath, "utf8"));
+      } catch {
+        return {};
+      }
     }
 
     async function runThesisRuntimeCli(args) {
@@ -137,21 +150,18 @@ export default definePluginEntry({
           const preflight = await ensureRuntimeReady();
           if (preflight) return preflight;
 
-          const scriptPath = path.join(rootDir, 'scripts', 'run_default_workflow.sh');
+          const scriptPath = path.join(rootDir, "scripts", "run_default_workflow.sh");
           const { stdout, stderr } = await execFileAsync(scriptPath, [], {
             cwd: rootDir,
             env: process.env
           });
-          const runtimePath = path.join(rootDir, 'lobster-intel', 'data', 'runtime', 'gooaye', 'latest.json');
-          let runtime = {};
-          if (fs.existsSync(runtimePath)) {
-            runtime = JSON.parse(fs.readFileSync(runtimePath, 'utf8'));
-          }
+          const runtimePath = path.join(rootDir, "lobster-intel", "data", "runtime", "gooaye", "latest.json");
+          const runtime = readRuntimeJsonSafe(runtimePath);
           const result = {
-            plugin: 'gooaye-tracker',
-            version: '0.1.0',
+            plugin: "gooaye-tracker",
+            version: "0.1.0",
             new_count: runtime.new_count ?? 0,
-            channel: runtime.channel ?? '@Gooaye',
+            channel: runtime.channel ?? "@Gooaye",
             run_id: runtime.run_id ?? null,
             digest_path: runtime.digest_path ?? null
           };
@@ -159,14 +169,14 @@ export default definePluginEntry({
           return {
             content: [
               {
-                type: 'text',
+                type: "text",
                 text
               }
             ],
             details: {
               runtimePath,
-              stdout: stdout?.trim() || '',
-              stderr: stderr?.trim() || '',
+              stdout: stdout?.trim() || "",
+              stderr: stderr?.trim() || "",
               ...result
             }
           };
@@ -190,26 +200,23 @@ export default definePluginEntry({
           const preflight = await ensureRuntimeReady();
           if (preflight) return preflight;
 
-          const scriptPath = path.join(rootDir, 'scripts', 'run_default_workflow.sh');
+          const scriptPath = path.join(rootDir, "scripts", "run_default_workflow.sh");
           const { stdout, stderr } = await execFileAsync(scriptPath, [], {
             cwd: rootDir,
             env: process.env
           });
-          const runtimePath = path.join(rootDir, 'lobster-intel', 'data', 'runtime', 'gooaye', 'latest.json');
-          let runtime = {};
-          if (fs.existsSync(runtimePath)) {
-            runtime = JSON.parse(fs.readFileSync(runtimePath, 'utf8'));
-          }
-          const digestPath = runtime.digest_path || path.join(rootDir, 'lobster-intel', 'data', 'compiled', 'gooaye', 'latest_digest.md');
-          const text = (stdout || stderr || '').trim() || `Workflow ran. Digest: ${digestPath}`;
+          const runtimePath = path.join(rootDir, "lobster-intel", "data", "runtime", "gooaye", "latest.json");
+          const runtime = readRuntimeJsonSafe(runtimePath);
+          const digestPath = runtime.digest_path || path.join(rootDir, "lobster-intel", "data", "compiled", "gooaye", "latest_digest.md");
+          const text = formatDefaultWorkflowText(stdout, stderr, digestPath);
           return {
-            content: [{ type: 'text', text }],
+            content: [{ type: "text", text }],
             details: {
               digestPath,
               runtimePath,
               newCount: runtime.new_count ?? null,
-              stdout: stdout?.trim() || '',
-              stderr: stderr?.trim() || ''
+              stdout: stdout?.trim() || "",
+              stderr: stderr?.trim() || ""
             }
           };
         }
@@ -299,5 +306,5 @@ export default definePluginEntry({
       },
       { name: "ngi_lobster_run_thesis_runtime" }
     );
-  },
+  }
 });

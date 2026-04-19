@@ -54,6 +54,8 @@ export function loadBundledThesisProfile(rootDir, request = {}, io = {}) {
   const profilePath =
     resolveRepoPath(rootDir, request.thesisProfilePath) ||
     defaultThesisProfilePath(rootDir, thesisId);
+    resolveRepoPath(rootDir, request.thesisProfilePath) ||
+    defaultThesisProfilePath(rootDir, thesisId);
 
   if (!existsSync(profilePath)) {
     return null;

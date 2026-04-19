@@ -16,6 +16,23 @@ DELIVERY_DIR = BASE_DIR / "delivery" / "gooaye"
 RUNTIME_DIR = BASE_DIR / "runtime" / "gooaye"
 
 
+def write_digest(payload: dict, summaries: list[str]) -> Path:
+    path = COMPILED_DIR / "latest_digest.md"
+    lines = [
+        "# Gooaye Digest",
+        "",
+        f"- Recorded at: {datetime.now(timezone.utc).isoformat()}",
+        f"- Channel: {payload.get('channel', CHANNEL)}",
+        f"- New count: {payload.get('new_count', 0)}",
+    ]
+    if summaries:
+        lines += ["", "## New items", ""] + [f"- {summary}" for summary in summaries]
+    else:
+        lines += ["", "## New items", "", "- No new items"]
+    path.write_text("\n".join(lines) + "\n")
+    return path
+
+
 def run_tracker(state_path: Path) -> dict:
     result = subprocess.run(
         ["python3", str(TRACKER_PATH), CHANNEL, "--state", str(state_path)],
@@ -142,12 +159,14 @@ def write_compiled(item: dict) -> Path:
 
 def write_runtime(payload: dict, summaries: list[str]) -> Path:
     items = payload.get("items", [])
+    digest_path = write_digest(payload, summaries)
     data = {
         "recorded_at_utc": datetime.now(timezone.utc).isoformat(),
         "channel": payload.get("channel", CHANNEL),
         "new_count": payload.get("new_count", 0),
         "items": items,
         "summaries": summaries,
+        "digest_path": str(digest_path),
         "image_analysis_queue": [
             {
                 "post_id": item.get("post_id"),

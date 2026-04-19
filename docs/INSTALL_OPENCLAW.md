@@ -151,6 +151,26 @@ For OpenClaw integration, keep the boundary clean:
 
 Do **not** let the plugin itself send Telegram / Discord / chat messages.
 
+## 7.1 Native OpenClaw wrapper test
+
+After installing the repo as a native OpenClaw plugin:
+
+```bash
+openclaw plugins install ./path/to/ngi-lobster
+openclaw gateway restart
+openclaw plugins inspect ngi-lobster
+```
+
+Current v0 wrapper also exposes a minimal tool:
+
+- `ngi_lobster_demo`
+- `ngi_lobster_run_default_workflow`
+
+Their jobs are:
+
+- `ngi_lobster_demo`: smoke-test the local runtime path
+- `ngi_lobster_run_default_workflow`: run the default installed workflow and write artifacts/digest
+
 ## 8. Current expected local artifacts
 
 The first example plugin currently writes artifacts under:

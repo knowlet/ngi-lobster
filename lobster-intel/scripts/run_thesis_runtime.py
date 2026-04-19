@@ -13,36 +13,47 @@ for rel in ["lobster-core", "lobster-delivery", "lobster-plugins", "lobster-runt
     sys.path.insert(0, str(PACKAGES / rel))
 
 from lobster_runtime import ThesisRuntimeInput, run_thesis_runtime
-
-
-def _load_json(path: str | None) -> dict | list | None:
-    if not path:
-        return None
-    return json.loads(Path(path).read_text(encoding="utf-8"))
+from lobster_runtime.runtime_spine import load_thesis_runtime_inputs
 
 
 def main() -> None:
-    ap = argparse.ArgumentParser()
+    ap = argparse.ArgumentParser(description="Run the thesis runtime spine against installed source artifacts.")
     ap.add_argument("--workspace", default=".")
     ap.add_argument("--thesis-id", required=True)
-    ap.add_argument("--official")
-    ap.add_argument("--watchlist")
-    ap.add_argument("--polymarket")
-    ap.add_argument("--registry-file")
+    ap.add_argument(
+        "--official",
+        help="Override the official-statements runtime artifact path. Defaults to the installed workspace artifact.",
+    )
+    ap.add_argument(
+        "--watchlist",
+        help="Override the watchlist runtime artifact path. Defaults to the installed workspace artifact.",
+    )
+    ap.add_argument(
+        "--polymarket",
+        help="Override the polymarket runtime artifact path. Defaults to the installed workspace artifact.",
+    )
+    ap.add_argument("--registry-file", help="Override the runtime registry file path.")
     ap.add_argument("--semantic-frame", default="generic_thesis_frame")
     ap.add_argument("--probability-direction", default="yes_is_peace")
     ap.add_argument("--state", default="ACTIVE_TRUCE")
     ap.add_argument("--now-utc")
     args = ap.parse_args()
 
+    runtime_inputs = load_thesis_runtime_inputs(
+        args.workspace,
+        official_statements_path=args.official,
+        watchlist_path=args.watchlist,
+        polymarket_path=args.polymarket,
+        registry_file=args.registry_file,
+    )
     result = run_thesis_runtime(
         ThesisRuntimeInput(
             thesis_id=args.thesis_id,
             workspace_dir=args.workspace,
-            official_statements=_load_json(args.official),
-            watchlist=_load_json(args.watchlist),
-            polymarket=_load_json(args.polymarket),
-            target_registry=_load_json(args.registry_file) or [],
+            official_statements=runtime_inputs["official_statements"],
+            watchlist=runtime_inputs["watchlist"],
+            polymarket=runtime_inputs["polymarket"],
+            target_registry=runtime_inputs["target_registry"],
             semantic_frame=args.semantic_frame,
             probability_direction=args.probability_direction,
             state=args.state,
@@ -55,8 +66,12 @@ def main() -> None:
                 "thesis_id": result.thesis_id,
                 "run_id": result.run_id,
                 "compare_mode": result.runtime_snapshot.get("compare_mode"),
-                "runtime_latest_path": result.paths["runtime_latest"],
-                "delivery_receipt_path": result.paths["delivery_receipt"],
+                "input_contract": {
+                    "workspace": str(Path(args.workspace).resolve()),
+                    "source_resolution": runtime_inputs["source_resolution"],
+                    "registry_resolution": runtime_inputs["registry_resolution"],
+                },
+                "artifact_paths": result.paths,
             },
             ensure_ascii=False,
         )

@@ -119,6 +119,23 @@ def _target_registry() -> list[dict]:
     ]
 
 
+def _install_runtime_source_artifacts(
+    workspace: Path,
+    official: dict,
+    watchlist: dict,
+    polymarket: dict,
+) -> None:
+    source_root = workspace / "lobster-intel" / "data" / "runtime" / "sources"
+    for source_id, payload in [
+        ("official-statements-tracker", official),
+        ("watchlist-tracker", watchlist),
+        ("polymarket-tracker", polymarket),
+    ]:
+        source_dir = source_root / source_id
+        source_dir.mkdir(parents=True, exist_ok=True)
+        (source_dir / "latest.json").write_text(json.dumps(payload), encoding="utf-8")
+
+
 def test_runtime_spine_run_writes_full_artifact_chain(tmp_path: Path):
     official, watchlist, polymarket = _source_payloads()
 
@@ -370,6 +387,7 @@ def test_rebuild_runtime_index_closes_sqlite_connection(tmp_path: Path, monkeypa
 
 def test_run_thesis_runtime_cli_writes_latest_runtime_snapshot(tmp_path: Path):
     official, watchlist, polymarket = _source_payloads()
+    _install_runtime_source_artifacts(tmp_path, official, watchlist, polymarket)
     official_path = tmp_path / "official.json"
     watchlist_path = tmp_path / "watchlist.json"
     polymarket_path = tmp_path / "polymarket.json"
@@ -413,5 +431,43 @@ def test_run_thesis_runtime_cli_writes_latest_runtime_snapshot(tmp_path: Path):
     assert result.returncode == 0, result.stderr
     payload = json.loads(result.stdout)
     assert payload["compare_mode"] == "full_compare"
-    assert (tmp_path / Path(payload["runtime_latest_path"])).exists()
-    assert (tmp_path / Path(payload["delivery_receipt_path"])).exists()
+    assert payload["input_contract"]["source_resolution"]["official_statements"]["mode"] == "explicit"
+    assert payload["input_contract"]["source_resolution"]["watchlist"]["mode"] == "explicit"
+    assert payload["input_contract"]["source_resolution"]["polymarket"]["mode"] == "explicit"
+    assert (tmp_path / Path(payload["artifact_paths"]["runtime_latest"])).exists()
+    assert (tmp_path / Path(payload["artifact_paths"]["delivery_receipt"])).exists()
+
+
+def test_run_thesis_runtime_cli_discovers_installed_source_artifacts(tmp_path: Path):
+    official, watchlist, polymarket = _source_payloads()
+    _install_runtime_source_artifacts(tmp_path, official, watchlist, polymarket)
+
+    repo = Path(__file__).resolve().parents[2]
+    result = subprocess.run(
+        [
+            sys.executable,
+            "lobster-intel/scripts/run_thesis_runtime.py",
+            "--workspace",
+            str(tmp_path),
+            "--thesis-id",
+            "gooaye",
+            "--now-utc",
+            "2026-04-19T12:30:00+00:00",
+        ],
+        cwd=repo,
+        text=True,
+        capture_output=True,
+        check=False,
+    )
+
+    assert result.returncode == 0, result.stderr
+    payload = json.loads(result.stdout)
+    assert payload["compare_mode"] == "degraded_compare"
+    assert payload["input_contract"]["source_resolution"]["official_statements"]["mode"] == "discovered"
+    assert payload["input_contract"]["source_resolution"]["watchlist"]["mode"] == "discovered"
+    assert payload["input_contract"]["source_resolution"]["polymarket"]["mode"] == "discovered"
+    assert payload["input_contract"]["source_resolution"]["official_statements"]["path"].endswith(
+        "lobster-intel/data/runtime/sources/official-statements-tracker/latest.json"
+    )
+    assert payload["input_contract"]["registry_resolution"]["mode"] == "empty"
+    assert Path(payload["artifact_paths"]["runtime_latest"]).exists()

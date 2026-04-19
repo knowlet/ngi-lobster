@@ -7,7 +7,7 @@ import sqlite3
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any
+from typing import Any, cast
 
 from lobster_delivery import deliver_heartbeat_payload
 
@@ -15,6 +15,12 @@ from lobster_delivery import deliver_heartbeat_payload
 SUPPORTED_DIRECTION_NORMALIZATIONS = {
     ("yes_is_peace", "yes_is_escalation"),
     ("yes_is_escalation", "yes_is_peace"),
+}
+
+RUNTIME_SOURCE_PLUGIN_IDS = {
+    "official_statements": "official-statements-tracker",
+    "watchlist": "watchlist-tracker",
+    "polymarket": "polymarket-tracker",
 }
 
 
@@ -76,8 +82,16 @@ def _artifact_path(workspace_dir: str | Path, *parts: str) -> Path:
     return path
 
 
+def _runtime_source_latest_path(workspace_dir: str | Path, source_key: str) -> Path:
+    return _workspace_data_dir(workspace_dir) / "runtime" / "sources" / RUNTIME_SOURCE_PLUGIN_IDS[source_key] / "latest.json"
+
+
 def _write_json(path: Path, payload: dict[str, Any]) -> None:
     path.write_text(json.dumps(payload, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+
+
+def _load_json_file(path: Path) -> dict[str, Any] | list[Any]:
+    return json.loads(path.read_text(encoding="utf-8"))
 
 
 def _base_artifact(
@@ -129,6 +143,58 @@ def _source_payloads(inp: ThesisRuntimeInput) -> list[tuple[str, dict[str, Any] 
         ("watchlist-tracker", inp.watchlist),
         ("polymarket-tracker", inp.polymarket),
     ]
+
+
+def load_thesis_runtime_inputs(
+    workspace_dir: str | Path,
+    *,
+    official_statements_path: str | Path | None = None,
+    watchlist_path: str | Path | None = None,
+    polymarket_path: str | Path | None = None,
+    registry_file: str | Path | None = None,
+) -> dict[str, Any]:
+    source_specs = {
+        "official_statements": official_statements_path,
+        "watchlist": watchlist_path,
+        "polymarket": polymarket_path,
+    }
+    source_payloads: dict[str, dict[str, Any] | None] = {}
+    source_resolution: dict[str, dict[str, Any]] = {}
+
+    for source_key, explicit_path in source_specs.items():
+        if explicit_path is not None:
+            source_path = Path(explicit_path)
+            if not source_path.exists():
+                raise FileNotFoundError(f"missing runtime source artifact: {source_path}")
+            source_resolution[source_key] = {"path": str(source_path), "mode": "explicit", "exists": True}
+            source_payloads[source_key] = _load_json_file(source_path)
+            continue
+
+        source_path = _runtime_source_latest_path(workspace_dir, source_key)
+        if source_path.exists():
+            source_resolution[source_key] = {"path": str(source_path), "mode": "discovered", "exists": True}
+            source_payloads[source_key] = _load_json_file(source_path)
+        else:
+            source_resolution[source_key] = {"path": str(source_path), "mode": "missing", "exists": False}
+            source_payloads[source_key] = None
+
+    registry_payload: list[dict[str, Any]] = []
+    registry_resolution: dict[str, Any] = {"path": None, "mode": "empty", "exists": False}
+    if registry_file is not None:
+        registry_path = Path(registry_file)
+        if not registry_path.exists():
+            raise FileNotFoundError(f"missing runtime registry file: {registry_path}")
+        registry_resolution = {"path": str(registry_path), "mode": "explicit", "exists": True}
+        registry_payload = cast(list[dict[str, Any]], _load_json_file(registry_path))
+
+    return {
+        "official_statements": source_payloads["official_statements"],
+        "watchlist": source_payloads["watchlist"],
+        "polymarket": source_payloads["polymarket"],
+        "target_registry": registry_payload,
+        "source_resolution": source_resolution,
+        "registry_resolution": registry_resolution,
+    }
 
 
 def _build_content_refs(item: dict[str, Any]) -> list[dict[str, str]]:

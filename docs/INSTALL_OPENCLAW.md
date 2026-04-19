@@ -4,6 +4,18 @@ This document explains how another OpenClaw instance can install and run the cur
 
 This is **v0**. It is honest about what is productized already, and what still needs manual wiring.
 
+## Project goal
+
+The goal of this repo is not only to ship a runnable intelligence script.
+
+The goal is to productize NGI as an installable OpenClaw plugin:
+
+- install through `openclaw plugins install`
+- ingest evidence through pluginized source trackers
+- compute runtime truth through the NGI runtime spine
+- compare against the active market target on the correct semantic frame
+- keep delivery downstream of runtime truth
+
 ## What you get today
 
 If you install this repo today, you get:
@@ -165,11 +177,13 @@ Current v0 wrapper also exposes a minimal tool:
 
 - `ngi_lobster_demo`
 - `ngi_lobster_run_default_workflow`
+- `ngi_lobster_run_thesis_runtime`
 
 Their jobs are:
 
 - `ngi_lobster_demo`: smoke-test the local runtime path
 - `ngi_lobster_run_default_workflow`: run the default installed workflow and write artifacts/digest
+- `ngi_lobster_run_thesis_runtime`: run the thesis runtime spine against installed source artifacts or explicit overrides
 
 ## 7.2 First batch source trackers
 

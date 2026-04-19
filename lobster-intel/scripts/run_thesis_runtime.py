@@ -39,13 +39,17 @@ def main() -> None:
     ap.add_argument("--now-utc")
     args = ap.parse_args()
 
-    runtime_inputs = load_thesis_runtime_inputs(
-        args.workspace,
-        official_statements_path=args.official,
-        watchlist_path=args.watchlist,
-        polymarket_path=args.polymarket,
-        registry_file=args.registry_file,
-    )
+    try:
+        runtime_inputs = load_thesis_runtime_inputs(
+            args.workspace,
+            official_statements_path=args.official,
+            watchlist_path=args.watchlist,
+            polymarket_path=args.polymarket,
+            registry_file=args.registry_file,
+        )
+    except FileNotFoundError as exc:
+        print(f"ERROR: {exc}", file=sys.stderr)
+        raise SystemExit(2)
     result = run_thesis_runtime(
         ThesisRuntimeInput(
             thesis_id=args.thesis_id,

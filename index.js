@@ -58,10 +58,31 @@ export default definePluginEntry({
           cliArgs.push(flag, String(value));
         }
       }
-      const { stdout, stderr } = await execFileAsync(venvPython, cliArgs, {
-        cwd: rootDir,
-        env: process.env
-      });
+      let stdout;
+      let stderr;
+      try {
+        ({ stdout, stderr } = await execFileAsync(venvPython, cliArgs, {
+          cwd: rootDir,
+          env: process.env
+        }));
+      } catch (err) {
+        const rawStdout = err?.stdout?.trim?.() || "";
+        const rawStderr = err?.stderr?.trim?.() || err?.message || "";
+        return {
+          content: [
+            {
+              type: "text",
+              text: rawStderr || rawStdout || "NGI Lobster thesis runtime failed."
+            }
+          ],
+          details: {
+            scriptPath,
+            stdout: rawStdout,
+            stderr: rawStderr,
+            exitCode: err?.code ?? null
+          }
+        };
+      }
       const rawStdout = stdout?.trim() || "";
       const rawStderr = stderr?.trim() || "";
       let parsed = {};

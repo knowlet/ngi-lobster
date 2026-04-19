@@ -178,6 +178,14 @@ def load_thesis_runtime_inputs(
             source_resolution[source_key] = {"path": str(source_path), "mode": "missing", "exists": False}
             source_payloads[source_key] = None
 
+    missing_sources = [
+        f"{source_key}: {details['path']}"
+        for source_key, details in source_resolution.items()
+        if not details["exists"]
+    ]
+    if missing_sources:
+        raise FileNotFoundError("missing runtime source artifacts:\n" + "\n".join(missing_sources))
+
     registry_payload: list[dict[str, Any]] = []
     registry_resolution: dict[str, Any] = {"path": None, "mode": "empty", "exists": False}
     if registry_file is not None:
@@ -471,24 +479,40 @@ def _normalize_match_text(value: str) -> str:
     return re.sub(r"[^a-z0-9]+", " ", value.lower()).strip()
 
 
-def _alias_matches_candidate(alias: str, candidate_name: str) -> bool:
-    normalized_alias = _normalize_match_text(alias)
-    normalized_candidate = _normalize_match_text(candidate_name)
-    if not normalized_alias or not normalized_candidate:
+def _normalized_equals(left: str | None, right: str | None) -> bool:
+    if not left or not right:
         return False
-    return normalized_alias == normalized_candidate or f" {normalized_alias} " in f" {normalized_candidate} "
+    return _normalize_match_text(left) == _normalize_match_text(right)
+
+
+def _candidate_matches_registry_entry(entry: dict[str, Any], candidate: dict[str, Any]) -> bool:
+    if entry.get("market_id") and candidate.get("market_id") and entry["market_id"] == candidate["market_id"]:
+        return True
+    if _normalized_equals(entry.get("market_slug"), candidate.get("market_slug")):
+        return True
+    if _normalized_equals(entry.get("market_question"), candidate.get("market_question")):
+        return True
+
+    candidate_slug = candidate.get("market_slug")
+    candidate_question = candidate.get("market_question")
+    for alias in _registry_aliases(entry):
+        if _normalized_equals(alias, candidate_slug) or _normalized_equals(alias, candidate_question):
+            return True
+    return False
 
 
 def resolve_active_target(inp: ThesisRuntimeInput, observations: list[dict[str, Any]]) -> tuple[dict[str, Any] | None, dict[str, Any] | None]:
     market_candidates = _market_candidates(observations)
-    if not market_candidates and not inp.target_registry:
+    if not market_candidates:
         return None, None
+    if not inp.target_registry:
+        return None, market_candidates[0]
 
     for entry in inp.target_registry:
         for candidate in market_candidates:
-            if entry.get("market_id") and entry.get("market_id") == candidate.get("market_id"):
+            if _candidate_matches_registry_entry(entry, candidate):
                 resolved = {
-                    "market_id": entry.get("market_id"),
+                    "market_id": entry.get("market_id") or candidate.get("market_id"),
                     "market_slug": entry.get("market_slug") or candidate.get("market_slug"),
                     "market_question": entry.get("market_question") or candidate.get("market_question"),
                     "semantic_frame": entry.get("semantic_frame") or inp.semantic_frame,
@@ -499,51 +523,7 @@ def resolve_active_target(inp: ThesisRuntimeInput, observations: list[dict[str, 
                 }
                 return resolved, candidate
 
-            candidate_name = (candidate.get("market_question") or "").lower()
-            alias_match = any(_alias_matches_candidate(alias, candidate_name) for alias in _registry_aliases(entry))
-            if alias_match:
-                resolved = {
-                    "market_id": candidate.get("market_id") or entry.get("market_id"),
-                    "market_slug": candidate.get("market_slug") or entry.get("market_slug"),
-                    "market_question": candidate.get("market_question") or entry.get("market_question"),
-                    "semantic_frame": entry.get("semantic_frame") or inp.semantic_frame,
-                    "probability_direction": entry.get("probability_direction") or inp.probability_direction,
-                    "resolution_mode": "registry_alias_match",
-                    "resolver_confidence": 0.8,
-                    "fallback_used": True,
-                }
-                return resolved, candidate
-
-    if market_candidates:
-        candidate = market_candidates[0]
-        return (
-            {
-                "market_id": candidate.get("market_id"),
-                "market_slug": candidate.get("market_slug"),
-                "market_question": candidate.get("market_question"),
-                "semantic_frame": candidate.get("semantic_frame") or inp.semantic_frame,
-                "probability_direction": candidate.get("probability_direction") or inp.probability_direction,
-                "resolution_mode": "live_search_fallback",
-                "resolver_confidence": 0.7,
-                "fallback_used": True,
-            },
-            candidate,
-        )
-
-    entry = inp.target_registry[0]
-    return (
-        {
-            "market_id": entry.get("market_id"),
-            "market_slug": entry.get("market_slug"),
-            "market_question": entry.get("market_question"),
-            "semantic_frame": entry.get("semantic_frame") or inp.semantic_frame,
-            "probability_direction": entry.get("probability_direction") or inp.probability_direction,
-            "resolution_mode": "registry_only",
-            "resolver_confidence": 0.4,
-            "fallback_used": False,
-        },
-        None,
-    )
+    return None, market_candidates[0]
 
 
 def _normalized_market_probability(active_target: dict[str, Any] | None, market_candidate: dict[str, Any] | None) -> float | None:
@@ -1016,10 +996,9 @@ def rebuild_runtime_index(workspace_dir: str | Path, thesis_id: str) -> Path:
     conn = sqlite3.connect(index_path)
     try:
         with conn:
-            conn.execute("drop table if exists runtime_runs")
             conn.execute(
                 """
-                create table runtime_runs (
+                create table if not exists runtime_runs (
                     run_id text primary key,
                     thesis_id text not null,
                     compare_mode text,
@@ -1029,6 +1008,7 @@ def rebuild_runtime_index(workspace_dir: str | Path, thesis_id: str) -> Path:
                 )
                 """
             )
+            conn.execute("delete from runtime_runs")
             for runtime_path in sorted(runs_dir.glob("*.json")):
                 runtime_snapshot = _load_json(runtime_path)
                 run_id = runtime_snapshot["run_id"]

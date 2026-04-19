@@ -298,9 +298,9 @@ def test_resolve_active_target_avoids_alias_substring_false_positive():
 
     active_target, _market_candidate = runtime_spine.resolve_active_target(inp, observations)
 
-    assert active_target is not None
-    assert active_target["resolution_mode"] == "live_search_fallback"
-    assert active_target["market_id"] == "software-1"
+    assert active_target is None
+    assert _market_candidate is not None
+    assert _market_candidate["market_id"] == "software-1"
 
 
 def test_runtime_index_can_be_rebuilt_from_artifacts(tmp_path: Path):
@@ -331,6 +331,35 @@ def test_runtime_index_can_be_rebuilt_from_artifacts(tmp_path: Path):
     db_path.unlink()
     rebuilt_path = rebuild_runtime_index(tmp_path, "gooaye")
     assert rebuilt_path.exists()
+
+
+def test_rebuild_runtime_index_preserves_runtime_runs_indexes(tmp_path: Path):
+    official, watchlist, polymarket = _source_payloads()
+    run_thesis_runtime(
+        ThesisRuntimeInput(
+            thesis_id="gooaye",
+            workspace_dir=tmp_path,
+            official_statements=official,
+            watchlist=watchlist,
+            polymarket=polymarket,
+            target_registry=_target_registry(),
+            semantic_frame="military_operations_end_by_deadline",
+            probability_direction="yes_is_peace",
+            state="ACTIVE_TRUCE",
+            now_utc="2026-04-19T12:30:00+00:00",
+        )
+    )
+
+    db_path = rebuild_runtime_index(tmp_path, "gooaye")
+    with sqlite3.connect(db_path) as conn:
+        conn.execute("create index runtime_runs_compare_mode_idx on runtime_runs(compare_mode)")
+        conn.commit()
+
+    rebuild_runtime_index(tmp_path, "gooaye")
+
+    with sqlite3.connect(db_path) as conn:
+        indexes = {row[0] for row in conn.execute("select name from sqlite_master where type = 'index'")}
+    assert "runtime_runs_compare_mode_idx" in indexes
 
 
 def test_rebuild_runtime_index_closes_sqlite_connection(tmp_path: Path, monkeypatch: pytest.MonkeyPatch):
@@ -462,7 +491,7 @@ def test_run_thesis_runtime_cli_discovers_installed_source_artifacts(tmp_path: P
 
     assert result.returncode == 0, result.stderr
     payload = json.loads(result.stdout)
-    assert payload["compare_mode"] == "degraded_compare"
+    assert payload["compare_mode"] == "suppressed"
     assert payload["input_contract"]["source_resolution"]["official_statements"]["mode"] == "discovered"
     assert payload["input_contract"]["source_resolution"]["watchlist"]["mode"] == "discovered"
     assert payload["input_contract"]["source_resolution"]["polymarket"]["mode"] == "discovered"
@@ -471,3 +500,36 @@ def test_run_thesis_runtime_cli_discovers_installed_source_artifacts(tmp_path: P
     )
     assert payload["input_contract"]["registry_resolution"]["mode"] == "empty"
     assert Path(payload["artifact_paths"]["runtime_latest"]).exists()
+
+
+def test_run_thesis_runtime_cli_fails_when_installed_source_artifacts_are_missing(tmp_path: Path):
+    official, _watchlist, polymarket = _source_payloads()
+    source_root = tmp_path / "lobster-intel" / "data" / "runtime" / "sources"
+    for source_id, payload in [
+        ("official-statements-tracker", official),
+        ("polymarket-tracker", polymarket),
+    ]:
+        source_dir = source_root / source_id
+        source_dir.mkdir(parents=True, exist_ok=True)
+        (source_dir / "latest.json").write_text(json.dumps(payload), encoding="utf-8")
+
+    repo = Path(__file__).resolve().parents[2]
+    result = subprocess.run(
+        [
+            sys.executable,
+            "lobster-intel/scripts/run_thesis_runtime.py",
+            "--workspace",
+            str(tmp_path),
+            "--thesis-id",
+            "gooaye",
+            "--now-utc",
+            "2026-04-19T12:30:00+00:00",
+        ],
+        cwd=repo,
+        text=True,
+        capture_output=True,
+        check=False,
+    )
+
+    assert result.returncode != 0
+    assert "watchlist-tracker/latest.json" in result.stderr

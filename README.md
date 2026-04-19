@@ -43,6 +43,7 @@ Current status:
 - `package.json` exists
 - `index.js` native wrapper entry exists
 - native tool `ngi_lobster_demo` exists for local smoke testing
+- native tool `ngi_lobster_list_installed_theses` exists to list bundled thesis ids, profile defaults, and linked registry paths
 - native tool `ngi_lobster_run_installed_thesis_workflow` exists to run bundled source packs and then the thesis runtime spine
 - `lobster-intel/examples/thesis-packs/gooaye.json` exists for install-ready thesis defaults
 - bundled thesis defaults also live under `lobster-intel/examples/thesis-profiles/` and `lobster-intel/examples/target-registries/`

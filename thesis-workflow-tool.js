@@ -23,12 +23,13 @@ function defaultSourcePackDir(rootDir) {
   return path.join(rootDir, "lobster-intel", "examples", "source-packs");
 }
 
+function defaultThesisProfileDir(rootDir) {
+  return path.join(rootDir, "lobster-intel", "examples", "thesis-profiles");
+}
+
 function defaultThesisProfilePath(rootDir, thesisId) {
   return path.join(
-    rootDir,
-    "lobster-intel",
-    "examples",
-    "thesis-profiles",
+    defaultThesisProfileDir(rootDir),
     `${thesisId}.json`,
   );
 }
@@ -54,8 +55,6 @@ export function loadBundledThesisProfile(rootDir, request = {}, io = {}) {
   const profilePath =
     resolveRepoPath(rootDir, request.thesisProfilePath) ||
     defaultThesisProfilePath(rootDir, thesisId);
-    resolveRepoPath(rootDir, request.thesisProfilePath) ||
-    defaultThesisProfilePath(rootDir, thesisId);
 
   if (!existsSync(profilePath)) {
     return null;
@@ -65,6 +64,67 @@ export function loadBundledThesisProfile(rootDir, request = {}, io = {}) {
   return {
     ...profile,
     profile_path: profilePath,
+  };
+}
+
+function profileSummary(rootDir, profile) {
+  return {
+    thesisId: profile.thesis_id,
+    title: profile.title || profile.thesis_id,
+    summary: profile.summary || "",
+    semanticFrame: profile.semantic_frame,
+    probabilityDirection: profile.probability_direction,
+    state: profile.state,
+    profilePath: profile.profile_path,
+    registryFilePath: resolveRepoPath(rootDir, profile.registry_file_path),
+  };
+}
+
+export function listBundledThesisProfiles(rootDir, io = {}) {
+  const readdirSync = io.readdirSync || fs.readdirSync;
+  const readFileSync = io.readFileSync || fs.readFileSync;
+  const profileDir = defaultThesisProfileDir(rootDir);
+
+  return readdirSync(profileDir, { withFileTypes: true })
+    .filter((entry) => entry.isFile() && entry.name.endsWith(".json"))
+    .map((entry) => {
+      const profilePath = path.join(profileDir, entry.name);
+      const profile = JSON.parse(readFileSync(profilePath, "utf8"));
+      return profileSummary(rootDir, {
+        ...profile,
+        profile_path: profilePath,
+      });
+    })
+    .sort((left, right) => left.thesisId.localeCompare(right.thesisId));
+}
+
+export function describeBundledThesisProfile(rootDir, thesisId, io = {}) {
+  const existsSync = io.existsSync || fs.existsSync;
+  const readFileSync = io.readFileSync || fs.readFileSync;
+  const profile = loadBundledThesisProfile(rootDir, { thesisId }, {
+    existsSync,
+    readFileSync,
+  });
+  if (!profile) {
+    return null;
+  }
+
+  const registryPath = resolveRepoPath(rootDir, profile.registry_file_path);
+  const registryEntries =
+    registryPath && existsSync(registryPath)
+      ? JSON.parse(readFileSync(registryPath, "utf8"))
+      : [];
+
+  return {
+    ...profileSummary(rootDir, profile),
+    registry: {
+      path: registryPath || null,
+      entryCount: registryEntries.length,
+      markets: registryEntries.map((entry) => ({
+        marketId: entry.market_id || null,
+        marketQuestion: entry.market_question || null,
+      })),
+    },
   };
 }
 

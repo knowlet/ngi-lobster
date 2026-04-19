@@ -17,4 +17,8 @@ if [ -z "$PY" ]; then
   exit 2
 fi
 
-"$PY" "$LOBSTER_DIR/scripts/process_gooaye_channel.py"
+"$PY" "$LOBSTER_DIR/scripts/process_gooaye_channel.py" >/dev/null
+
+"$PY" "$LOBSTER_DIR/scripts/run_thesis_runtime.py" \
+  --workspace "$ROOT" \
+  --thesis-id gooaye

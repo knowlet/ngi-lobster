@@ -1,6 +1,6 @@
 import json
 import subprocess
-import tempfile
+import sys
 import unittest
 from pathlib import Path
 
@@ -12,6 +12,8 @@ class SourceRunnerE2E(unittest.TestCase):
         config_path = repo / "tmp-test-watch-pack.json"
         runtime_path = repo / "lobster-intel" / "data" / "runtime" / "sources" / "watchlist-tracker" / "latest.json"
         runtime_runs_dir = repo / "lobster-intel" / "data" / "runtime" / "sources" / "watchlist-tracker" / "runs"
+        prior_latest = runtime_path.read_text(encoding="utf-8") if runtime_path.exists() else None
+        prior_run_paths = set(runtime_runs_dir.glob("*.json")) if runtime_runs_dir.exists() else set()
         try:
             feed_path.write_text(
                 """<rss version=\"2.0\"><channel>
@@ -39,7 +41,7 @@ class SourceRunnerE2E(unittest.TestCase):
             )
             output = subprocess.check_output(
                 [
-                    str(repo / ".venv" / "bin" / "python"),
+                    sys.executable,
                     "lobster-intel/scripts/run_source_plugin.py",
                     "lobster-intel/plugins/watchlist-tracker",
                     "--workspace",
@@ -64,6 +66,14 @@ class SourceRunnerE2E(unittest.TestCase):
                 feed_path.unlink()
             if config_path.exists():
                 config_path.unlink()
+            if prior_latest is not None:
+                runtime_path.write_text(prior_latest, encoding="utf-8")
+            elif runtime_path.exists():
+                runtime_path.unlink()
+            if runtime_runs_dir.exists():
+                for run_path in runtime_runs_dir.glob("*.json"):
+                    if run_path not in prior_run_paths:
+                        run_path.unlink()
 
 
 if __name__ == "__main__":

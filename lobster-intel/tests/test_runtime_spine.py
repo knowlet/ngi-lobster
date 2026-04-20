@@ -30,6 +30,7 @@ from lobster_runtime import (
     trace_run_lineage,
 )
 from lobster_runtime import runtime_spine
+from lobster_runtime.runtime_spine import load_thesis_runtime_inputs
 
 
 def _source_payloads() -> tuple[dict, dict, dict]:
@@ -134,6 +135,13 @@ def _install_runtime_source_artifacts(
         source_dir = source_root / source_id
         source_dir.mkdir(parents=True, exist_ok=True)
         (source_dir / "latest.json").write_text(json.dumps(payload), encoding="utf-8")
+
+
+def _install_thesis_registry(workspace: Path, thesis_id: str, entries: list[dict]) -> Path:
+    registry_path = workspace / "lobster-intel" / "data" / "runtime" / "thesis-registry" / f"{thesis_id}.json"
+    registry_path.parent.mkdir(parents=True, exist_ok=True)
+    registry_path.write_text(json.dumps(entries), encoding="utf-8")
+    return registry_path
 
 
 def _thesis_pack() -> dict:
@@ -566,6 +574,7 @@ def test_run_thesis_runtime_cli_writes_latest_runtime_snapshot(tmp_path: Path):
 def test_run_thesis_runtime_cli_discovers_installed_source_artifacts(tmp_path: Path):
     official, watchlist, polymarket = _source_payloads()
     _install_runtime_source_artifacts(tmp_path, official, watchlist, polymarket)
+    registry_path = _install_thesis_registry(tmp_path, "gooaye", _target_registry())
 
     repo = Path(__file__).resolve().parents[2]
     result = subprocess.run(
@@ -587,15 +596,107 @@ def test_run_thesis_runtime_cli_discovers_installed_source_artifacts(tmp_path: P
 
     assert result.returncode == 0, result.stderr
     payload = json.loads(result.stdout)
-    assert payload["compare_mode"] == "suppressed"
+    assert payload["compare_mode"] == "full_compare"
     assert payload["input_contract"]["source_resolution"]["official_statements"]["mode"] == "discovered"
     assert payload["input_contract"]["source_resolution"]["watchlist"]["mode"] == "discovered"
     assert payload["input_contract"]["source_resolution"]["polymarket"]["mode"] == "discovered"
     assert payload["input_contract"]["source_resolution"]["official_statements"]["path"].endswith(
         "lobster-intel/data/runtime/sources/official-statements-tracker/latest.json"
     )
-    assert payload["input_contract"]["registry_resolution"]["mode"] == "empty"
+    assert payload["input_contract"]["registry_resolution"]["mode"] == "discovered"
+    assert payload["input_contract"]["registry_resolution"]["path"] == str(registry_path)
     assert Path(payload["artifact_paths"]["runtime_latest"]).exists()
+
+
+def test_load_thesis_runtime_inputs_prefers_explicit_registry_file(tmp_path: Path):
+    official, watchlist, polymarket = _source_payloads()
+    _install_runtime_source_artifacts(tmp_path, official, watchlist, polymarket)
+    _install_thesis_registry(tmp_path, "gooaye", _target_registry())
+    explicit_registry_path = tmp_path / "explicit-registry.json"
+    explicit_registry_path.write_text(
+        json.dumps(
+            [
+                {
+                    "market_id": "explicit-target",
+                    "market_slug": "explicit-market",
+                    "market_question": "Explicit market target?",
+                    "semantic_frame": "military_operations_end_by_deadline",
+                    "probability_direction": "yes_is_peace",
+                    "aliases": ["explicit target"],
+                    "resolution_mode": "registry_first",
+                }
+            ]
+        ),
+        encoding="utf-8",
+    )
+
+    payload = load_thesis_runtime_inputs(
+        tmp_path,
+        thesis_id="gooaye",
+        registry_file=explicit_registry_path,
+    )
+
+    assert payload["registry_resolution"]["mode"] == "explicit"
+    assert payload["registry_resolution"]["path"] == str(explicit_registry_path)
+    assert payload["target_registry"][0]["market_id"] == "explicit-target"
+
+
+def test_load_thesis_runtime_inputs_rejects_unsafe_thesis_id(tmp_path: Path):
+    official, watchlist, polymarket = _source_payloads()
+    _install_runtime_source_artifacts(tmp_path, official, watchlist, polymarket)
+
+    with pytest.raises(ValueError, match="unsafe thesis_id"):
+        load_thesis_runtime_inputs(
+            tmp_path,
+            thesis_id="../../etc/passwd",
+        )
+
+
+def test_run_thesis_runtime_rejects_unsafe_thesis_id(tmp_path: Path):
+    official, watchlist, polymarket = _source_payloads()
+
+    with pytest.raises(ValueError, match="unsafe thesis_id"):
+        run_thesis_runtime(
+            ThesisRuntimeInput(
+                thesis_id="../../etc/passwd",
+                workspace_dir=tmp_path,
+                official_statements=official,
+                watchlist=watchlist,
+                polymarket=polymarket,
+                target_registry=_target_registry(),
+                semantic_frame="military_operations_end_by_deadline",
+                probability_direction="yes_is_peace",
+                state="ACTIVE_TRUCE",
+                now_utc="2026-04-19T12:30:00+00:00",
+            )
+        )
+
+
+def test_load_thesis_runtime_inputs_rejects_non_list_registry_payload(tmp_path: Path):
+    official, watchlist, polymarket = _source_payloads()
+    _install_runtime_source_artifacts(tmp_path, official, watchlist, polymarket)
+    registry_root = tmp_path / "lobster-intel" / "data" / "runtime" / "thesis-registry"
+    registry_root.mkdir(parents=True, exist_ok=True)
+    registry_path = registry_root / "gooaye.json"
+    registry_path.write_text(json.dumps({"market_id": "unexpected-object"}), encoding="utf-8")
+
+    with pytest.raises(ValueError, match="must contain a JSON list"):
+        load_thesis_runtime_inputs(
+            tmp_path,
+            thesis_id="gooaye",
+        )
+
+    assert registry_path.exists()
+
+
+def test_trace_run_lineage_rejects_unsafe_thesis_id(tmp_path: Path):
+    with pytest.raises(ValueError, match="unsafe thesis_id"):
+        trace_run_lineage(tmp_path, "../../etc/passwd", "20260419T123000Z")
+
+
+def test_rebuild_runtime_index_rejects_unsafe_thesis_id(tmp_path: Path):
+    with pytest.raises(ValueError, match="unsafe thesis_id"):
+        rebuild_runtime_index(tmp_path, "../../etc/passwd")
 
 
 def test_run_thesis_runtime_cli_fails_when_installed_source_artifacts_are_missing(tmp_path: Path):

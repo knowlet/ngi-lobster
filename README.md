@@ -46,6 +46,7 @@ Current status:
 - native tool `ngi_lobster_run_installed_thesis_workflow` exists to run bundled source packs and then the thesis runtime spine
 - `lobster-intel/examples/thesis-packs/gooaye.json` exists for install-ready thesis defaults
 - bundled thesis defaults also live under `lobster-intel/examples/thesis-profiles/` and `lobster-intel/examples/target-registries/`
+- thesis runtime registry discovery now defaults to `lobster-intel/data/runtime/thesis-registry/<thesis_id>.json`
 - the heavy NGI runtime is still being migrated from `lobster-intel/` Python code into a fuller native OpenClaw plugin surface
 
 So the install surface is starting to look right, but runtime feature parity is not finished yet.
@@ -57,6 +58,7 @@ The repo already contains:
 - a minimal plugin contract
 - a plugin loader
 - a run-once runtime path
+- a thesis runtime spine with registry-first target resolution
 - a delivery gate
 - a first ingest plugin example (`gooaye-tracker`)
 - an install-ready thesis pack example for runtime target resolution

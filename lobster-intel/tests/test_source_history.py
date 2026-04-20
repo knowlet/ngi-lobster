@@ -113,6 +113,25 @@ class SourceHistoryTests(unittest.TestCase):
         self.assertEqual(replay["items"][0]["external_id"], "stmt-1")
         self.assertEqual(replay["items"][1]["title"], "Second watch item")
 
+    def test_source_history_rejects_path_traversal_inputs(self):
+        replay_source_run = getattr(lobster_runtime, "replay_source_run", None)
+        rebuild_source_index = getattr(lobster_runtime, "rebuild_source_index", None)
+        self.assertIsNotNone(replay_source_run, "lobster_runtime.replay_source_run should exist")
+        self.assertIsNotNone(rebuild_source_index, "lobster_runtime.rebuild_source_index should exist")
+
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            workspace = Path(tmp_dir)
+            _install_source_history_fixture(workspace)
+
+            with self.assertRaises(ValueError):
+                replay_source_run(workspace, "../escape", "20260420T010000Z")
+
+            with self.assertRaises(ValueError):
+                replay_source_run(workspace, "watchlist-tracker", "../20260420T010000Z")
+
+            with self.assertRaises(ValueError):
+                rebuild_source_index(workspace, "../escape")
+
     def test_rebuild_source_index_recreates_sqlite_rows(self):
         rebuild_source_index = getattr(lobster_runtime, "rebuild_source_index", None)
         self.assertIsNotNone(rebuild_source_index, "lobster_runtime.rebuild_source_index should exist")

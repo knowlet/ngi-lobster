@@ -6,8 +6,19 @@ from pathlib import Path
 from typing import Any
 
 
+def _validated_segment(value: str, field_name: str) -> str:
+    candidate = str(value or "")
+    path = Path(candidate)
+    if not candidate or path.is_absolute() or "/" in candidate or "\\" in candidate:
+        raise ValueError(f"invalid {field_name}: {candidate!r}")
+    if any(part in {"", ".", ".."} for part in path.parts):
+        raise ValueError(f"invalid {field_name}: {candidate!r}")
+    return candidate
+
+
 def _source_runtime_dir(workspace_dir: str | Path, plugin_id: str) -> Path:
-    return Path(workspace_dir) / "lobster-intel" / "data" / "runtime" / "sources" / plugin_id
+    safe_plugin_id = _validated_segment(plugin_id, "plugin_id")
+    return Path(workspace_dir) / "lobster-intel" / "data" / "runtime" / "sources" / safe_plugin_id
 
 
 def _source_runs_dir(workspace_dir: str | Path, plugin_id: str) -> Path:
@@ -15,7 +26,8 @@ def _source_runs_dir(workspace_dir: str | Path, plugin_id: str) -> Path:
 
 
 def _source_run_path(workspace_dir: str | Path, plugin_id: str, run_id: str) -> Path:
-    return _source_runs_dir(workspace_dir, plugin_id) / f"{run_id}.json"
+    safe_run_id = _validated_segment(run_id, "run_id")
+    return _source_runs_dir(workspace_dir, plugin_id) / f"{safe_run_id}.json"
 
 
 def _source_index_path(workspace_dir: str | Path, plugin_id: str) -> Path:

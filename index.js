@@ -274,7 +274,7 @@ export default definePluginEntry({
             : { theses: listBundledThesisProfiles(rootDir) };
           if (request.thesisId && !details) {
             return {
-              ok: false,
+              ok: workflowResult.kind === "ok",
               content: [
                 {
                   type: "text",

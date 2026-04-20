@@ -159,6 +159,7 @@ The product intent is:
 
 - source plugins fetch and normalize evidence
 - runtime stores cursor / source state
+- thesis registries live under `data/runtime/thesis-registry/` and resolve active targets before compare
 - delivery remains downstream
 
 ## Install-ready thesis pack examples

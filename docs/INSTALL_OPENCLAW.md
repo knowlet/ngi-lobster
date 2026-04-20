@@ -26,12 +26,10 @@ If you install this repo today, you get:
 - minimal one-shot runtime
 - delivery gate for background output
 - first source plugin example: `gooaye-tracker`
-- install-ready thesis pack example: `lobster-intel/examples/thesis-packs/gooaye.json`
 - legacy NGI scripts for reference and migration
 
 What you do **not** get yet:
 
-- a polished one-command installer
 - a fully packaged OpenClaw plugin registry entry
 - stable OCR backfill
 - stable linked-content transcript/article extraction
@@ -49,6 +47,24 @@ If the repo is private, use the owner-approved account or token.
 ## 2. Python requirement
 
 - Python `>= 3.11`
+
+## 2.1 Cleaner local commands
+
+The repo now exposes cleaner package-level commands for the current install surface:
+
+```bash
+npm run bootstrap-runtime
+npm run run-installed-workflow -- --thesis-id regional-escalation
+```
+
+Both commands are now self-describing via `--help`.
+
+If you prefer executable bins after package install, these are also exposed:
+
+```bash
+ngi-lobster-bootstrap-runtime
+ngi-lobster-run-installed-workflow --thesis-id regional-escalation
+```
 
 ## 3. Recommended layout on the host
 
@@ -177,36 +193,55 @@ openclaw plugins inspect ngi-lobster
 Current v0 wrapper also exposes a minimal tool:
 
 - `ngi_lobster_demo`
+- `ngi_lobster_list_installed_theses`
 - `ngi_lobster_run_default_workflow`
 - `ngi_lobster_run_thesis_runtime`
-- `ngi_lobster_list_installed_theses`
 - `ngi_lobster_run_installed_thesis_workflow`
 
 Their jobs are:
 
 - `ngi_lobster_demo`: smoke-test the local runtime path
+- `ngi_lobster_list_installed_theses`: list bundled thesis ids, titles, summaries, and registry paths, or inspect one thesis in detail with `thesisId`
 - `ngi_lobster_run_default_workflow`: run the default installed workflow and write artifacts/digest
 - `ngi_lobster_run_thesis_runtime`: run the thesis runtime spine against installed source artifacts or explicit overrides
-- `ngi_lobster_list_installed_theses`: list bundled thesis ids, human-readable titles/summaries, runtime defaults, contract status, and linked registry paths; accepts an optional `thesisId` for a single detailed view
 - `ngi_lobster_run_installed_thesis_workflow`: run the bundled or explicit source-pack trackers first, then invoke the thesis runtime spine against the freshly written source artifacts and bundled or explicit thesis defaults
 
 Bundled thesis defaults are resolved from:
 
-- `lobster-intel/examples/thesis-packs/<thesis-id>.json`
 - `lobster-intel/examples/thesis-profiles/<thesis-id>.json`
-- the registry file referenced by `registry_file_path` in `lobster-intel/examples/thesis-profiles/<thesis-id>.json`
+- `lobster-intel/examples/target-registries/<thesis-id>.json`
+- `lobster-intel/examples/thesis-packs/<thesis-id>.json` when the Python thesis runtime is invoked directly
 
 That means the installed workflow can carry a stable runtime contract for `semantic_frame`, `probability_direction`, `state`, and target registry without requiring those flags on every run.
 
-Bundled thesis profiles may also carry operator-facing metadata such as `title`, `summary`, and `source_config_paths`. The catalog tool exposes those fields plus `contractStatus` and `validationErrors` so another OpenClaw can discover what is installed before choosing a `thesisId`.
+The bundled thesis profiles can now also expose operator-facing metadata such as:
 
-The installed thesis workflow now validates the thesis contract before it runs:
+- `title`
+- `summary`
+- linked registry path and market list
 
-- missing or incomplete profiles fail closed
-- missing registry or source-pack files are surfaced before source plugins execute
-- explicit overrides still work for non-bundled theses when the full runtime contract is provided
+The install surface now treats those bundled thesis profiles as a contract instead of loose metadata:
 
-Profile field expectations are documented in `docs/THESIS_PROFILES.md`.
+- `ngi_lobster_list_installed_theses` exposes `contractStatus` and `validationErrors`
+- `ngi_lobster_run_installed_thesis_workflow` fails closed if a thesis profile is missing or incomplete
+- the reference contract is documented in `docs/THESIS_PROFILES.md`
+
+That gives an installed OpenClaw a discovery surface before it commits to a thesis run.
+
+Default runtime thesis registries now live under:
+
+- `lobster-intel/data/runtime/thesis-registry/<thesis-id>.json`
+
+`ngi_lobster_run_thesis_runtime` and `run_thesis_runtime.py` discover that file automatically before falling back to a suppressed no-registry run.
+If you need a one-off override, pass `registryFilePath` or `--registry-file`; the explicit path still wins.
+
+The installed workflow now also wires default source cursor persistence automatically:
+
+- `lobster-intel/data/runtime/sources/official-statements.json`
+- `lobster-intel/data/runtime/sources/watchlist.json`
+- `lobster-intel/data/runtime/sources/polymarket.json`
+
+Repeated installed-workflow runs reuse those cursor files without extra `*_STATE_PATH` environment-variable wiring.
 
 For source-runtime operations, the Python support CLI also exposes:
 
@@ -246,33 +281,6 @@ These trackers are still **silent-ingest only**. They are source plugins, not al
 `official-statements-tracker` now supports cursor persistence via `OFFICIAL_STATEMENTS_STATE_PATH`.
 `watchlist-tracker` and `polymarket-tracker` now support the same pattern via their respective `*_STATE_PATH` variables.
 
-## 7.3 Source history replay and index rebuild
-
-Installed source plugins write runtime artifacts under:
-
-```text
-lobster-intel/data/runtime/sources/<plugin-id>/
-```
-
-You can replay one stored source run without hitting the network:
-
-```bash
-python3 lobster-intel/scripts/source_history.py replay \
-  --workspace . \
-  --plugin-id watchlist-tracker \
-  --run-id 20260420T010000Z
-```
-
-You can also rebuild a local SQLite index from `runs/*.json`:
-
-```bash
-python3 lobster-intel/scripts/source_history.py rebuild-index \
-  --workspace . \
-  --plugin-id watchlist-tracker
-```
-
-This keeps source history auditable and replayable while preserving files as the primary truth contract.
-
 ## 8. Current expected local artifacts
 
 The first example plugin currently writes artifacts under:
@@ -284,7 +292,7 @@ lobster-intel/data/runtime/
 lobster-intel/data/delivery/
 ```
 
-Source plugin runs also persist under:
+Per-plugin source runtime directories also persist under:
 
 ```text
 lobster-intel/data/runtime/sources/<plugin-id>/latest.json
@@ -296,12 +304,24 @@ lobster-intel/data/runtime/sources/<plugin-id>/index.sqlite
 
 ## 9. Cron status
 
-There is **not yet** a final reusable cron recipe for outside installs.
+There is now a stable installed-workflow entrypoint for outside installs:
+
+```bash
+node scripts/run_installed_thesis_workflow.js --thesis-id regional-escalation
+```
+
+That command reuses the same bundled source packs, bundled thesis defaults, source cursor paths, and thesis runtime contracts as the native OpenClaw tool surface, but it can be called directly by local cron.
+
+Example cron line:
+
+```cron
+*/15 * * * * cd /path/to/ngi-lobster && /usr/bin/env node scripts/run_installed_thesis_workflow.js --thesis-id regional-escalation >> lobster-intel/data/runtime/regional-escalation-cron.log 2>&1
+```
 
 Current recommendation:
 
-- first validate `run_once`
-- then wire a local cron / OpenClaw cron after confirming paths and outputs
+- first run the CLI manually and inspect the JSON result plus artifact paths
+- then wire local cron or OpenClaw cron against that stable entrypoint
 - keep background output behind the delivery gate
 
 ## 10. What still needs productization
@@ -311,10 +331,8 @@ Before this becomes a smooth installable plugin for everyone, these still need w
 1. linked-content extraction
 2. OCR backfill loop
 3. Firehose junk suppression / ranking
-4. reusable cron recipes
-5. a cleaner setup command
-6. source cursor persistence wired into default runtime storage
-
+4. additional cron recipes beyond the installed thesis workflow
+5. broader install packaging beyond the current package commands
 ## Bottom line
 
 Another OpenClaw can already install this repo and run the first plugin example, but Firehose still requires operator setup and the full product installer does not exist yet.

@@ -6,19 +6,9 @@ Date: 2026-04-17
 
 As of 2026-04-19, the baseline `Per-Thesis Runtime Core` spine has landed in the repo.
 
-The implemented baseline currently proves:
+Execution companion:
 
-- one thesis run can consume installed source runtime artifacts and emit evidence, observations, fusion, runtime snapshot, compare, alert, and delivery receipt artifacts
-- compare can emit `full_compare`, `degraded_compare`, and `suppressed`
-- compare results can be replayed from artifacts and indexed back into a rebuildable SQLite view
-- delivery crosses the OpenClaw heartbeat boundary through `lobster_delivery`
-
-What remains before Phase 1 is fully productized:
-
-- make `openclaw plugins install` the primary operator/runtime entrypoint
-- harden active-target resolution beyond registry plus local market candidate artifacts
-- extract explicit source-analyzer seams from the current inline MVP runtime logic
-- turn the current single-thesis path into a stable operator workflow rather than a baseline proof
+- `docs/superpowers/plans/2026-04-20-world-monitor-roadmap-breakdown.md`
 
 ## Vision
 
@@ -60,22 +50,6 @@ Ship an installable OpenClaw plugin that produces a hard runtime truth for one t
 - compare contract
 - alert decision
 - delivery receipt
-
-### Current Status
-
-Implemented baseline:
-
-- thesis-scoped runtime orchestration in `lobster_runtime.runtime_spine`
-- thesis runtime CLI in `lobster-intel/scripts/run_thesis_runtime.py`
-- runtime spine contract coverage in `lobster-intel/tests/test_runtime_spine.py`
-- replay, lineage, and SQLite rebuild helpers for runtime artifacts
-
-Remaining Phase 1 closure work:
-
-- OpenClaw plugin-surface packaging and operator-facing install flow
-- stronger registry and live-search target resolution
-- cleaner source analyzer boundaries so source families can expand without inflating the runtime core
-- more operational fixtures around real thesis inputs and delivery review flows
 
 ### Exit Criteria
 
@@ -199,9 +173,9 @@ This keeps the system composable:
 
 Near-term implementation planning should prioritize:
 
-1. closing the remaining per-thesis Phase 1 gaps above
-2. hardening registry and target-resolution behavior under real source data
-3. extracting source platform seams from the baseline runtime implementation
+1. hardening the per-thesis runtime contracts
+2. proving artifact lineage and delivery receipts
+3. extracting source platform seams from the MVP implementation
 4. delaying portfolio features until thesis truth is stable
 
 ## Summary

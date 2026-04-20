@@ -3,6 +3,12 @@
 Status: validated design for MVP direction; thesis-scoped baseline implemented on 2026-04-19
 Date: 2026-04-17
 
+Execution companions:
+
+- `docs/superpowers/plans/2026-04-19-ngi-runtime-spine.md`
+- `docs/superpowers/plans/2026-04-20-ngi-runtime-spine-implementation-flow.md`
+- `docs/superpowers/plans/2026-04-20-runtime-spine-verification-gates.md`
+
 ## Purpose
 
 Define the MVP architecture for an installable NGI Lobster runtime that:

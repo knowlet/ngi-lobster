@@ -8,7 +8,27 @@
 
 **Tech Stack:** Python 3.11+, stdlib `json`/`sqlite3`/`argparse`, existing `lobster_runtime`, `unittest`
 
+**Status:** Implemented on 2026-04-20. This plan now serves as the execution record for source history replay tooling.
+
 ---
+
+## Execution Summary
+
+This slice landed as:
+
+- `docs/superpowers/specs/2026-04-20-source-history-design.md`
+- `docs/superpowers/plans/2026-04-20-source-history-index.md`
+- `lobster-intel/tests/test_source_history.py`
+- `lobster-intel/packages/lobster-runtime/lobster_runtime/source_history.py`
+- `lobster-intel/packages/lobster-runtime/lobster_runtime/__init__.py`
+- `lobster-intel/scripts/source_history.py`
+- `lobster-intel/README.md`
+- `docs/INSTALL_OPENCLAW.md`
+
+Verified with:
+
+- `cd /Users/knowlet/ngi-lobster && .venv/bin/python -m unittest discover -s lobster-intel/tests -p 'test_source_history.py' -v`
+- `cd /Users/knowlet/ngi-lobster && .venv/bin/python -m pytest lobster-intel/tests -q`
 
 ### Task 1: Lock The Source History Contract With Tests
 
@@ -93,10 +113,10 @@ def replay_source_run(workspace_dir: str | Path, plugin_id: str, run_id: str) ->
 ```python
 with sqlite3.connect(index_path) as conn:
     conn.execute(
-        "create table if not exists source_runs (run_id text primary key, plugin text, ran_at_utc text, artifact_path text, evidence_item_count integer, new_count integer, state_path text)"
+        "create table source_runs (run_id text primary key, plugin text, ran_at_utc text, artifact_path text, evidence_item_count integer, new_count integer, state_path text)"
     )
     conn.execute(
-        "create table if not exists source_items (item_id text primary key, run_id text, source_id text, external_id text, title text, url text, published_at_utc text, collected_at_utc text, source_type text, artifact_path text)"
+        "create table source_items (item_id text primary key, run_id text, source_id text, external_id text, title text, url text, published_at_utc text, collected_at_utc text, source_type text, artifact_path text)"
     )
 ```
 

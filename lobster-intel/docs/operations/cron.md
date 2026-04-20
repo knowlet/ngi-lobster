@@ -39,6 +39,28 @@ A cron task should be able to answer:
 - when does it stay silent?
 - where is its state stored?
 
+## Installed thesis workflow entrypoint
+
+The current stable cron entrypoint for the install surface is:
+
+```bash
+node scripts/run_installed_thesis_workflow.js --thesis-id regional-escalation
+```
+
+This entrypoint:
+
+- runs the bundled installed-workflow orchestration instead of duplicating truth logic in cron
+- reuses bundled thesis defaults from `lobster-intel/examples/thesis-profiles/`
+- reuses bundled source-pack configs from `lobster-intel/examples/source-packs/`
+- reuses source cursor state under `lobster-intel/data/runtime/sources/`
+- prints structured JSON on success and a concrete stderr failure on invalid input
+
+Example outside-install cron recipe:
+
+```cron
+*/15 * * * * cd /path/to/ngi-lobster && /usr/bin/env node scripts/run_installed_thesis_workflow.js --thesis-id regional-escalation >> lobster-intel/data/runtime/regional-escalation-cron.log 2>&1
+```
+
 ## Failure policy
 
 Cron failures should be recorded as runtime artifacts.

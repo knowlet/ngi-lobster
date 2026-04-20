@@ -12,7 +12,7 @@ PACKAGES = ROOT / "packages"
 for rel in ["lobster-core", "lobster-delivery", "lobster-plugins", "lobster-runtime", "lobster-ingest"]:
     sys.path.insert(0, str(PACKAGES / rel))
 
-from lobster_runtime import run_source_plugin
+from lobster_runtime import normalize_source_plugin_config, run_source_plugin
 
 
 def main() -> None:
@@ -21,6 +21,7 @@ def main() -> None:
     ap.add_argument("--workspace", default=".")
     ap.add_argument("--config-json")
     ap.add_argument("--config-file")
+    ap.add_argument("--state-path")
     args = ap.parse_args()
 
     config = None
@@ -29,7 +30,12 @@ def main() -> None:
     elif args.config_file:
         config = json.loads(Path(args.config_file).read_text())
 
-    result = run_source_plugin(args.plugin_dir, args.workspace, config=config)
+    normalized_config = normalize_source_plugin_config(args.plugin_dir, config)
+    if args.state_path:
+        normalized_config = normalized_config or {}
+        normalized_config["state_path"] = args.state_path
+
+    result = run_source_plugin(args.plugin_dir, args.workspace, config=normalized_config)
     print(
         json.dumps(
             {

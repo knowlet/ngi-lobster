@@ -8,7 +8,7 @@
 
 **Tech Stack:** Node.js ESM, `node:test`, OpenClaw plugin entry in `index.js`, thesis workflow helper in `thesis-workflow-tool.js`, bundled JSON fixtures under `lobster-intel/examples/`
 
-**Status:** Implemented on 2026-04-20. This plan now serves as the execution record for the profile-contract validation slice.
+**Status:** Implemented on 2026-04-20. This plan now serves as the execution record for installed thesis contract validation.
 
 ---
 
@@ -16,26 +16,26 @@
 
 This slice landed as:
 
-- `thesis-workflow-tool.js`
+- `tests/installed-workflow-cli.test.js`
 - `tests/thesis-workflow-tool.test.js`
+- `thesis-workflow-tool.js`
 - `index.js`
+- `installed-workflow-cli.js`
+- `lobster-intel/examples/thesis-profiles/regional-escalation.json`
 - `README.md`
 - `docs/INSTALL_OPENCLAW.md`
 - `docs/THESIS_PROFILES.md`
 - `lobster-intel/README.md`
-- `lobster-intel/examples/thesis-profiles/regional-escalation.json`
-- `lobster-intel/examples/target-registries/regional-escalation.json`
 
 Verified with:
 
-- `node --test tests/workflow-default-tool.test.js tests/thesis-workflow-tool.test.js`
-- `node --check index.js`
-- `node --check thesis-workflow-tool.js`
+- `cd /Users/knowlet/ngi-lobster && node --test tests/*.test.js`
+- `cd /Users/knowlet/ngi-lobster && node --check index.js && node --check thesis-workflow-tool.js && node --check installed-workflow-cli.js && node --check scripts/run_installed_thesis_workflow.js`
 
 ### Task 1: Lock The Profile Contract In Tests
 
 **Files:**
-- Create: `tests/thesis-workflow-tool.test.js`
+- Modify: `tests/thesis-workflow-tool.test.js`
 - Test: `tests/thesis-workflow-tool.test.js`
 
 - [ ] **Step 1: Add tests for bundled thesis discovery and validation**
@@ -74,13 +74,13 @@ test("runInstalledThesisWorkflow stops when thesis profile defaults are unavaila
 
 - [ ] **Step 2: Run the focused JS suite and verify RED**
 
-Run: `cd /Users/knowlet/.codex/worktrees/8b78/ngi-lobster && node --test tests/thesis-workflow-tool.test.js`
+Run: `cd /Users/knowlet/ngi-lobster && node --test tests/thesis-workflow-tool.test.js`
 Expected: FAIL because the helper does not expose validation state yet
 
 ### Task 2: Implement Contract Validation And Surface It In The Catalog
 
 **Files:**
-- Create: `thesis-workflow-tool.js`
+- Modify: `thesis-workflow-tool.js`
 - Modify: `index.js`
 - Modify: `lobster-intel/examples/thesis-profiles/regional-escalation.json`
 - Test: `tests/thesis-workflow-tool.test.js`
@@ -138,7 +138,7 @@ if (validationErrors.length > 0) {
 
 - [ ] **Step 5: Run the focused suite and verify GREEN**
 
-Run: `cd /Users/knowlet/.codex/worktrees/8b78/ngi-lobster && node --test tests/thesis-workflow-tool.test.js`
+Run: `cd /Users/knowlet/ngi-lobster && node --test tests/thesis-workflow-tool.test.js`
 Expected: PASS
 
 ### Task 3: Document The Thesis Profile Contract
@@ -160,5 +160,12 @@ Expected: PASS
 
 - [ ] **Step 2: Run final verification**
 
-Run: `cd /Users/knowlet/.codex/worktrees/8b78/ngi-lobster && node --test tests/workflow-default-tool.test.js tests/thesis-workflow-tool.test.js && node --check index.js && node --check thesis-workflow-tool.js`
+Run: `cd /Users/knowlet/ngi-lobster && node --test tests/workflow-default-tool.test.js tests/thesis-workflow-tool.test.js && node --check index.js && node --check thesis-workflow-tool.js`
 Expected: PASS
+
+- [ ] **Step 3: Commit**
+
+```bash
+git add docs/superpowers/plans/2026-04-20-installed-thesis-contract-validation.md tests/thesis-workflow-tool.test.js thesis-workflow-tool.js index.js lobster-intel/examples/thesis-profiles/regional-escalation.json README.md docs/INSTALL_OPENCLAW.md docs/THESIS_PROFILES.md lobster-intel/README.md
+git commit -m "feat: validate installed thesis contracts"
+```

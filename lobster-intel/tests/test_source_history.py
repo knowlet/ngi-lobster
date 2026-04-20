@@ -7,6 +7,7 @@ import sys
 import tempfile
 import unittest
 from pathlib import Path
+from unittest import mock
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -154,6 +155,7 @@ class SourceHistoryTests(unittest.TestCase):
 
             with self.assertRaises(ValueError):
                 rebuild_source_index(workspace, "../escape")
+
     def test_rebuild_source_index_recreates_sqlite_rows(self):
         rebuild_source_index = getattr(lobster_runtime, "rebuild_source_index", None)
         self.assertIsNotNone(rebuild_source_index, "lobster_runtime.rebuild_source_index should exist")
@@ -210,6 +212,46 @@ class SourceHistoryTests(unittest.TestCase):
         self.assertEqual(item_rows[0][1], "dup-1")
         self.assertEqual(item_rows[1][1], "dup-1")
         self.assertNotEqual(item_rows[0][0], item_rows[1][0])
+
+    def test_rebuild_source_index_closes_sqlite_connection(self):
+        rebuild_source_index = getattr(lobster_runtime, "rebuild_source_index", None)
+        self.assertIsNotNone(rebuild_source_index, "lobster_runtime.rebuild_source_index should exist")
+
+        real_connect = source_history.sqlite3.connect
+        connections: list[RecordingConnection] = []
+
+        class RecordingConnection:
+            def __init__(self, *args, **kwargs):
+                self._inner = real_connect(*args, **kwargs)
+                self.close_calls = 0
+
+            def __enter__(self):
+                self._inner.__enter__()
+                return self
+
+            def __exit__(self, exc_type, exc, tb):
+                return self._inner.__exit__(exc_type, exc, tb)
+
+            def close(self):
+                self.close_calls += 1
+                return self._inner.close()
+
+            def __getattr__(self, name):
+                return getattr(self._inner, name)
+
+        def recording_connect(*args, **kwargs):
+            conn = RecordingConnection(*args, **kwargs)
+            connections.append(conn)
+            return conn
+
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            workspace = Path(tmp_dir)
+            plugin_id, _ = _install_source_history_fixture(workspace)
+            with mock.patch.object(source_history.sqlite3, "connect", recording_connect):
+                rebuild_source_index(workspace, plugin_id)
+
+        self.assertEqual(len(connections), 1)
+        self.assertEqual(connections[0].close_calls, 1)
 
     def test_rebuild_source_index_preserves_existing_index_on_failure(self):
         rebuild_source_index = getattr(lobster_runtime, "rebuild_source_index", None)

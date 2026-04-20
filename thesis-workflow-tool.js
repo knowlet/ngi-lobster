@@ -5,17 +5,23 @@ const INSTALLED_SOURCE_SPECS = [
   {
     pluginId: "official-statements-tracker",
     requestField: "officialStatementsConfigPath",
+    stateRequestField: "officialStatementsStatePath",
     defaultConfig: "official-statements.json",
+    defaultState: "official-statements.json",
   },
   {
     pluginId: "watchlist-tracker",
     requestField: "watchlistConfigPath",
     defaultConfig: "watchlist.json",
+    stateRequestField: "watchlistStatePath",
+    defaultState: "watchlist.json",
   },
   {
     pluginId: "polymarket-tracker",
     requestField: "polymarketConfigPath",
     defaultConfig: "polymarket.json",
+    stateRequestField: "polymarketStatePath",
+    defaultState: "polymarket.json",
   },
 ];
 
@@ -35,6 +41,16 @@ function defaultThesisProfilePath(rootDir, thesisId) {
   return path.join(defaultThesisProfileDir(rootDir), `${thesisId}.json`);
 }
 
+function resolveThesisProfilePath(rootDir, request = {}) {
+  if (!request.thesisId) {
+    return null;
+  }
+  return (
+    resolveRepoPath(rootDir, request.thesisProfilePath) ||
+    defaultThesisProfilePath(rootDir, request.thesisId)
+  );
+}
+
 function resolveRepoPath(rootDir, value) {
   if (!value) {
     return undefined;
@@ -43,6 +59,16 @@ function resolveRepoPath(rootDir, value) {
     return value;
   }
   return path.join(rootDir, value);
+}
+
+function resolveWorkspacePath(workspace, value) {
+  if (!value) {
+    return undefined;
+  }
+  if (path.isAbsolute(value)) {
+    return value;
+  }
+  return path.join(workspace, value);
 }
 
 function parseJsonFile(readFileSync, filePath, label) {
@@ -67,19 +93,24 @@ function readBundledThesisProfile(rootDir, request = {}, io = {}) {
 
   const existsSync = io.existsSync || fs.existsSync;
   const readFileSync = io.readFileSync || fs.readFileSync;
-  const profilePath =
-    resolveRepoPath(rootDir, request.thesisProfilePath) ||
-    defaultThesisProfilePath(rootDir, thesisId);
+  const profilePath = resolveThesisProfilePath(rootDir, request);
 
   if (!existsSync(profilePath)) {
     return { profile: null, error: null, profilePath };
   }
 
   const { value, error } = parseJsonFile(readFileSync, profilePath, "profile");
+  if (error) {
+    return {
+      profile: null,
+      error: `Failed to parse thesis profile at ${profilePath}: ${error.replace(/^Failed to parse profile JSON: /, "")}`,
+      profilePath,
+    };
+  }
   if (!value || typeof value !== "object" || Array.isArray(value)) {
     return {
       profile: null,
-      error: error || `Failed to parse profile JSON: expected object at ${profilePath}`,
+      error: `Failed to parse thesis profile at ${profilePath}: expected JSON object`,
       profilePath,
     };
   }
@@ -98,6 +129,7 @@ function sourceConfigSummaries(workflow, existsSync) {
   return workflow.sourceRuns.map((sourceRun) => ({
     pluginId: sourceRun.pluginId,
     configPath: sourceRun.configPath,
+    statePath: sourceRun.statePath,
     exists: existsSync(sourceRun.configPath),
   }));
 }
@@ -148,6 +180,11 @@ function validateInstalledWorkflowContract(request, thesisProfile, workflow) {
     return errors;
   }
 
+  if (request.thesisId && thesisProfile.thesis_id !== request.thesisId) {
+    errors.push(
+      `Thesis profile "${thesisProfile.profile_path}" declares thesis_id "${thesisProfile.thesis_id}" but the request asked for "${request.thesisId}".`,
+    );
+  }
   if (!hasValue(workflow.runtimeRequest.semanticFrame)) {
     errors.push(`Thesis profile "${thesisId}" does not resolve semanticFrame.`);
   }
@@ -161,11 +198,26 @@ function validateInstalledWorkflowContract(request, thesisProfile, workflow) {
     errors.push(`Thesis profile "${thesisId}" does not resolve registryFilePath.`);
   }
 
+  for (const spec of INSTALLED_SOURCE_SPECS) {
+    const hasExplicitOverride = hasValue(request[spec.requestField]);
+    const declaredSourcePath =
+      thesisProfile.source_config_paths?.[spec.pluginId] || null;
+    if (!hasExplicitOverride && !declaredSourcePath) {
+      errors.push(
+        `Thesis profile "${thesisId}" does not declare source_config_paths.${spec.pluginId}.`,
+      );
+    }
+  }
+
   return errors;
 }
 
 export function loadBundledThesisProfile(rootDir, request = {}, io = {}) {
-  return readBundledThesisProfile(rootDir, request, io).profile;
+  const { profile, error } = readBundledThesisProfile(rootDir, request, io);
+  if (error) {
+    throw new Error(error);
+  }
+  return profile;
 }
 
 export function listBundledThesisProfiles(rootDir, io = {}) {
@@ -308,9 +360,9 @@ export function buildInstalledThesisWorkflow(
   request = {},
   thesisProfile = null,
 ) {
-  const workspace = request.workspace || rootDir;
+  const workspace = resolveRepoPath(rootDir, request.workspace) || rootDir;
   const sourcePackDir =
-    request.sourcePackDir ||
+    resolveRepoPath(rootDir, request.sourcePackDir) ||
     resolveRepoPath(rootDir, thesisProfile?.source_pack_dir) ||
     defaultSourcePackDir(rootDir);
 
@@ -322,19 +374,33 @@ export function buildInstalledThesisWorkflow(
       pluginId: spec.pluginId,
       pluginDir: path.join(rootDir, "lobster-intel", "plugins", spec.pluginId),
       configPath:
-        request[spec.requestField] ||
+        resolveRepoPath(rootDir, request[spec.requestField]) ||
         resolveRepoPath(
           rootDir,
           thesisProfile?.source_config_paths?.[spec.pluginId],
         ) ||
         path.join(sourcePackDir, spec.defaultConfig),
+      statePath:
+        resolveWorkspacePath(workspace, request[spec.stateRequestField]) ||
+        resolveWorkspacePath(
+          workspace,
+          thesisProfile?.source_state_paths?.[spec.pluginId],
+        ) ||
+        path.join(
+          workspace,
+          "lobster-intel",
+          "data",
+          "runtime",
+          "sources",
+          spec.defaultState,
+        ),
       workspace,
     })),
     runtimeRequest: {
       thesisId: request.thesisId,
       workspace,
       registryFilePath:
-        request.registryFilePath ||
+        resolveRepoPath(rootDir, request.registryFilePath) ||
         resolveRepoPath(rootDir, thesisProfile?.registry_file_path),
       semanticFrame: request.semanticFrame || thesisProfile?.semantic_frame,
       probabilityDirection:
@@ -408,7 +474,7 @@ export async function runInstalledThesisWorkflow({
     thesisProfile,
     workflow,
   );
-  if (profileError && validationErrors.length > 0) {
+  if (profileError) {
     validationErrors.unshift(profileError);
   }
   if (validationErrors.length > 0) {

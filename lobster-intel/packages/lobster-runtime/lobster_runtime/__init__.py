@@ -45,6 +45,8 @@ __all__ = [
     "SourceFusionInput",
     "build_source_fusion_result",
     "load_source_fusion_artifacts",
+    "rebuild_source_index",
+    "replay_source_run",
     "SourceCursor",
     "SourceState",
     "load_source_state",

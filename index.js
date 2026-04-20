@@ -8,7 +8,7 @@ import { fileURLToPath } from "node:url";
 import {
   describeBundledThesisProfile,
   listBundledThesisProfiles,
-  runInstalledThesisWorkflow
+  runInstalledThesisWorkflow,
 } from "./thesis-workflow-tool.js";
 import { formatDefaultWorkflowText } from "./workflow-default-tool.js";
 
@@ -56,12 +56,13 @@ export default definePluginEntry({
       };
     }
 
-    function buildInvalidProfileError(validationErrors) {
+    function buildInvalidProfileError(validationErrors = []) {
       return {
+        ok: false,
         content: [
           {
             type: "text",
-            text: `NGI Lobster thesis profile is incomplete:\n\n${validationErrors.map((item) => `- ${item}`).join("\n")}`
+            text: `NGI Lobster thesis profile contract is incomplete:\n\n${validationErrors.map((item) => `- ${item}`).join("\n")}`
           }
         ],
         details: { validationErrors }
@@ -157,7 +158,7 @@ export default definePluginEntry({
       };
     }
 
-    async function runSourcePluginCli({ pluginDir, workspace, configPath }) {
+    async function runSourcePluginCli({ pluginDir, workspace, configPath, statePath }) {
       const preflight = await ensureRuntimeReady();
       if (preflight) return { ok: false, ...preflight };
 
@@ -165,6 +166,9 @@ export default definePluginEntry({
       const cliArgs = [scriptPath, pluginDir, "--workspace", workspace];
       if (configPath) {
         cliArgs.push("--config-file", configPath);
+      }
+      if (statePath) {
+        cliArgs.push("--state-path", statePath);
       }
 
       let stdout;
@@ -190,6 +194,7 @@ export default definePluginEntry({
             pluginDir,
             workspace,
             configPath,
+            statePath,
             stdout: rawStdout,
             stderr: rawStderr,
             exitCode: err?.code ?? null
@@ -217,6 +222,7 @@ export default definePluginEntry({
               pluginDir,
               workspace,
               configPath,
+              statePath,
               stdout: rawStdout,
               stderr: rawStderr,
               parseError: (err && err.message) || "failed to parse source plugin output"
@@ -238,6 +244,7 @@ export default definePluginEntry({
           pluginDir,
           workspace,
           configPath,
+          statePath,
           stdout: rawStdout,
           stderr: rawStderr,
           ...parsed
@@ -393,7 +400,7 @@ export default definePluginEntry({
         name: "ngi_lobster_run_thesis_runtime",
         label: "NGI Lobster Run Thesis Runtime",
         description:
-          "Run the thesis runtime spine through lobster-intel/scripts/run_thesis_runtime.py and return the runtime snapshot plus artifact paths.",
+          "Run the thesis runtime spine through lobster-intel/scripts/run_thesis_runtime.py, discovering runtime thesis registries by thesis id before applying explicit overrides, and return the runtime snapshot plus artifact paths.",
         parameters: {
           type: "object",
           additionalProperties: false,
@@ -503,13 +510,25 @@ export default definePluginEntry({
               type: "string",
               description: "Optional path to the official statements source-pack JSON."
             },
+            officialStatementsStatePath: {
+              type: "string",
+              description: "Optional path to the official statements cursor state JSON. Defaults under <workspace>/lobster-intel/data/runtime/sources/."
+            },
             watchlistConfigPath: {
               type: "string",
               description: "Optional path to the watchlist source-pack JSON."
             },
+            watchlistStatePath: {
+              type: "string",
+              description: "Optional path to the watchlist cursor state JSON. Defaults under <workspace>/lobster-intel/data/runtime/sources/."
+            },
             polymarketConfigPath: {
               type: "string",
               description: "Optional path to the polymarket source-pack JSON."
+            },
+            polymarketStatePath: {
+              type: "string",
+              description: "Optional path to the polymarket cursor state JSON. Defaults under <workspace>/lobster-intel/data/runtime/sources/."
             },
             registryFilePath: {
               type: "string",

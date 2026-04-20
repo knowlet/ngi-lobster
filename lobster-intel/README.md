@@ -22,12 +22,14 @@ That guide explains current v0 setup, package paths, Firehose expectations, and 
 
 ## Product goal
 
-Build an intelligence operating system that is:
-- maintainable
-- auditable
-- documented
-- installable
-- extensible by plugins
+NGI Lobster exists to turn the current NGI workflow into an installable OpenClaw plugin product.
+
+That means:
+- `openclaw plugins install` is the primary install surface
+- runtime artifacts under `lobster-intel/data/` are live runtime truth
+- source plugins ingest and normalize evidence
+- runtime computes thesis state, target resolution, compare mode, and alert decisions
+- delivery stays downstream of runtime truth
 
 ## Architecture
 
@@ -108,7 +110,7 @@ This milestone establishes:
 - Compiled knowledge is not raw truth.
 - Runtime state must be auditable.
 - Delivery must stay separate from core logic.
-- Plugins must declare capabilities and outputs.
+- Plugins must declare capabilities, tracker contracts, and outputs.
 - Semantic memory is optional, not foundational.
 
 ## Near-term plan
@@ -133,6 +135,13 @@ The current ingest family is now:
 
 These are intentionally **silent-ingest** plugins. They do not send delivery output themselves.
 
+Each ingest manifest now separates:
+
+- `capabilities`: host-facing dependency hints such as `web_fetch`, `ocr`, `image_understanding`
+- `tracker`: Lobster-owned source contract for source family, replayability, cursor state mode, and follow-up runtime queues
+
+That keeps plugin onboarding and follow-up processing machine-readable without moving decision logic into delivery code.
+
 ## Install-ready source pack examples
 
 Example source pack configs now live under:
@@ -154,8 +163,24 @@ lobster-intel/examples/target-registries/
 ```
 
 These fixtures let the installed OpenClaw workflow resolve thesis-specific runtime defaults without moving decision logic into delivery code.
-They also provide operator-facing metadata such as `title`, `summary`, and optional `source_config_paths`, which the native `ngi_lobster_list_installed_theses` tool now exposes with `contractStatus` and `validationErrors`.
-That means another OpenClaw can inspect whether a bundled thesis is actually runnable before invoking the installed workflow.
+The native OpenClaw wrapper can now expose those bundled thesis profiles as an install-time catalog, including human-readable `title` / `summary` metadata plus linked registry inspection.
+That catalog now also reports `contractStatus` and `validationErrors`, and the installed thesis workflow fails closed when a profile is missing required runtime defaults or per-source config declarations.
+
+Default runtime thesis registries now also live under:
+
+```text
+lobster-intel/data/runtime/thesis-registry/
+```
+
+That lets `run_thesis_runtime` discover a thesis-owned registry contract automatically from runtime data before relying on explicit override flags.
+
+The installed workflow also auto-wires source cursor persistence into:
+
+- `lobster-intel/data/runtime/sources/official-statements.json`
+- `lobster-intel/data/runtime/sources/watchlist.json`
+- `lobster-intel/data/runtime/sources/polymarket.json`
+
+That keeps repeated installed runs replayable and auditable without pushing cursor logic into delivery code or relying on ad hoc host env wiring.
 
 The product intent is:
 
@@ -163,25 +188,24 @@ The product intent is:
 - runtime stores cursor / source state
 - delivery remains downstream
 
-## Source history tooling
+When the Python runtime is invoked directly with only `--workspace` and `--thesis-id`, it can also discover install-ready thesis packs from `lobster-intel/examples/thesis-packs/` and use them to recover runtime defaults plus bundled registry entries.
 
-Source runtime artifacts under `lobster-intel/data/runtime/sources/<plugin-id>/` are now replayable from disk.
+## Source replay and index rebuild
 
-Replay one stored run:
+Per-plugin runtime artifacts under `lobster-intel/data/runtime/sources/<plugin-id>/` are now intended to be auditable runtime truth, not disposable cache.
 
-```bash
-python3 lobster-intel/scripts/source_history.py replay \
-  --workspace . \
-  --plugin-id watchlist-tracker \
-  --run-id 20260420T010000Z
-```
-
-Rebuild a per-plugin SQLite index from `runs/*.json`:
+Operators can inspect a historical run directly from disk:
 
 ```bash
-python3 lobster-intel/scripts/source_history.py rebuild-index \
-  --workspace . \
-  --plugin-id watchlist-tracker
+python3 lobster-intel/scripts/source_history.py replay --workspace . --plugin-id watchlist-tracker --run-id 20260415T013020Z
 ```
 
-The generated `index.sqlite` is rebuildable and non-authoritative. The JSON artifact files remain runtime truth.
+They can also rebuild a local SQLite index from `runs/*.json` without rerunning the source plugin:
+
+```bash
+python3 lobster-intel/scripts/source_history.py rebuild-index --workspace . --plugin-id watchlist-tracker
+```
+
+Each rebuild invocation closes its SQLite handle before returning, so repeated automation runs can refresh the index without leaving descriptor cleanup to process shutdown.
+
+This keeps replayability and lineage in the runtime layer while leaving delivery downstream of the same artifact truth.

@@ -33,8 +33,16 @@
 - `entrypoints.compile`
 - `entrypoints.evaluate`
 - `capabilities`
+- `tracker`
 - `required_env`
 - `notes`
+
+## Capability split
+
+- `capabilities`: external dependency or execution hints such as `web_fetch`, `ocr`, `image_understanding`
+- `tracker`: Lobster-owned source contract describing replayability, source family, state persistence mode, and runtime follow-up queues
+
+`capabilities` stays intentionally flat because it tells the host what the plugin depends on. `tracker` is the machine-readable contract that downstream runtime and operator tooling can trust without re-implementing plugin-specific rules.
 
 ## Entrypoint contracts
 
@@ -68,6 +76,19 @@ evaluate(ctx, evidence, compiled) -> RuntimeSnapshot | AlertRecord | dict
 - plugin 不可直接做 delivery
 - delivery 只能由主系統下游處理
 - 背景任務若需要 user-visible output，必須走 gate
+- 若 plugin 宣告 `runtime.*_queue` 輸出，必須同步宣告 `tracker.follow_up_queues`
+
+## Tracker contract
+
+`tracker` 欄位用來描述 source plugin 的 runtime-owned behavior：
+
+- `source_family`: 上游來源家族，例如 `telegram_channel`、`rss_feed`、`prediction_market`
+- `default_source_type`: plugin 沒有額外 config override 時預設產出的 `source_type`
+- `replayable`: 是否能從 runtime artifacts 重播 / 重建
+- `state_mode`: runtime 如何保存來源狀態，MVP 預設為 `cursor_json`
+- `follow_up_queues`: plugin 可能送入 runtime 的後續處理佇列名稱，不含 `runtime.` 前綴
+
+Gooaye tracker 是目前的參考 manifest：它宣告 `tracker.source_family=telegram_channel`，並把 `linked_content_queue` / `image_analysis_queue` 明確列在 `tracker.follow_up_queues`，讓 linked-content 與 image follow-up 保持在 runtime 真相層，而不是靠 ad hoc manifest 判斷。
 
 ## Minimal artifact flow
 
@@ -86,4 +107,3 @@ delivery layer reads runtime, not plugin internals
 2. entrypoint 可載入
 3. 不依賴私有聊天輸出流程
 4. 不把本地環境細節硬編進核心契約
-

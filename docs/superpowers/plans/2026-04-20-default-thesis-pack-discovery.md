@@ -37,8 +37,8 @@ def test_load_thesis_runtime_inputs_discovers_thesis_pack_defaults(tmp_path: Pat
 
 - [ ] **Step 2: Run the focused runtime-input test and verify RED**
 
-Run: `cd /Users/knowlet/.codex/worktrees/0357/ngi-lobster && python3 -m pytest lobster-intel/tests/test_runtime_spine.py -k thesis_pack -q`
-Expected: FAIL because `load_thesis_runtime_inputs()` does not accept `thesis_id` or return thesis-pack defaults yet
+Run: `cd /Users/knowlet/ngi-lobster && .venv/bin/python -m pytest lobster-intel/tests/test_runtime_spine.py -k thesis_pack -q`
+Expected: FAIL because `load_thesis_runtime_inputs()` does not return thesis-pack defaults yet
 
 - [ ] **Step 3: Write the failing default workflow test**
 
@@ -54,7 +54,7 @@ def test_default_workflow_uses_installed_thesis_pack(tmp_path: Path):
 
 - [ ] **Step 4: Run the focused default workflow test and verify RED**
 
-Run: `cd /Users/knowlet/.codex/worktrees/0357/ngi-lobster && python3 -m pytest lobster-intel/tests/test_default_workflow.py -q`
+Run: `cd /Users/knowlet/ngi-lobster && .venv/bin/python -m pytest lobster-intel/tests/test_default_workflow.py -q`
 Expected: FAIL because the default workflow currently discovers source artifacts only and does not load an installed thesis pack
 
 ### Task 2: Add Thesis-Pack Discovery And Install-Ready Example
@@ -77,8 +77,8 @@ Expected: FAIL because the default workflow currently discovers source artifacts
   "target_registry": [
     {
       "market_id": "1517836",
-      "market_slug": "trump-announces-end-of-military-operations-against-iran-by-june-30th-566-326-653-781-167-426-752-225",
-      "market_question": "Trump announces end of military operations against Iran by June 30th?",
+      "market_slug": "military-operations-end-by-june-30",
+      "market_question": "Military operations end by June 30?",
       "semantic_frame": "military_operations_end_by_deadline",
       "probability_direction": "yes_is_peace",
       "aliases": ["military-operations-end-by-june-30"],
@@ -113,7 +113,7 @@ state = args.state or runtime_inputs["thesis_settings"].get("state") or "ACTIVE_
 
 - [ ] **Step 4: Run focused tests and verify GREEN**
 
-Run: `cd /Users/knowlet/.codex/worktrees/0357/ngi-lobster && python3 -m pytest lobster-intel/tests/test_runtime_spine.py lobster-intel/tests/test_default_workflow.py -q`
+Run: `cd /Users/knowlet/ngi-lobster && .venv/bin/python -m pytest lobster-intel/tests/test_runtime_spine.py lobster-intel/tests/test_default_workflow.py -q`
 Expected: PASS
 
 ### Task 3: Document The Install-Ready Thesis-Pack Path
@@ -133,5 +133,12 @@ The runtime discovers `<thesis-id>.json` there when no explicit registry file is
 
 - [ ] **Step 2: Run the focused documentation-linked verification**
 
-Run: `cd /Users/knowlet/.codex/worktrees/0357/ngi-lobster && python3 -m pytest lobster-intel/tests/test_runtime_spine.py lobster-intel/tests/test_default_workflow.py -q`
+Run: `cd /Users/knowlet/ngi-lobster && .venv/bin/python -m pytest lobster-intel/tests/test_runtime_spine.py lobster-intel/tests/test_default_workflow.py -q`
 Expected: PASS
+
+- [ ] **Step 3: Commit**
+
+```bash
+git add docs/superpowers/plans/2026-04-20-default-thesis-pack-discovery.md lobster-intel/tests/test_runtime_spine.py lobster-intel/tests/test_default_workflow.py lobster-intel/packages/lobster-runtime/lobster_runtime/runtime_spine.py lobster-intel/scripts/run_thesis_runtime.py lobster-intel/examples/thesis-packs/gooaye.json README.md docs/INSTALL_OPENCLAW.md lobster-intel/README.md docs/THESIS_PACKS.md
+git commit -m "feat: add thesis pack discovery defaults"
+```

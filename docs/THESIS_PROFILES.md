@@ -2,7 +2,9 @@
 
 ## Project goal
 
-NGI Lobster is being productized as an installable OpenClaw plugin, not just a local script bundle.
+NGI Lobster exists to turn the current NGI workflow into an installable OpenClaw plugin product.
+
+Thesis profiles are part of that install surface: they let `openclaw plugins install` carry stable runtime defaults without moving thesis decision logic into delivery code.
 
 The install path we are aiming to make real is:
 
@@ -10,51 +12,46 @@ The install path we are aiming to make real is:
 openclaw plugins install -> source ingest plugins -> runtime spine -> auditable artifacts -> downstream delivery
 ```
 
-Thesis profiles exist so that installed workflows can carry a stable runtime contract without moving decision logic into delivery code or scattering defaults across wrapper-only glue.
-
-## What a thesis profile defines
+## What a thesis profile is
 
 Bundled thesis profiles live under:
 
 ```text
-lobster-intel/examples/thesis-profiles/
+lobster-intel/examples/thesis-profiles/<thesis-id>.json
 ```
 
-Each profile is a JSON document keyed by `thesis_id`. It should define:
+They define the install-surface contract for one runnable thesis:
+
+- thesis identity and operator-facing metadata
+- runtime defaults such as `semantic_frame`, `probability_direction`, and `state`
+- linked registry defaults
+- explicit source-pack config paths for each bundled tracker
+
+## Required contract fields
+
+The current installed workflow treats these fields as required for a ready profile:
 
 - `thesis_id`
-- `title`
-- `summary`
 - `semantic_frame`
 - `probability_direction`
 - `state`
 - `registry_file_path`
-- optional `source_pack_dir`
-- optional `source_config_paths`
+- `source_config_paths.official-statements-tracker`
+- `source_config_paths.watchlist-tracker`
+- `source_config_paths.polymarket-tracker`
 
-`registry_file_path` points at the bundled target registry used to resolve the active comparison target.
-`source_config_paths` lets a thesis pin the exact source-pack JSON files that the installed workflow should run before invoking the runtime spine.
+If any of these are missing, the profile is considered incomplete.
 
-## Operator contract
+## Operator-facing behavior
 
-The installed thesis workflow is considered operator-ready only when all of these are true:
-
-1. the profile exists for the requested `thesisId`
-2. `semantic_frame`, `probability_direction`, and `state` resolve to non-empty runtime defaults
-3. `registry_file_path` resolves to a concrete file
-4. every required source plugin and referenced source-pack config file exists
-
-If any of those fail, the JS install-surface workflow should stop before running source plugins or the runtime.
-
-## Native OpenClaw surfaces
-
-The native plugin wrapper now exposes two profile-aware tools:
+The native OpenClaw wrapper now exposes the contract state directly:
 
 - `ngi_lobster_list_installed_theses`
+  returns `contractStatus` plus `validationErrors` for each bundled thesis
 - `ngi_lobster_run_installed_thesis_workflow`
+  refuses to launch source plugins or the thesis runtime when the selected profile is incomplete
 
-The catalog tool returns `contractStatus` plus `validationErrors` so another OpenClaw can inspect what is installed before choosing a thesis.
-The workflow tool uses the same validation rules and fails closed when the thesis contract is incomplete.
+This keeps install-time defaults explicit and fail-closed while leaving runtime truth in `lobster-intel/data/`.
 
 ## Example
 
@@ -62,7 +59,7 @@ The workflow tool uses the same validation rules and fails closed when the thesi
 {
   "thesis_id": "regional-escalation",
   "title": "Regional escalation monitor",
-  "summary": "Tracks the military-operations end-state thesis and bundled target registry defaults.",
+  "summary": "Tracks the active military-operations end-state thesis and bundled market target defaults.",
   "semantic_frame": "military_operations_end_by_deadline",
   "probability_direction": "yes_is_peace",
   "state": "ACTIVE_TRUCE",

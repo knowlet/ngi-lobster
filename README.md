@@ -81,4 +81,4 @@ When you run the default workflow or `lobster-intel/scripts/run_thesis_runtime.p
 - runtime state
 - curated target registry entries
 
-Operational details live in [docs/THESIS_PACKS.md](/Users/knowlet/.codex/worktrees/0357/ngi-lobster/docs/THESIS_PACKS.md).
+Operational details live in [docs/THESIS_PACKS.md](docs/THESIS_PACKS.md).

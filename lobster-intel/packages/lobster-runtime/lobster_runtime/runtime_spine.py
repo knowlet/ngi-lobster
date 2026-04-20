@@ -198,11 +198,15 @@ def load_thesis_runtime_inputs(
     thesis_pack_payload: dict[str, Any] = {}
     thesis_pack_resolution: dict[str, Any] = {"path": None, "mode": "empty", "exists": False}
     if thesis_id:
+        thesis_pack_resolution["mode"] = "missing"
         for thesis_pack_path in _thesis_pack_search_paths(workspace_dir, thesis_id):
             if not thesis_pack_path.exists():
                 continue
+            payload = _load_json_file(thesis_pack_path)
+            if not isinstance(payload, dict):
+                continue
             thesis_pack_resolution = {"path": str(thesis_pack_path), "mode": "discovered", "exists": True}
-            thesis_pack_payload = cast(dict[str, Any], _load_json_file(thesis_pack_path))
+            thesis_pack_payload = payload
             break
 
     registry_payload: list[dict[str, Any]] = []
@@ -492,7 +496,7 @@ def _market_candidates(observations: list[dict[str, Any]]) -> list[dict[str, Any
                 "market_slug": metadata.get("market_slug") or metadata.get("slug"),
                 "market_question": metadata.get("market_question") or observation.get("extractive_rationale"),
                 "semantic_frame": metadata.get("semantic_frame"),
-                "probability_direction": metadata.get("probability_direction") or "yes_is_peace",
+                "probability_direction": metadata.get("probability_direction"),
                 "market_yes_probability": metadata.get("yes_probability"),
                 "active": metadata.get("active"),
                 "closed": metadata.get("closed"),

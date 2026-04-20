@@ -1,0 +1,266 @@
+from __future__ import annotations
+
+import json
+import re
+import urllib.parse
+import urllib.request
+from datetime import datetime, timezone
+from pathlib import Path
+from typing import Any, Callable
+
+
+_HTML_TAG = re.compile(r"<[^>]+>")
+_SPACE = re.compile(r"\s+")
+_SAFE_NAME = re.compile(r"[^A-Za-z0-9._-]+")
+
+
+def _now_utc(value: str | None = None) -> str:
+    if value:
+        return value
+    return datetime.now(timezone.utc).isoformat()
+
+
+def _safe_name(value: str | None, *, fallback: str) -> str:
+    cleaned = _SAFE_NAME.sub("-", (value or "").strip()).strip("-._")
+    return cleaned or fallback
+
+
+def _workspace_root(workspace_dir: str | Path) -> Path:
+    return Path(workspace_dir) / "lobster-intel" / "data"
+
+
+def _artifact_paths(workspace_dir: str | Path, thesis_id: str) -> dict[str, Path]:
+    root = _workspace_root(workspace_dir)
+    runtime = root / "runtime" / thesis_id / "linked-content"
+    return {
+        "evidence": root / "evidence" / thesis_id / "linked-content",
+        "compiled": root / "compiled" / thesis_id / "linked-content",
+        "runtime": runtime,
+        "runtime_runs": runtime / "runs",
+    }
+
+
+def _ensure_dirs(workspace_dir: str | Path, thesis_id: str) -> dict[str, Path]:
+    paths = _artifact_paths(workspace_dir, thesis_id)
+    for path in paths.values():
+        path.mkdir(parents=True, exist_ok=True)
+    return paths
+
+
+def _relative_path(path: Path, workspace_dir: str | Path) -> str:
+    return str(path.relative_to(Path(workspace_dir)))
+
+
+def _runtime_payload_path(workspace_dir: str | Path, thesis_id: str) -> Path:
+    return _workspace_root(workspace_dir) / "runtime" / thesis_id / "latest.json"
+
+
+def load_runtime_payload(
+    workspace_dir: str | Path,
+    thesis_id: str,
+    *,
+    runtime_file: str | Path | None = None,
+) -> dict[str, Any]:
+    payload_path = Path(runtime_file) if runtime_file else _runtime_payload_path(workspace_dir, thesis_id)
+    return json.loads(payload_path.read_text(encoding="utf-8"))
+
+
+def _extract_title(html: str) -> str | None:
+    match = re.search(r"<title[^>]*>(.*?)</title>", html, re.IGNORECASE | re.DOTALL)
+    if not match:
+        return None
+    return _SPACE.sub(" ", match.group(1)).strip() or None
+
+
+def _plain_text(value: str) -> str:
+    without_tags = _HTML_TAG.sub(" ", value)
+    return _SPACE.sub(" ", without_tags).strip()
+
+
+def extract_linked_content(url: str) -> dict[str, Any]:
+    parsed = urllib.parse.urlparse(url)
+    if parsed.scheme == "file":
+        content_path = Path(urllib.request.url2pathname(parsed.path))
+        raw = content_path.read_text(encoding="utf-8")
+        content_type = "text/html" if content_path.suffix.lower() in {".htm", ".html"} else "text/plain"
+    else:
+        with urllib.request.urlopen(url, timeout=15) as response:
+            raw_bytes = response.read()
+            content_type = response.headers.get_content_type()
+        raw = raw_bytes.decode("utf-8", errors="replace")
+
+    is_html = "html" in content_type.lower() or "<html" in raw.lower()
+    text_content = _plain_text(raw) if is_html else raw.strip()
+    return {
+        "url": url,
+        "content_type": content_type,
+        "title": _extract_title(raw) if is_html else None,
+        "content": text_content,
+    }
+
+
+def _item_stem(source_run_id: str, item: dict[str, Any], index: int) -> str:
+    post_id = _safe_name(str(item.get("post_id") or f"item-{index}"), fallback=f"item-{index}")
+    run_id = _safe_name(source_run_id, fallback="linked-content")
+    return f"{run_id}--post-{post_id}"
+
+
+def _compiled_markdown(
+    *,
+    thesis_id: str,
+    source_run_id: str,
+    linked_item: dict[str, Any],
+    extracted: dict[str, Any],
+    recorded_at_utc: str,
+) -> str:
+    lines = [
+        f"# Linked Content {linked_item.get('post_id') or 'manual'}",
+        "",
+        f"- Thesis: {thesis_id}",
+        f"- Source run id: {source_run_id}",
+        f"- Recorded at: {recorded_at_utc}",
+        f"- Queue URL: {linked_item.get('url')}",
+        f"- Linked URL: {linked_item.get('linked_url')}",
+        f"- Site: {linked_item.get('site_name')}",
+        f"- Queue title: {linked_item.get('title')}",
+        f"- Extracted title: {extracted.get('title')}",
+        f"- Content type: {extracted.get('content_type')}",
+    ]
+    content = (extracted.get("content") or "").strip()
+    if content:
+        lines += ["", "## Extracted Content", "", content]
+    if extracted.get("error"):
+        lines += ["", "## Extraction Error", "", str(extracted["error"])]
+    return "\n".join(lines) + "\n"
+
+
+def _write_receipt(
+    *,
+    workspace_dir: str | Path,
+    thesis_id: str,
+    source_run_id: str,
+    recorded_at_utc: str,
+    status: str,
+    processed_count: int,
+    evidence_paths: list[str],
+    compiled_paths: list[str],
+) -> str:
+    paths = _ensure_dirs(workspace_dir, thesis_id)
+    receipt_payload = {
+        "schema": "lobster.runtime.linked_content_receipt.v1",
+        "recorded_at_utc": recorded_at_utc,
+        "thesis_id": thesis_id,
+        "source_run_id": source_run_id,
+        "status": status,
+        "processed_count": processed_count,
+        "evidence_paths": evidence_paths,
+        "compiled_paths": compiled_paths,
+    }
+    run_name = _safe_name(source_run_id, fallback="linked-content")
+    run_path = paths["runtime_runs"] / f"{run_name}.json"
+    latest_path = paths["runtime"] / "latest.json"
+    payload = json.dumps(receipt_payload, ensure_ascii=False, indent=2)
+    run_path.write_text(payload, encoding="utf-8")
+    latest_path.write_text(payload, encoding="utf-8")
+    return _relative_path(run_path, workspace_dir)
+
+
+def process_linked_content_queue(
+    *,
+    workspace_dir: str | Path,
+    thesis_id: str,
+    runtime_payload: dict[str, Any],
+    extractor: Callable[[str], dict[str, Any]],
+    now_utc: str | None = None,
+) -> dict[str, Any]:
+    queue = list(runtime_payload.get("linked_content_queue") or [])
+    source_run_id = str(runtime_payload.get("run_id") or "linked-content")
+    recorded_at_utc = _now_utc(now_utc)
+
+    if not queue:
+        receipt_path = _write_receipt(
+            workspace_dir=workspace_dir,
+            thesis_id=thesis_id,
+            source_run_id=source_run_id,
+            recorded_at_utc=recorded_at_utc,
+            status="no_items",
+            processed_count=0,
+            evidence_paths=[],
+            compiled_paths=[],
+        )
+        return {
+            "status": "no_items",
+            "processed_count": 0,
+            "evidence_paths": [],
+            "compiled_paths": [],
+            "receipt_path": receipt_path,
+        }
+
+    paths = _ensure_dirs(workspace_dir, thesis_id)
+    evidence_paths: list[str] = []
+    compiled_paths: list[str] = []
+
+    for index, item in enumerate(queue):
+        linked_url = str(item.get("linked_url") or item.get("url") or "").strip()
+        if not linked_url:
+            extracted = {
+                "url": None,
+                "title": None,
+                "content": "",
+                "content_type": None,
+                "error": "missing linked_url",
+            }
+        else:
+            try:
+                extracted = extractor(linked_url)
+            except Exception as exc:  # pragma: no cover - defensive audit path
+                extracted = {
+                    "url": linked_url,
+                    "title": None,
+                    "content": "",
+                    "content_type": None,
+                    "error": str(exc),
+                }
+
+        stem = _item_stem(source_run_id, item, index)
+        evidence_path = paths["evidence"] / f"{stem}.json"
+        compiled_path = paths["compiled"] / f"{stem}.md"
+        evidence_payload = {
+            "schema": "lobster.evidence.linked_content.v1",
+            "recorded_at_utc": recorded_at_utc,
+            "thesis_id": thesis_id,
+            "source_run_id": source_run_id,
+            "linked_item": item,
+            "extracted": extracted,
+        }
+        evidence_path.write_text(json.dumps(evidence_payload, ensure_ascii=False, indent=2), encoding="utf-8")
+        compiled_path.write_text(
+            _compiled_markdown(
+                thesis_id=thesis_id,
+                source_run_id=source_run_id,
+                linked_item=item,
+                extracted=extracted,
+                recorded_at_utc=recorded_at_utc,
+            ),
+            encoding="utf-8",
+        )
+        evidence_paths.append(_relative_path(evidence_path, workspace_dir))
+        compiled_paths.append(_relative_path(compiled_path, workspace_dir))
+
+    receipt_path = _write_receipt(
+        workspace_dir=workspace_dir,
+        thesis_id=thesis_id,
+        source_run_id=source_run_id,
+        recorded_at_utc=recorded_at_utc,
+        status="processed",
+        processed_count=len(queue),
+        evidence_paths=evidence_paths,
+        compiled_paths=compiled_paths,
+    )
+    return {
+        "status": "processed",
+        "processed_count": len(queue),
+        "evidence_paths": evidence_paths,
+        "compiled_paths": compiled_paths,
+        "receipt_path": receipt_path,
+    }

@@ -32,7 +32,7 @@ What you do **not** get yet:
 
 - a fully packaged OpenClaw plugin registry entry
 - stable OCR backfill
-- stable linked-content transcript/article extraction
+- stable rich linked-content transcript/article extraction beyond the current replayable queue worker
 - final cron templates for every workflow
 
 ## 1. Clone the repo
@@ -302,6 +302,28 @@ lobster-intel/data/runtime/sources/<plugin-id>/index.sqlite
 
 `latest.json` and `runs/*.json` are the truth artifacts. `index.sqlite` is derived state and can be rebuilt from those files with `source_history.py rebuild-index`.
 
+## 8.1 Linked-content queue follow-up
+
+When a runtime artifact exposes `linked_content_queue`, keep the fetch/extraction step downstream of the source plugin:
+
+```bash
+python3 lobster-intel/scripts/process_linked_content_queue.py --workspace . --thesis-id gooaye
+```
+
+That command reads `lobster-intel/data/runtime/<thesis-id>/latest.json` by default, processes queued linked items, and writes replayable artifacts under:
+
+- `lobster-intel/data/evidence/<thesis-id>/linked-content/`
+- `lobster-intel/data/compiled/<thesis-id>/linked-content/`
+- `lobster-intel/data/runtime/<thesis-id>/linked-content/`
+
+If you need to backfill a prior run instead of the latest snapshot, point the worker at an explicit runtime artifact:
+
+```bash
+python3 lobster-intel/scripts/process_linked_content_queue.py --workspace . --thesis-id gooaye --runtime-file lobster-intel/data/runtime/gooaye/runs/<run-id>.json
+```
+
+This keeps linked-content extraction downstream of runtime truth and avoids letting source plugins mutate prior artifacts in place.
+
 ## 9. Cron status
 
 There is now a stable installed-workflow entrypoint for outside installs:
@@ -328,7 +350,7 @@ Current recommendation:
 
 Before this becomes a smooth installable plugin for everyone, these still need work:
 
-1. linked-content extraction
+1. richer linked-content extraction beyond the current replayable queue worker
 2. OCR backfill loop
 3. Firehose junk suppression / ranking
 4. additional cron recipes beyond the installed thesis workflow

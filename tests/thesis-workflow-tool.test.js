@@ -29,7 +29,42 @@ test("buildInstalledThesisWorkflow uses bundled source-pack defaults", () => {
       ],
     ],
   );
+  assert.deepEqual(
+    workflow.sourceRuns.map((run) => [run.pluginId, run.statePath]),
+    [
+      [
+        "official-statements-tracker",
+        "/repo/lobster-intel/data/runtime/sources/official-statements.json",
+      ],
+      [
+        "watchlist-tracker",
+        "/repo/lobster-intel/data/runtime/sources/watchlist.json",
+      ],
+      [
+        "polymarket-tracker",
+        "/repo/lobster-intel/data/runtime/sources/polymarket.json",
+      ],
+    ],
+  );
   assert.equal(workflow.runtimeRequest.workspace, "/repo");
+});
+
+test("buildInstalledThesisWorkflow applies explicit source state path overrides", () => {
+  const workflow = buildInstalledThesisWorkflow("/repo", {
+    thesisId: "regional-escalation",
+    officialStatementsStatePath: "custom/official-state.json",
+    watchlistStatePath: "/tmp/watch-state.json",
+    polymarketStatePath: "custom/polymarket-state.json",
+  });
+
+  assert.deepEqual(
+    workflow.sourceRuns.map((run) => run.statePath),
+    [
+      "/repo/custom/official-state.json",
+      "/tmp/watch-state.json",
+      "/repo/custom/polymarket-state.json",
+    ],
+  );
 });
 
 test("loadBundledThesisProfile resolves the thesisId profile path by default", () => {
@@ -111,6 +146,7 @@ test("runInstalledThesisWorkflow stops before execution when required files are 
 
 test("runInstalledThesisWorkflow runs sources before the runtime and returns a workflow summary", async () => {
   const calls = [];
+  const statePaths = [];
   const result = await runInstalledThesisWorkflow({
     rootDir: "/repo",
     request: {
@@ -129,6 +165,7 @@ test("runInstalledThesisWorkflow runs sources before the runtime and returns a w
       }),
     runSourcePlugin: async (run) => {
       calls.push(run.pluginId);
+      statePaths.push(run.statePath);
       return {
         plugin: run.pluginId,
         new_count: 1,
@@ -163,6 +200,11 @@ test("runInstalledThesisWorkflow runs sources before the runtime and returns a w
     "watchlist-tracker",
     "polymarket-tracker",
     "runtime",
+  ]);
+  assert.deepEqual(statePaths, [
+    "/repo/lobster-intel/data/runtime/sources/official-statements.json",
+    "/repo/lobster-intel/data/runtime/sources/watchlist.json",
+    "/repo/lobster-intel/data/runtime/sources/polymarket.json",
   ]);
   assert.equal(result.kind, "ok");
   assert.equal(result.sourceResults.length, 3);

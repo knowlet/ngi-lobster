@@ -194,6 +194,14 @@ Bundled thesis defaults are resolved from:
 
 That means the installed workflow can carry a stable runtime contract for `semantic_frame`, `probability_direction`, `state`, and target registry without requiring those flags on every run.
 
+The installed workflow now also wires default source cursor persistence automatically:
+
+- `lobster-intel/data/runtime/sources/official-statements.json`
+- `lobster-intel/data/runtime/sources/watchlist.json`
+- `lobster-intel/data/runtime/sources/polymarket.json`
+
+Repeated installed-workflow runs reuse those cursor files without extra `*_STATE_PATH` environment-variable wiring.
+
 ## 7.2 First batch source trackers
 
 The repo now includes these installable ingest plugins:
@@ -257,8 +265,6 @@ Before this becomes a smooth installable plugin for everyone, these still need w
 3. Firehose junk suppression / ranking
 4. reusable cron recipes
 5. a cleaner setup command
-6. source cursor persistence wired into default runtime storage
-
 ## Bottom line
 
 Another OpenClaw can already install this repo and run the first plugin example, but Firehose still requires operator setup and the full product installer does not exist yet.

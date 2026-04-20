@@ -153,6 +153,14 @@ lobster-intel/examples/target-registries/
 
 These fixtures let the installed OpenClaw workflow resolve thesis-specific runtime defaults without moving decision logic into delivery code.
 
+The installed workflow also auto-wires source cursor persistence into:
+
+- `lobster-intel/data/runtime/sources/official-statements.json`
+- `lobster-intel/data/runtime/sources/watchlist.json`
+- `lobster-intel/data/runtime/sources/polymarket.json`
+
+That keeps repeated installed runs replayable and auditable without pushing cursor logic into delivery code or relying on ad hoc host env wiring.
+
 The product intent is:
 
 - source plugins fetch and normalize evidence

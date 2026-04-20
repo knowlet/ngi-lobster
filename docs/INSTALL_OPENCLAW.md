@@ -26,7 +26,6 @@ If you install this repo today, you get:
 - minimal one-shot runtime
 - delivery gate for background output
 - first source plugin example: `gooaye-tracker`
-- install-ready thesis pack example: `lobster-intel/examples/thesis-packs/gooaye.json`
 - legacy NGI scripts for reference and migration
 
 What you do **not** get yet:
@@ -186,38 +185,26 @@ Their jobs are:
 
 - `ngi_lobster_demo`: smoke-test the local runtime path
 - `ngi_lobster_run_default_workflow`: run the default installed workflow and write artifacts/digest
-- `ngi_lobster_run_thesis_runtime`: run the thesis runtime spine against installed source artifacts plus the default thesis registry, or explicit overrides when provided
-- `ngi_lobster_list_installed_theses`: list bundled thesis ids, human-readable titles/summaries, runtime defaults, and linked registry paths; accepts an optional `thesisId` for a single detailed view
+- `ngi_lobster_run_thesis_runtime`: run the thesis runtime spine against installed source artifacts or explicit overrides
+- `ngi_lobster_list_installed_theses`: list bundled thesis ids, human-readable titles/summaries, runtime defaults, contract status, and linked registry paths; accepts an optional `thesisId` for a single detailed view
 - `ngi_lobster_run_installed_thesis_workflow`: run the bundled or explicit source-pack trackers first, then invoke the thesis runtime spine against the freshly written source artifacts and bundled or explicit thesis defaults
-
-### Default thesis registry discovery
-
-Installed thesis runtimes now look for their curated target registry at:
-
-```text
-lobster-intel/data/runtime/thesis-registry/<thesis_id>.json
-```
-
-Example:
-
-```text
-lobster-intel/data/runtime/thesis-registry/gooaye.json
-```
 
 Bundled thesis defaults are resolved from:
 
 - `lobster-intel/examples/thesis-profiles/<thesis-id>.json`
 - `lobster-intel/examples/target-registries/<thesis-id>.json`
 
-This keeps the install path aligned with the product contract:
+That means the installed workflow can carry a stable runtime contract for `semantic_frame`, `probability_direction`, `state`, and target registry without requiring those flags on every run.
 
-- source plugins write source runtime truth under `lobster-intel/data/runtime/sources/`
-- thesis runtime resolves the active target from a thesis-owned registry artifact first
-- delivery stays downstream of the runtime decision
+Bundled thesis profiles may also carry operator-facing metadata such as `title`, `summary`, and `source_config_paths`. The catalog tool exposes those fields plus `contractStatus` and `validationErrors` so another OpenClaw can discover what is installed before choosing a `thesisId`.
 
-If you need to override the registry for a one-off run, pass `--registry-file` or `registryFilePath`. The explicit path wins over the discovered default.
+The installed thesis workflow now validates the thesis contract before it runs:
 
-Bundled thesis profiles may also carry operator-facing metadata such as `title` and `summary`. The catalog tool exposes those fields so another OpenClaw can discover what is installed before choosing a `thesisId`.
+- missing or incomplete profiles fail closed
+- missing registry or source-pack files are surfaced before source plugins execute
+- explicit overrides still work for non-bundled theses when the full runtime contract is provided
+
+Profile field expectations are documented in `docs/THESIS_PROFILES.md`.
 
 ## 7.2 First batch source trackers
 
@@ -251,73 +238,6 @@ These trackers are still **silent-ingest only**. They are source plugins, not al
 
 `official-statements-tracker` now supports cursor persistence via `OFFICIAL_STATEMENTS_STATE_PATH`.
 `watchlist-tracker` and `polymarket-tracker` now support the same pattern via their respective `*_STATE_PATH` variables.
-
-## 7.3 Thesis packs for runtime truth defaults
-
-The runtime now supports install-ready thesis packs under:
-
-```text
-lobster-intel/examples/thesis-packs/
-```
-
-Current example:
-
-- `gooaye.json`
-
-When you run:
-
-```bash
-python3 lobster-intel/scripts/run_thesis_runtime.py --workspace . --thesis-id gooaye
-```
-
-the runtime will discover:
-
-1. installed source artifacts under `lobster-intel/data/runtime/sources/`
-2. the thesis pack at `lobster-intel/examples/thesis-packs/gooaye.json`
-
-That thesis pack supplies:
-
-- semantic frame
-- probability direction
-- runtime state
-- curated target registry entries
-
-Explicit CLI overrides still win. If you pass `--registry-file`, `--semantic-frame`, `--probability-direction`, or `--state`, those values replace the pack defaults.
-
-If you want runtime-managed thesis config instead of example-pack defaults, promote the file into:
-
-```text
-lobster-intel/data/runtime/thesis-packs/<thesis-id>.json
-```
-
-That path is checked before the example pack path.
-
-## 7.4 Source history replay and index rebuild
-
-Installed source plugins write runtime artifacts under:
-
-```text
-lobster-intel/data/runtime/sources/<plugin-id>/
-```
-
-You can replay one stored source run without hitting the network:
-
-```bash
-python3 lobster-intel/scripts/source_history.py replay \
-  --workspace . \
-  --plugin-id watchlist-tracker \
-  --run-id 20260420T010000Z
-```
-
-You can also rebuild a local SQLite index from `runs/*.json`:
-
-```bash
-python3 lobster-intel/scripts/source_history.py rebuild-index \
-  --workspace . \
-  --plugin-id watchlist-tracker
-```
-
-This keeps source history auditable and replayable while preserving files as the primary truth contract.
 
 ## 8. Current expected local artifacts
 

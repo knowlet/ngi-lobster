@@ -194,7 +194,7 @@ Bundled thesis defaults are resolved from:
 
 - `lobster-intel/examples/thesis-packs/<thesis-id>.json`
 - `lobster-intel/examples/thesis-profiles/<thesis-id>.json`
-- `lobster-intel/examples/target-registries/<thesis-id>.json`
+- the registry file referenced by `registry_file_path` in `lobster-intel/examples/thesis-profiles/<thesis-id>.json`
 
 That means the installed workflow can carry a stable runtime contract for `semantic_frame`, `probability_direction`, `state`, and target registry without requiring those flags on every run.
 

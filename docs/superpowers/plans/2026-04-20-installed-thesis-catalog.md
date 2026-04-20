@@ -109,7 +109,7 @@ test("describeBundledThesisProfile summarizes registry entries for a thesis", ()
 
 - [ ] **Step 2: Run the focused JS test file and verify RED**
 
-Run: `cd /Users/knowlet/ngi-lobster && node --test tests/thesis-workflow-tool.test.js`
+Run: `node --test tests/thesis-workflow-tool.test.js`
 Expected: FAIL because the catalog helpers do not exist yet
 
 ### Task 2: Implement The Installed Thesis Catalog Helpers And Tool
@@ -235,7 +235,7 @@ api.registerTool(
 
 - [ ] **Step 5: Run the focused JS tests and verify GREEN**
 
-Run: `cd /Users/knowlet/ngi-lobster && node --test tests/thesis-workflow-tool.test.js`
+Run: `node --test tests/thesis-workflow-tool.test.js`
 Expected: PASS
 
 ### Task 3: Document The Installed Thesis Discovery Path
@@ -256,7 +256,7 @@ Expected: PASS
 
 - [ ] **Step 2: Run the focused JS suite and syntax checks**
 
-Run: `cd /Users/knowlet/ngi-lobster && node --test tests/workflow-default-tool.test.js tests/thesis-workflow-tool.test.js && node --check index.js && node --check thesis-workflow-tool.js`
+Run: `node --test tests/workflow-default-tool.test.js tests/thesis-workflow-tool.test.js && node --check index.js && node --check thesis-workflow-tool.js`
 Expected: PASS
 
 - [ ] **Step 3: Commit**

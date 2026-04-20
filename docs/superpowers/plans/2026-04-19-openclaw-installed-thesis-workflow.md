@@ -106,7 +106,7 @@ test("runInstalledThesisWorkflow runs sources before the runtime and returns a w
 
 - [ ] **Step 2: Run the new tests and verify RED**
 
-Run: `cd /Users/knowlet/ngi-lobster && node --test tests/thesis-workflow-tool.test.js`
+Run: `node --test tests/thesis-workflow-tool.test.js`
 Expected: FAIL because `thesis-workflow-tool.js` and its exported workflow helpers do not exist yet
 
 ### Task 2: Implement The OpenClaw Installed Workflow Tool
@@ -185,7 +185,7 @@ api.registerTool(
 
 - [ ] **Step 4: Run the focused JS tests and verify GREEN**
 
-Run: `cd /Users/knowlet/ngi-lobster && node --test tests/workflow-default-tool.test.js tests/thesis-workflow-tool.test.js`
+Run: `node --test tests/workflow-default-tool.test.js tests/thesis-workflow-tool.test.js`
 Expected: PASS
 
 - [ ] **Step 5: Commit**

@@ -183,7 +183,29 @@ Their jobs are:
 
 - `ngi_lobster_demo`: smoke-test the local runtime path
 - `ngi_lobster_run_default_workflow`: run the default installed workflow and write artifacts/digest
-- `ngi_lobster_run_thesis_runtime`: run the thesis runtime spine against installed source artifacts or explicit overrides
+- `ngi_lobster_run_thesis_runtime`: run the thesis runtime spine against installed source artifacts plus the default thesis registry, or explicit overrides when provided
+
+### Default thesis registry discovery
+
+Installed thesis runtimes now look for their curated target registry at:
+
+```text
+lobster-intel/data/runtime/thesis-registry/<thesis_id>.json
+```
+
+Example:
+
+```text
+lobster-intel/data/runtime/thesis-registry/gooaye.json
+```
+
+This keeps the install path aligned with the product contract:
+
+- source plugins write source runtime truth under `lobster-intel/data/runtime/sources/`
+- thesis runtime resolves the active target from a thesis-owned registry artifact first
+- delivery stays downstream of the runtime decision
+
+If you need to override the registry for a one-off run, pass `--registry-file` or `registryFilePath`. The explicit path wins over the discovered default.
 
 ## 7.2 First batch source trackers
 

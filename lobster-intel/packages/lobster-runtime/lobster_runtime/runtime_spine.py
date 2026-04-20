@@ -86,6 +86,16 @@ def _runtime_source_latest_path(workspace_dir: str | Path, source_key: str) -> P
     return _workspace_data_dir(workspace_dir) / "runtime" / "sources" / RUNTIME_SOURCE_PLUGIN_IDS[source_key] / "latest.json"
 
 
+def _default_registry_candidates(workspace_dir: str | Path, thesis_id: str | None) -> list[Path]:
+    if not thesis_id:
+        return []
+    registry_root = _workspace_data_dir(workspace_dir) / "runtime" / "thesis-registry"
+    return [
+        registry_root / f"{thesis_id}.json",
+        registry_root / thesis_id / "registry.json",
+    ]
+
+
 def _write_json(path: Path, payload: dict[str, Any]) -> None:
     path.write_text(json.dumps(payload, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
 
@@ -148,6 +158,7 @@ def _source_payloads(inp: ThesisRuntimeInput) -> list[tuple[str, dict[str, Any] 
 def load_thesis_runtime_inputs(
     workspace_dir: str | Path,
     *,
+    thesis_id: str | None = None,
     official_statements_path: str | Path | None = None,
     watchlist_path: str | Path | None = None,
     polymarket_path: str | Path | None = None,
@@ -194,6 +205,13 @@ def load_thesis_runtime_inputs(
             raise FileNotFoundError(f"missing runtime registry file: {registry_path}")
         registry_resolution = {"path": str(registry_path), "mode": "explicit", "exists": True}
         registry_payload = cast(list[dict[str, Any]], _load_json_file(registry_path))
+    else:
+        for registry_path in _default_registry_candidates(workspace_dir, thesis_id):
+            if not registry_path.exists():
+                continue
+            registry_resolution = {"path": str(registry_path), "mode": "discovered", "exists": True}
+            registry_payload = cast(list[dict[str, Any]], _load_json_file(registry_path))
+            break
 
     return {
         "official_statements": source_payloads["official_statements"],

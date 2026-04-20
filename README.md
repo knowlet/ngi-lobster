@@ -43,6 +43,7 @@ Current status:
 - `package.json` exists
 - `index.js` native wrapper entry exists
 - native tool `ngi_lobster_demo` exists for local smoke testing
+- thesis runtime registry discovery now defaults to `lobster-intel/data/runtime/thesis-registry/<thesis_id>.json`
 - the heavy NGI runtime is still being migrated from `lobster-intel/` Python code into a fuller native OpenClaw plugin surface
 
 So the install surface is starting to look right, but runtime feature parity is not finished yet.
@@ -54,6 +55,7 @@ The repo already contains:
 - a minimal plugin contract
 - a plugin loader
 - a run-once runtime path
+- a thesis runtime spine with registry-first target resolution
 - a delivery gate
 - a first ingest plugin example (`gooaye-tracker`)
 - legacy NGI scripts kept as migration references

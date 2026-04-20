@@ -22,12 +22,14 @@ That guide explains current v0 setup, package paths, Firehose expectations, and 
 
 ## Product goal
 
-Build an intelligence operating system that is:
-- maintainable
-- auditable
-- documented
-- installable
-- extensible by plugins
+NGI Lobster exists to turn the current NGI workflow into an installable OpenClaw plugin product.
+
+That means:
+- `openclaw plugins install` is the primary install surface
+- runtime artifacts under `lobster-intel/data/` are live runtime truth
+- source plugins ingest and normalize evidence
+- runtime computes thesis state, target resolution, compare mode, and alert decisions
+- delivery stays downstream of runtime truth
 
 ## Architecture
 
@@ -107,7 +109,7 @@ This milestone establishes:
 - Compiled knowledge is not raw truth.
 - Runtime state must be auditable.
 - Delivery must stay separate from core logic.
-- Plugins must declare capabilities and outputs.
+- Plugins must declare capabilities, tracker contracts, and outputs.
 - Semantic memory is optional, not foundational.
 
 ## Near-term plan
@@ -131,6 +133,13 @@ The current ingest family is now:
 - `watchlist-tracker`
 
 These are intentionally **silent-ingest** plugins. They do not send delivery output themselves.
+
+Each ingest manifest now separates:
+
+- `capabilities`: host-facing dependency hints such as `web_fetch`, `ocr`, `image_understanding`
+- `tracker`: Lobster-owned source contract for source family, replayability, cursor state mode, and follow-up runtime queues
+
+That keeps plugin onboarding and follow-up processing machine-readable without moving decision logic into delivery code.
 
 ## Install-ready source pack examples
 

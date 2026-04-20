@@ -56,16 +56,19 @@ test("loadBundledThesisProfile resolves the thesisId profile path by default", (
   assert.equal(profile.probability_direction, "yes_is_peace");
 });
 
-test("loadBundledThesisProfile resolves an explicit thesisProfilePath relative to rootDir", () => {
+test("loadBundledThesisProfile resolves a relative thesisProfilePath from the repo root", () => {
+  let seenPath;
   const profile = loadBundledThesisProfile(
     "/repo",
     {
       thesisId: "regional-escalation",
-      thesisProfilePath: "custom/profiles/regional-escalation.json",
+      thesisProfilePath: "profiles/custom.json",
     },
     {
-      existsSync: (value) =>
-        value === "/repo/custom/profiles/regional-escalation.json",
+      existsSync: (value) => {
+        seenPath = value;
+        return value === "/repo/profiles/custom.json";
+      },
       readFileSync: () =>
         JSON.stringify({
           thesis_id: "regional-escalation",
@@ -76,10 +79,8 @@ test("loadBundledThesisProfile resolves an explicit thesisProfilePath relative t
     },
   );
 
-  assert.equal(
-    profile.profile_path,
-    "/repo/custom/profiles/regional-escalation.json",
-  );
+  assert.equal(seenPath, "/repo/profiles/custom.json");
+  assert.equal(profile.profile_path, "/repo/profiles/custom.json");
 });
 
 test("buildInstalledThesisWorkflow applies thesis profile defaults before explicit overrides", () => {
@@ -111,9 +112,10 @@ test("buildInstalledThesisWorkflow applies thesis profile defaults before explic
   );
 });
 
-test("buildInstalledThesisWorkflow resolves request-supplied relative override paths", () => {
+test("buildInstalledThesisWorkflow resolves relative request paths from the repo root", () => {
   const workflow = buildInstalledThesisWorkflow("/repo", {
     thesisId: "regional-escalation",
+    workspace: "workspaces/live",
     sourcePackDir: "custom/source-packs",
     officialStatementsConfigPath: "configs/official.json",
     watchlistConfigPath: "configs/watchlist.json",
@@ -122,6 +124,7 @@ test("buildInstalledThesisWorkflow resolves request-supplied relative override p
     thesisProfilePath: "profiles/regional-escalation.json",
   });
 
+  assert.equal(workflow.runtimeRequest.workspace, "/repo/workspaces/live");
   assert.equal(workflow.sourcePackDir, "/repo/custom/source-packs");
   assert.equal(
     workflow.sourceRuns[0].configPath,
@@ -228,30 +231,34 @@ test("listBundledThesisProfiles skips invalid JSON profile files", () => {
 });
 
 test("describeBundledThesisProfile summarizes registry entries for a thesis", () => {
-  const description = describeBundledThesisProfile("/repo", "regional-escalation", {
-    existsSync: () => true,
-    readFileSync: (value) => {
-      if (value.includes("thesis-profiles")) {
-        return JSON.stringify({
-          thesis_id: "regional-escalation",
-          title: "Regional escalation monitor",
-          summary: "Tracks military operations end-state risk.",
-          semantic_frame: "military_operations_end_by_deadline",
-          probability_direction: "yes_is_peace",
-          state: "ACTIVE_TRUCE",
-          registry_file_path:
-            "lobster-intel/examples/target-registries/regional-escalation.json",
-        });
-      }
+  const description = describeBundledThesisProfile(
+    "/repo",
+    "regional-escalation",
+    {
+      existsSync: () => true,
+      readFileSync: (value) => {
+        if (value.includes("thesis-profiles")) {
+          return JSON.stringify({
+            thesis_id: "regional-escalation",
+            title: "Regional escalation monitor",
+            summary: "Tracks military operations end-state risk.",
+            semantic_frame: "military_operations_end_by_deadline",
+            probability_direction: "yes_is_peace",
+            state: "ACTIVE_TRUCE",
+            registry_file_path:
+              "lobster-intel/examples/target-registries/regional-escalation.json",
+          });
+        }
 
-      return JSON.stringify([
-        {
-          market_id: "1517836",
-          market_question: "Military operations end by June 30?",
-        },
-      ]);
+        return JSON.stringify([
+          {
+            market_id: "1517836",
+            market_question: "Military operations end by June 30?",
+          },
+        ]);
+      },
     },
-  });
+  );
 
   assert.equal(description.thesisId, "regional-escalation");
   assert.equal(description.registry.entryCount, 1);

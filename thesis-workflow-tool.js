@@ -23,18 +23,12 @@ function defaultSourcePackDir(rootDir) {
   return path.join(rootDir, "lobster-intel", "examples", "source-packs");
 }
 
-function defaultThesisProfilePath(rootDir, thesisId) {
-  return path.join(
-    rootDir,
-    "lobster-intel",
-    "examples",
-    "thesis-profiles",
-    `${thesisId}.json`,
-  );
+function defaultThesisProfileDir(rootDir) {
+  return path.join(rootDir, "lobster-intel", "examples", "thesis-profiles");
 }
 
-function thesisProfileDir(rootDir) {
-  return path.join(rootDir, "lobster-intel", "examples", "thesis-profiles");
+function defaultThesisProfilePath(rootDir, thesisId) {
+  return path.join(defaultThesisProfileDir(rootDir), `${thesisId}.json`);
 }
 
 function resolveRepoPath(rootDir, value) {
@@ -70,11 +64,24 @@ export function loadBundledThesisProfile(rootDir, request = {}, io = {}) {
   };
 }
 
+function profileSummary(rootDir, profile) {
+  return {
+    thesisId: profile.thesis_id,
+    title: profile.title || profile.thesis_id,
+    summary: profile.summary || "",
+    semanticFrame: profile.semantic_frame,
+    probabilityDirection: profile.probability_direction,
+    state: profile.state,
+    profilePath: profile.profile_path,
+    registryFilePath: resolveRepoPath(rootDir, profile.registry_file_path),
+  };
+}
+
 export function listBundledThesisProfiles(rootDir, io = {}) {
   const existsSync = io.existsSync || fs.existsSync;
   const readdirSync = io.readdirSync || fs.readdirSync;
   const readFileSync = io.readFileSync || fs.readFileSync;
-  const profileDir = thesisProfileDir(rootDir);
+  const profileDir = defaultThesisProfileDir(rootDir);
 
   if (!existsSync(profileDir)) {
     return [];
@@ -86,16 +93,10 @@ export function listBundledThesisProfiles(rootDir, io = {}) {
       const profilePath = path.join(profileDir, entry.name);
       try {
         const profile = JSON.parse(readFileSync(profilePath, "utf8"));
-        return {
-          thesisId: profile.thesis_id,
-          title: profile.title || profile.thesis_id,
-          summary: profile.summary || "",
-          semanticFrame: profile.semantic_frame,
-          probabilityDirection: profile.probability_direction,
-          state: profile.state,
-          profilePath,
-          registryFilePath: resolveRepoPath(rootDir, profile.registry_file_path),
-        };
+        return profileSummary(rootDir, {
+          ...profile,
+          profile_path: profilePath,
+        });
       } catch {
         return [];
       }
@@ -122,13 +123,7 @@ export function describeBundledThesisProfile(rootDir, thesisId, io = {}) {
       : [];
 
   return {
-    thesisId: profile.thesis_id,
-    title: profile.title || profile.thesis_id,
-    summary: profile.summary || "",
-    semanticFrame: profile.semantic_frame,
-    probabilityDirection: profile.probability_direction,
-    state: profile.state,
-    profilePath: profile.profile_path,
+    ...profileSummary(rootDir, profile),
     registry: {
       path: registryPath || null,
       entryCount: registryEntries.length,
@@ -145,14 +140,15 @@ export function buildInstalledThesisWorkflow(
   request = {},
   thesisProfile = null,
 ) {
-  const workspace = request.workspace || rootDir;
+  const workspace = resolveRepoPath(rootDir, request.workspace) || rootDir;
   const sourcePackDir =
     resolveRepoPath(rootDir, request.sourcePackDir) ||
     resolveRepoPath(rootDir, thesisProfile?.source_pack_dir) ||
     defaultSourcePackDir(rootDir);
-  const thesisProfileRequestPath =
-    resolveRepoPath(rootDir, request.thesisProfilePath) ||
-    defaultThesisProfilePath(rootDir, request.thesisId);
+  const thesisProfileRequestPath = request.thesisId
+    ? resolveRepoPath(rootDir, request.thesisProfilePath) ||
+      defaultThesisProfilePath(rootDir, request.thesisId)
+    : null;
 
   return {
     rootDir,

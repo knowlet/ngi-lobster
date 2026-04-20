@@ -20,8 +20,8 @@ def _prepare_isolated_repo(tmp_path: Path) -> Path:
     shutil.copy2(ROOT / "scripts" / "run_default_workflow.sh", repo / "scripts" / "run_default_workflow.sh")
     shutil.copytree(ROOT / "lobster-intel" / "scripts", repo / "lobster-intel" / "scripts", dirs_exist_ok=True)
     shutil.copytree(ROOT / "lobster-intel" / "data" / "runtime", repo / "lobster-intel" / "data" / "runtime", dirs_exist_ok=True)
-
     shutil.copytree(ROOT / "lobster-intel" / "packages", repo / "lobster-intel" / "packages", dirs_exist_ok=True)
+    shutil.copytree(ROOT / "lobster-intel" / "examples", repo / "lobster-intel" / "examples", dirs_exist_ok=True)
 
     venv_python = repo / ".venv" / "bin" / "python"
     venv_python.parent.mkdir(parents=True, exist_ok=True)
@@ -76,8 +76,14 @@ def test_default_workflow_runs_thesis_runtime_spine(tmp_path: Path):
     assert result.returncode == 0, result.stderr
 
     payload = json.loads(result.stdout)
+    assert payload["compare_mode"] == "full_compare"
     assert payload["input_contract"]["source_resolution"]["official_statements"]["mode"] == "discovered"
     assert payload["input_contract"]["source_resolution"]["watchlist"]["mode"] == "discovered"
     assert payload["input_contract"]["source_resolution"]["polymarket"]["mode"] == "discovered"
+    assert payload["input_contract"]["registry_resolution"]["mode"] == "discovered"
+    assert payload["input_contract"]["registry_resolution"]["path"].endswith(
+        "lobster-intel/data/runtime/thesis-registry/gooaye.json"
+    )
+    assert payload["input_contract"]["thesis_pack_resolution"]["mode"] == "discovered"
     assert Path(payload["artifact_paths"]["runtime_latest"]).exists()
     assert Path(payload["artifact_paths"]["delivery_receipt"]).exists()

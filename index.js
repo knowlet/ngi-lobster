@@ -409,7 +409,8 @@ export default definePluginEntry({
             },
             registryFilePath: {
               type: "string",
-              description: "Optional path to a JSON file with target registry entries."
+              description:
+                "Optional path to a JSON file with target registry entries. If omitted, the runtime discovers lobster-intel/data/runtime/thesis-registry/<thesisId>.json automatically."
             },
             semanticFrame: {
               type: "string",
@@ -565,7 +566,6 @@ export default definePluginEntry({
             }
 
             return {
-              ok: false,
               content: [
                 {
                   type: "text",
@@ -579,6 +579,7 @@ export default definePluginEntry({
               return err.toolResult;
             }
             return {
+              ok: false,
               content: [
                 {
                   type: "text",

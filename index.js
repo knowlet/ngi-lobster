@@ -8,7 +8,7 @@ import { fileURLToPath } from "node:url";
 import {
   describeBundledThesisProfile,
   listBundledThesisProfiles,
-  runInstalledThesisWorkflow
+  runInstalledThesisWorkflow,
 } from "./thesis-workflow-tool.js";
 import { formatDefaultWorkflowText } from "./workflow-default-tool.js";
 
@@ -45,7 +45,6 @@ export default definePluginEntry({
 
     function buildMissingFileError(missingPaths) {
       return {
-        ok: false,
         content: [
           {
             type: "text",
@@ -53,18 +52,6 @@ export default definePluginEntry({
           }
         ],
         details: { missingPaths }
-      };
-    }
-
-    function buildInvalidProfileError(validationErrors) {
-      return {
-        content: [
-          {
-            type: "text",
-            text: `NGI Lobster thesis profile is incomplete:\n\n${validationErrors.map((item) => `- ${item}`).join("\n")}`
-          }
-        ],
-        details: { validationErrors }
       };
     }
 
@@ -101,7 +88,6 @@ export default definePluginEntry({
         const rawStdout = err?.stdout?.trim?.() || "";
         const rawStderr = err?.stderr?.trim?.() || err?.message || "";
         return {
-          ok: false,
           content: [
             {
               type: "text",
@@ -266,40 +252,29 @@ export default definePluginEntry({
           properties: {
             thesisId: {
               type: "string",
-              description: "Optional thesis id to return a detailed single-thesis view."
-            }
-          }
+              description:
+                "Optional thesis id to return a detailed single-thesis view.",
+            },
+          },
         },
         async execute(input) {
           const request = input || {};
           const details = request.thesisId
             ? describeBundledThesisProfile(rootDir, request.thesisId)
             : { theses: listBundledThesisProfiles(rootDir) };
-          if (request.thesisId && !details) {
-            return {
-              ok: false,
-              content: [
-                {
-                  type: "text",
-                  text: `No bundled thesis found for id: ${request.thesisId}`
-                }
-              ],
-              details: { thesisId: request.thesisId }
-            };
-          }
 
           return {
             content: [
               {
                 type: "text",
-                text: JSON.stringify(details)
-              }
+                text: JSON.stringify(details),
+              },
             ],
-            details
+            details,
           };
-        }
+        },
       },
-      { name: "ngi_lobster_list_installed_theses" }
+      { name: "ngi_lobster_list_installed_theses" },
     );
 
     api.registerTool(
@@ -315,7 +290,7 @@ export default definePluginEntry({
         },
         async execute() {
           const preflight = await ensureRuntimeReady();
-          if (preflight) return { ok: false, ...preflight };
+          if (preflight) return preflight;
 
           const scriptPath = path.join(rootDir, "scripts", "run_default_workflow.sh");
           const { stdout, stderr } = await execFileAsync(scriptPath, [], {
@@ -365,7 +340,7 @@ export default definePluginEntry({
         },
         async execute() {
           const preflight = await ensureRuntimeReady();
-          if (preflight) return { ok: false, ...preflight };
+          if (preflight) return preflight;
 
           const scriptPath = path.join(rootDir, "scripts", "run_default_workflow.sh");
           const { stdout, stderr } = await execFileAsync(scriptPath, [], {
@@ -424,8 +399,7 @@ export default definePluginEntry({
             },
             registryFilePath: {
               type: "string",
-              description:
-                "Optional path to a JSON file with target registry entries. If omitted, the runtime discovers lobster-intel/data/runtime/thesis-registry/<thesisId>.json automatically."
+              description: "Optional path to a JSON file with target registry entries."
             },
             semanticFrame: {
               type: "string",
@@ -528,8 +502,7 @@ export default definePluginEntry({
             },
             registryFilePath: {
               type: "string",
-              description:
-                "Optional path to a JSON file with target registry entries. If omitted, the runtime discovers lobster-intel/data/runtime/thesis-registry/<thesisId>.json automatically."
+              description: "Optional path to a JSON file with target registry entries."
             },
             semanticFrame: {
               type: "string",
@@ -551,7 +524,7 @@ export default definePluginEntry({
         },
         async execute(input) {
           const preflight = await ensureRuntimeReady();
-          if (preflight) return { ok: false, ...preflight };
+          if (preflight) return preflight;
 
           try {
             const request = input || {};
@@ -589,16 +562,11 @@ export default definePluginEntry({
               }
             });
 
-            if (workflowResult.kind === "invalid_profile") {
-              return buildInvalidProfileError(workflowResult.validationErrors);
-            }
-
             if (workflowResult.kind === "missing_paths") {
               return buildMissingFileError(workflowResult.missingPaths);
             }
 
             return {
-              ok: workflowResult.kind === "ok",
               content: [
                 {
                   type: "text",

@@ -26,7 +26,6 @@ If you install this repo today, you get:
 - minimal one-shot runtime
 - delivery gate for background output
 - first source plugin example: `gooaye-tracker`
-- install-ready thesis pack example: `lobster-intel/examples/thesis-packs/gooaye.json`
 - legacy NGI scripts for reference and migration
 
 What you do **not** get yet:
@@ -194,36 +193,33 @@ openclaw plugins inspect ngi-lobster
 Current v0 wrapper also exposes a minimal tool:
 
 - `ngi_lobster_demo`
+- `ngi_lobster_list_installed_theses`
 - `ngi_lobster_run_default_workflow`
 - `ngi_lobster_run_thesis_runtime`
-- `ngi_lobster_list_installed_theses`
 - `ngi_lobster_run_installed_thesis_workflow`
 
 Their jobs are:
 
 - `ngi_lobster_demo`: smoke-test the local runtime path
+- `ngi_lobster_list_installed_theses`: list bundled thesis ids, titles, summaries, and registry paths, or inspect one thesis in detail with `thesisId`
 - `ngi_lobster_run_default_workflow`: run the default installed workflow and write artifacts/digest
 - `ngi_lobster_run_thesis_runtime`: run the thesis runtime spine against installed source artifacts or explicit overrides
-- `ngi_lobster_list_installed_theses`: list bundled thesis ids, human-readable titles/summaries, runtime defaults, contract status, and linked registry paths; accepts an optional `thesisId` for a single detailed view
 - `ngi_lobster_run_installed_thesis_workflow`: run the bundled or explicit source-pack trackers first, then invoke the thesis runtime spine against the freshly written source artifacts and bundled or explicit thesis defaults
 
 Bundled thesis defaults are resolved from:
 
-- `lobster-intel/examples/thesis-packs/<thesis-id>.json`
 - `lobster-intel/examples/thesis-profiles/<thesis-id>.json`
-- the registry file referenced by `registry_file_path` in `lobster-intel/examples/thesis-profiles/<thesis-id>.json`
+- `lobster-intel/examples/target-registries/<thesis-id>.json`
 
 That means the installed workflow can carry a stable runtime contract for `semantic_frame`, `probability_direction`, `state`, and target registry without requiring those flags on every run.
 
-Bundled thesis profiles may also carry operator-facing metadata such as `title`, `summary`, and `source_config_paths`. The catalog tool exposes those fields plus `contractStatus` and `validationErrors` so another OpenClaw can discover what is installed before choosing a `thesisId`.
+The bundled thesis profiles can now also expose operator-facing metadata such as:
 
-The installed thesis workflow now validates the thesis contract before it runs:
+- `title`
+- `summary`
+- linked registry path and market list
 
-- missing or incomplete profiles fail closed
-- missing registry or source-pack files are surfaced before source plugins execute
-- explicit overrides still work for non-bundled theses when the full runtime contract is provided
-
-Profile field expectations are documented in `docs/THESIS_PROFILES.md`.
+That gives an installed OpenClaw a discovery surface before it commits to a thesis run.
 
 The installed workflow now also wires default source cursor persistence automatically:
 
@@ -232,11 +228,6 @@ The installed workflow now also wires default source cursor persistence automati
 - `lobster-intel/data/runtime/sources/polymarket.json`
 
 Repeated installed-workflow runs reuse those cursor files without extra `*_STATE_PATH` environment-variable wiring.
-
-For source-runtime operations, the Python support CLI also exposes:
-
-- `python3 lobster-intel/scripts/source_history.py replay --workspace . --plugin-id watchlist-tracker --run-id <run_id>`
-- `python3 lobster-intel/scripts/source_history.py rebuild-index --workspace . --plugin-id watchlist-tracker`
 
 ## 7.2 First batch source trackers
 
@@ -271,33 +262,6 @@ These trackers are still **silent-ingest only**. They are source plugins, not al
 `official-statements-tracker` now supports cursor persistence via `OFFICIAL_STATEMENTS_STATE_PATH`.
 `watchlist-tracker` and `polymarket-tracker` now support the same pattern via their respective `*_STATE_PATH` variables.
 
-## 7.3 Source history replay and index rebuild
-
-Installed source plugins write runtime artifacts under:
-
-```text
-lobster-intel/data/runtime/sources/<plugin-id>/
-```
-
-You can replay one stored source run without hitting the network:
-
-```bash
-python3 lobster-intel/scripts/source_history.py replay \
-  --workspace . \
-  --plugin-id watchlist-tracker \
-  --run-id 20260420T010000Z
-```
-
-You can also rebuild a local SQLite index from `runs/*.json`:
-
-```bash
-python3 lobster-intel/scripts/source_history.py rebuild-index \
-  --workspace . \
-  --plugin-id watchlist-tracker
-```
-
-This keeps source history auditable and replayable while preserving files as the primary truth contract.
-
 ## 8. Current expected local artifacts
 
 The first example plugin currently writes artifacts under:
@@ -308,16 +272,6 @@ lobster-intel/data/compiled/
 lobster-intel/data/runtime/
 lobster-intel/data/delivery/
 ```
-
-Source plugin runs also persist under:
-
-```text
-lobster-intel/data/runtime/sources/<plugin-id>/latest.json
-lobster-intel/data/runtime/sources/<plugin-id>/runs/<run_id>.json
-lobster-intel/data/runtime/sources/<plugin-id>/index.sqlite
-```
-
-`latest.json` and `runs/*.json` are the truth artifacts. `index.sqlite` is derived state and can be rebuilt from those files with `source_history.py rebuild-index`.
 
 ## 9. Cron status
 

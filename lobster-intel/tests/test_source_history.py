@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import sqlite3
 import subprocess
 import sys
 import tempfile
@@ -132,6 +133,28 @@ class SourceHistoryTests(unittest.TestCase):
         self.assertEqual(rebuilt["plugin"], plugin_id)
         self.assertEqual(rebuilt["run_count"], 2)
         self.assertEqual(rebuilt["item_count"], 3)
+
+    def test_rebuild_source_index_keeps_existing_index_when_rebuild_fails(self):
+        rebuild_source_index = getattr(lobster_runtime, "rebuild_source_index", None)
+        self.assertIsNotNone(rebuild_source_index, "lobster_runtime.rebuild_source_index should exist")
+
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            workspace = Path(tmp_dir)
+            plugin_id, _ = _install_source_history_fixture(workspace)
+            rebuilt = rebuild_source_index(workspace, plugin_id)
+            index_path = Path(rebuilt["index_path"])
+            bad_run_path = index_path.parent / "runs" / "20260420T030000Z.json"
+            bad_run_path.write_text("{broken json\n", encoding="utf-8")
+
+            with self.assertRaises(json.JSONDecodeError):
+                rebuild_source_index(workspace, plugin_id)
+
+            with sqlite3.connect(index_path) as conn:
+                run_count = conn.execute("select count(*) from source_runs").fetchone()[0]
+                item_count = conn.execute("select count(*) from source_items").fetchone()[0]
+
+        self.assertEqual(run_count, 2)
+        self.assertEqual(item_count, 3)
 
     def test_source_history_cli_supports_replay_and_rebuild(self):
         script_path = ROOT / "scripts" / "source_history.py"

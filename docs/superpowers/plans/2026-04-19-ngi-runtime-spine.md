@@ -8,7 +8,42 @@
 
 **Tech Stack:** Python 3.11, stdlib `json`/`sqlite3`/`hashlib`, existing `lobster_runtime`, `lobster_delivery`, and `pytest`/`unittest` tests
 
+**Status:** Baseline implementation landed on 2026-04-19 in commit `bad6a63`. This document now serves as the executed plan record for that slice.
+
 ---
+
+## Execution Summary
+
+The planned runtime spine baseline has been implemented in:
+
+- `lobster-intel/packages/lobster-runtime/lobster_runtime/runtime_spine.py`
+- `lobster-intel/scripts/run_thesis_runtime.py`
+- `lobster-intel/packages/lobster-runtime/lobster_runtime/__init__.py`
+- `lobster-intel/packages/lobster-delivery/lobster_delivery/__init__.py`
+- `lobster-intel/packages/lobster-delivery/lobster_delivery/gate.py`
+- `lobster-intel/tests/test_runtime_spine.py`
+- `lobster-intel/tests/test_source_runner_e2e.py`
+
+Verification snapshot captured on 2026-04-19:
+
+- `cd /Users/knowlet/ngi-lobster && .venv/bin/python -m pytest lobster-intel/tests/test_runtime_spine.py lobster-intel/tests/test_source_runner_e2e.py -q`
+- result: `11 passed`
+
+Implementation note:
+
+- the code landed largely in one implementation pass rather than the exact per-task commit cadence described below
+- the task list below is retained as the original plan for the baseline slice, not as a statement that the work is still pending
+
+## Remaining Follow-On Planning Inputs
+
+The next plan should be a separate follow-on document. The highest-value unresolved items after this baseline are:
+
+- package the runtime spine behind the OpenClaw plugin install and operator workflow surface
+- harden active-target resolution beyond registry plus current market artifact snapshots
+- extract explicit source-analyzer seams from the inline MVP runtime logic
+- expand rebuildable runtime indexes and operator inspection tooling beyond the current single `runtime_runs` table
+
+## Historical Task List
 
 ### Task 1: Lock The Spine Contract With Tests
 

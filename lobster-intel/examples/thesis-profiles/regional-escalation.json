@@ -1,0 +1,7 @@
+{
+  "thesis_id": "regional-escalation",
+  "semantic_frame": "military_operations_end_by_deadline",
+  "probability_direction": "yes_is_peace",
+  "state": "ACTIVE_TRUCE",
+  "registry_file_path": "lobster-intel/examples/target-registries/regional-escalation.json"
+}

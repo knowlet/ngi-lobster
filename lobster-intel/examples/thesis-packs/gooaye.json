@@ -1,0 +1,21 @@
+{
+  "thesis_id": "gooaye",
+  "semantic_frame": "military_operations_end_by_deadline",
+  "probability_direction": "yes_is_peace",
+  "state": "ACTIVE_TRUCE",
+  "target_registry": [
+    {
+      "market_id": "1517836",
+      "market_slug": "trump-announces-end-of-military-operations-against-iran-by-june-30th-566-326-653-781-167-426-752-225",
+      "market_question": "Trump announces end of military operations against Iran by June 30th?",
+      "semantic_frame": "military_operations_end_by_deadline",
+      "probability_direction": "yes_is_peace",
+      "aliases": [
+        "military-operations-end-by-june-30",
+        "operations end by june 30",
+        "june 30 end market"
+      ],
+      "resolution_mode": "registry_first"
+    }
+  ]
+}

@@ -26,6 +26,7 @@ If you install this repo today, you get:
 - minimal one-shot runtime
 - delivery gate for background output
 - first source plugin example: `gooaye-tracker`
+- install-ready thesis pack example: `lobster-intel/examples/thesis-packs/gooaye.json`
 - legacy NGI scripts for reference and migration
 
 What you do **not** get yet:
@@ -191,6 +192,7 @@ Their jobs are:
 
 Bundled thesis defaults are resolved from:
 
+- `lobster-intel/examples/thesis-packs/<thesis-id>.json`
 - `lobster-intel/examples/thesis-profiles/<thesis-id>.json`
 - `lobster-intel/examples/target-registries/<thesis-id>.json`
 

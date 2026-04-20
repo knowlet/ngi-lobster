@@ -82,6 +82,7 @@ lobster-intel/
     watchlist-tracker/
   examples/
     source-packs/
+    thesis-packs/
     thesis-profiles/
     target-registries/
   data/
@@ -147,6 +148,7 @@ lobster-intel/examples/source-packs/
 Bundled thesis defaults now also live under:
 
 ```text
+lobster-intel/examples/thesis-packs/
 lobster-intel/examples/thesis-profiles/
 lobster-intel/examples/target-registries/
 ```

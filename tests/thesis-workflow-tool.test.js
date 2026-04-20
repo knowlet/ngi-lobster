@@ -56,6 +56,30 @@ test("loadBundledThesisProfile resolves the thesisId profile path by default", (
   assert.equal(profile.probability_direction, "yes_is_peace");
 });
 
+test("loadBundledThesisProfile resolves a relative thesisProfilePath from the repo root", () => {
+  let seenPath;
+  const profile = loadBundledThesisProfile(
+    "/repo",
+    {
+      thesisId: "regional-escalation",
+      thesisProfilePath: "profiles/custom.json",
+    },
+    {
+      existsSync: (value) => {
+        seenPath = value;
+        return value === "/repo/profiles/custom.json";
+      },
+      readFileSync: () =>
+        JSON.stringify({
+          thesis_id: "regional-escalation",
+        }),
+    },
+  );
+
+  assert.equal(seenPath, "/repo/profiles/custom.json");
+  assert.equal(profile.profile_path, "/repo/profiles/custom.json");
+});
+
 test("loadBundledThesisProfile returns null when profile JSON is malformed", () => {
   const profile = loadBundledThesisProfile(
     "/repo",

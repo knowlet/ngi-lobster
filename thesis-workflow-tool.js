@@ -68,7 +68,8 @@ function readBundledThesisProfile(rootDir, request = {}, io = {}) {
   const existsSync = io.existsSync || fs.existsSync;
   const readFileSync = io.readFileSync || fs.readFileSync;
   const profilePath =
-    request.thesisProfilePath || defaultThesisProfilePath(rootDir, thesisId);
+    resolveRepoPath(rootDir, request.thesisProfilePath) ||
+    defaultThesisProfilePath(rootDir, thesisId);
 
   if (!existsSync(profilePath)) {
     return { profile: null, error: null, profilePath };

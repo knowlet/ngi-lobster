@@ -179,6 +179,7 @@ Current v0 wrapper also exposes a minimal tool:
 - `ngi_lobster_demo`
 - `ngi_lobster_run_default_workflow`
 - `ngi_lobster_run_thesis_runtime`
+- `ngi_lobster_list_installed_theses`
 - `ngi_lobster_run_installed_thesis_workflow`
 
 Their jobs are:
@@ -186,6 +187,7 @@ Their jobs are:
 - `ngi_lobster_demo`: smoke-test the local runtime path
 - `ngi_lobster_run_default_workflow`: run the default installed workflow and write artifacts/digest
 - `ngi_lobster_run_thesis_runtime`: run the thesis runtime spine against installed source artifacts plus the default thesis registry, or explicit overrides when provided
+- `ngi_lobster_list_installed_theses`: list bundled thesis ids, human-readable titles/summaries, runtime defaults, and linked registry paths; accepts an optional `thesisId` for a single detailed view
 - `ngi_lobster_run_installed_thesis_workflow`: run the bundled or explicit source-pack trackers first, then invoke the thesis runtime spine against the freshly written source artifacts and bundled or explicit thesis defaults
 
 ### Default thesis registry discovery
@@ -214,6 +216,8 @@ This keeps the install path aligned with the product contract:
 - delivery stays downstream of the runtime decision
 
 If you need to override the registry for a one-off run, pass `--registry-file` or `registryFilePath`. The explicit path wins over the discovered default.
+
+Bundled thesis profiles may also carry operator-facing metadata such as `title` and `summary`. The catalog tool exposes those fields so another OpenClaw can discover what is installed before choosing a `thesisId`.
 
 ## 7.2 First batch source trackers
 

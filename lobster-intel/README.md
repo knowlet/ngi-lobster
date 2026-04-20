@@ -153,6 +153,7 @@ lobster-intel/examples/target-registries/
 ```
 
 These fixtures let the installed OpenClaw workflow resolve thesis-specific runtime defaults without moving decision logic into delivery code.
+They also now provide operator-facing metadata such as `title` and `summary`, which the native `ngi_lobster_list_installed_theses` tool can expose after install.
 
 The product intent is:
 

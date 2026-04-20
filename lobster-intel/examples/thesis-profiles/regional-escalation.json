@@ -1,5 +1,7 @@
 {
   "thesis_id": "regional-escalation",
+  "title": "Regional escalation monitor",
+  "summary": "Tracks the military-operations end-state thesis and bundled target registry defaults.",
   "semantic_frame": "military_operations_end_by_deadline",
   "probability_direction": "yes_is_peace",
   "state": "ACTIVE_TRUCE",

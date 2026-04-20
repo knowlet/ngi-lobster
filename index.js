@@ -5,7 +5,11 @@ import path from "node:path";
 import fs from "node:fs";
 import { fileURLToPath } from "node:url";
 
-import { runInstalledThesisWorkflow } from "./thesis-workflow-tool.js";
+import {
+  describeBundledThesisProfile,
+  listBundledThesisProfiles,
+  runInstalledThesisWorkflow
+} from "./thesis-workflow-tool.js";
 import { formatDefaultWorkflowText } from "./workflow-default-tool.js";
 
 const execFileAsync = promisify(execFile);
@@ -232,6 +236,42 @@ export default definePluginEntry({
       error.toolResult = result;
       return error;
     }
+
+    api.registerTool(
+      {
+        name: "ngi_lobster_list_installed_theses",
+        label: "NGI Lobster List Installed Theses",
+        description:
+          "List bundled thesis profiles and runtime defaults for the installed thesis workflow.",
+        parameters: {
+          type: "object",
+          additionalProperties: false,
+          properties: {
+            thesisId: {
+              type: "string",
+              description: "Optional thesis id to return a detailed single-thesis view."
+            }
+          }
+        },
+        async execute(input) {
+          const request = input || {};
+          const details = request.thesisId
+            ? describeBundledThesisProfile(rootDir, request.thesisId)
+            : { theses: listBundledThesisProfiles(rootDir) };
+
+          return {
+            content: [
+              {
+                type: "text",
+                text: JSON.stringify(details)
+              }
+            ],
+            details
+          };
+        }
+      },
+      { name: "ngi_lobster_list_installed_theses" }
+    );
 
     api.registerTool(
       {

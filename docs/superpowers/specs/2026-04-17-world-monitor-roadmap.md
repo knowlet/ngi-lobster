@@ -2,6 +2,10 @@
 
 Date: 2026-04-17
 
+Execution companion:
+
+- `docs/superpowers/plans/2026-04-20-world-monitor-roadmap-breakdown.md`
+
 ## Vision
 
 Build NGI Lobster into a world-monitor-grade intelligence system that can ingest many OSINT and market-facing signals, find information gaps, and surface thesis-level opportunities where first-principles reality and public market pricing diverge.

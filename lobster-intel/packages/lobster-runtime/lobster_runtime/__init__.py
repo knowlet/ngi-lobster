@@ -14,6 +14,7 @@ from .runtime_spine import (
 from .source_fusion import SourceFusionArtifacts, SourceFusionInput, build_source_fusion_result, load_source_fusion_artifacts
 from .source_history import rebuild_source_index, replay_source_run
 from .source_runner import normalize_source_plugin_config, run_source_plugin
+from .source_history import rebuild_source_index, replay_source_run
 from .source_state import SourceCursor, SourceState, load_source_state, save_source_state
 from .state_machine import InvalidTransitionError, StateMachine
 

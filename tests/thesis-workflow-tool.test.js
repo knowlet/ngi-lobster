@@ -56,6 +56,32 @@ test("loadBundledThesisProfile resolves the thesisId profile path by default", (
   assert.equal(profile.probability_direction, "yes_is_peace");
 });
 
+test("loadBundledThesisProfile resolves an explicit thesisProfilePath relative to rootDir", () => {
+  const profile = loadBundledThesisProfile(
+    "/repo",
+    {
+      thesisId: "regional-escalation",
+      thesisProfilePath: "custom/profiles/regional-escalation.json",
+    },
+    {
+      existsSync: (value) =>
+        value === "/repo/custom/profiles/regional-escalation.json",
+      readFileSync: () =>
+        JSON.stringify({
+          thesis_id: "regional-escalation",
+          semantic_frame: "military_operations_end_by_deadline",
+          probability_direction: "yes_is_peace",
+          state: "ACTIVE_TRUCE",
+        }),
+    },
+  );
+
+  assert.equal(
+    profile.profile_path,
+    "/repo/custom/profiles/regional-escalation.json",
+  );
+});
+
 test("buildInstalledThesisWorkflow applies thesis profile defaults before explicit overrides", () => {
   const workflow = buildInstalledThesisWorkflow(
     "/repo",
@@ -85,8 +111,43 @@ test("buildInstalledThesisWorkflow applies thesis profile defaults before explic
   );
 });
 
+test("buildInstalledThesisWorkflow resolves request-supplied relative override paths", () => {
+  const workflow = buildInstalledThesisWorkflow("/repo", {
+    thesisId: "regional-escalation",
+    sourcePackDir: "custom/source-packs",
+    officialStatementsConfigPath: "configs/official.json",
+    watchlistConfigPath: "configs/watchlist.json",
+    polymarketConfigPath: "configs/polymarket.json",
+    registryFilePath: "registries/regional-escalation.json",
+    thesisProfilePath: "profiles/regional-escalation.json",
+  });
+
+  assert.equal(workflow.sourcePackDir, "/repo/custom/source-packs");
+  assert.equal(
+    workflow.sourceRuns[0].configPath,
+    "/repo/configs/official.json",
+  );
+  assert.equal(
+    workflow.sourceRuns[1].configPath,
+    "/repo/configs/watchlist.json",
+  );
+  assert.equal(
+    workflow.sourceRuns[2].configPath,
+    "/repo/configs/polymarket.json",
+  );
+  assert.equal(
+    workflow.runtimeRequest.registryFilePath,
+    "/repo/registries/regional-escalation.json",
+  );
+  assert.equal(
+    workflow.thesisProfileRequestPath,
+    "/repo/profiles/regional-escalation.json",
+  );
+});
+
 test("listBundledThesisProfiles returns bundled thesis metadata sorted by thesis id", () => {
   const catalog = listBundledThesisProfiles("/repo", {
+    existsSync: () => true,
     readdirSync: () => [
       { name: "regional-escalation.json", isFile: () => true },
       { name: "ignore-me.txt", isFile: () => true },
@@ -126,6 +187,44 @@ test("listBundledThesisProfiles returns bundled thesis metadata sorted by thesis
     catalog[1].registryFilePath,
     "/repo/lobster-intel/examples/target-registries/regional-escalation.json",
   );
+});
+
+test("listBundledThesisProfiles returns an empty array when the profile directory is missing", () => {
+  const catalog = listBundledThesisProfiles("/repo", {
+    existsSync: () => false,
+  });
+
+  assert.deepEqual(catalog, []);
+});
+
+test("listBundledThesisProfiles skips invalid JSON profile files", () => {
+  const catalog = listBundledThesisProfiles("/repo", {
+    existsSync: () => true,
+    readdirSync: () => [
+      { name: "broken.json", isFile: () => true },
+      { name: "regional-escalation.json", isFile: () => true },
+    ],
+    readFileSync: (value) => {
+      if (value.endsWith("broken.json")) {
+        return "{";
+      }
+
+      return JSON.stringify({
+        thesis_id: "regional-escalation",
+        title: "Regional escalation monitor",
+        summary: "Tracks military operations end-state risk.",
+        semantic_frame: "military_operations_end_by_deadline",
+        probability_direction: "yes_is_peace",
+        state: "ACTIVE_TRUCE",
+        registry_file_path:
+          "lobster-intel/examples/target-registries/regional-escalation.json",
+      });
+    },
+  });
+
+  assert.deepEqual(catalog.map((entry) => entry.thesisId), [
+    "regional-escalation",
+  ]);
 });
 
 test("describeBundledThesisProfile summarizes registry entries for a thesis", () => {
@@ -183,6 +282,45 @@ test("runInstalledThesisWorkflow stops before execution when required files are 
 
   assert.equal(result.kind, "missing_paths");
   assert.match(result.missingPaths[0], /watchlist\.json$/);
+});
+
+test("runInstalledThesisWorkflow stops when the requested thesis profile is missing", async () => {
+  const result = await runInstalledThesisWorkflow({
+    rootDir: "/repo",
+    request: { thesisId: "regional-escalation" },
+    existsSync: (value) => !value.endsWith("regional-escalation.json"),
+    runSourcePlugin: async () => {
+      throw new Error("should not run");
+    },
+    runThesisRuntime: async () => {
+      throw new Error("should not run");
+    },
+  });
+
+  assert.equal(result.kind, "missing_paths");
+  assert.deepEqual(result.missingPaths, [
+    "/repo/lobster-intel/examples/thesis-profiles/regional-escalation.json",
+  ]);
+});
+
+test("runInstalledThesisWorkflow stops when an explicit thesisProfilePath is missing", async () => {
+  const result = await runInstalledThesisWorkflow({
+    rootDir: "/repo",
+    request: {
+      thesisId: "regional-escalation",
+      thesisProfilePath: "profiles/custom.json",
+    },
+    existsSync: (value) => value !== "/repo/profiles/custom.json",
+    runSourcePlugin: async () => {
+      throw new Error("should not run");
+    },
+    runThesisRuntime: async () => {
+      throw new Error("should not run");
+    },
+  });
+
+  assert.equal(result.kind, "missing_paths");
+  assert.deepEqual(result.missingPaths, ["/repo/profiles/custom.json"]);
 });
 
 test("runInstalledThesisWorkflow runs sources before the runtime and returns a workflow summary", async () => {

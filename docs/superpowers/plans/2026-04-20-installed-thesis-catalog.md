@@ -17,7 +17,7 @@
 - [ ] **Step 1: Add failing tests for bundled thesis discovery and description**
 - [ ] **Step 2: Run the focused JS test file and verify RED**
 
-Run: `cd /Users/knowlet/ngi-lobster && node --test tests/thesis-workflow-tool.test.js`
+Run: `node --test tests/thesis-workflow-tool.test.js`
 Expected: FAIL because the catalog helpers do not exist yet
 
 ### Task 2: Implement The Installed Thesis Catalog Helpers And Tool
@@ -34,7 +34,7 @@ Expected: FAIL because the catalog helpers do not exist yet
 - [ ] **Step 4: Add human-readable metadata to the bundled thesis example**
 - [ ] **Step 5: Run the focused JS tests and verify GREEN**
 
-Run: `cd /Users/knowlet/ngi-lobster && node --test tests/thesis-workflow-tool.test.js`
+Run: `node --test tests/thesis-workflow-tool.test.js`
 Expected: PASS
 
 ### Task 3: Document The Installed Thesis Discovery Path
@@ -48,5 +48,5 @@ Expected: PASS
 - [ ] **Step 1: Document the catalog tool and bundled thesis metadata**
 - [ ] **Step 2: Run the focused JS suite and syntax checks**
 
-Run: `cd /Users/knowlet/ngi-lobster && node --test tests/workflow-default-tool.test.js tests/thesis-workflow-tool.test.js && node --check index.js && node --check thesis-workflow-tool.js`
+Run: `node --test tests/workflow-default-tool.test.js tests/thesis-workflow-tool.test.js && node --check index.js && node --check thesis-workflow-tool.js`
 Expected: PASS

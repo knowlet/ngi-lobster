@@ -17,7 +17,7 @@
 - [ ] **Step 1: Write the failing orchestrator tests**
 - [ ] **Step 2: Run the new tests and verify RED**
 
-Run: `cd /Users/knowlet/ngi-lobster && node --test tests/thesis-workflow-tool.test.js`
+Run: `node --test tests/thesis-workflow-tool.test.js`
 Expected: FAIL because `thesis-workflow-tool.js` and its exported workflow helpers do not exist yet
 
 ### Task 2: Implement The OpenClaw Installed Workflow Tool
@@ -34,5 +34,5 @@ Expected: FAIL because `thesis-workflow-tool.js` and its exported workflow helpe
 - [ ] **Step 3: Document the new tool as part of the install surface**
 - [ ] **Step 4: Run the focused JS tests and verify GREEN**
 
-Run: `cd /Users/knowlet/ngi-lobster && node --test tests/workflow-default-tool.test.js tests/thesis-workflow-tool.test.js`
+Run: `node --test tests/workflow-default-tool.test.js tests/thesis-workflow-tool.test.js`
 Expected: PASS

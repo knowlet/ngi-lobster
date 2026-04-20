@@ -56,7 +56,8 @@ export function loadBundledThesisProfile(rootDir, request = {}, io = {}) {
   const existsSync = io.existsSync || fs.existsSync;
   const readFileSync = io.readFileSync || fs.readFileSync;
   const profilePath =
-    request.thesisProfilePath || defaultThesisProfilePath(rootDir, thesisId);
+    resolveRepoPath(rootDir, request.thesisProfilePath) ||
+    defaultThesisProfilePath(rootDir, thesisId);
 
   if (!existsSync(profilePath)) {
     return null;
@@ -70,25 +71,34 @@ export function loadBundledThesisProfile(rootDir, request = {}, io = {}) {
 }
 
 export function listBundledThesisProfiles(rootDir, io = {}) {
+  const existsSync = io.existsSync || fs.existsSync;
   const readdirSync = io.readdirSync || fs.readdirSync;
   const readFileSync = io.readFileSync || fs.readFileSync;
   const profileDir = thesisProfileDir(rootDir);
 
+  if (!existsSync(profileDir)) {
+    return [];
+  }
+
   return readdirSync(profileDir, { withFileTypes: true })
     .filter((entry) => entry.isFile() && entry.name.endsWith(".json"))
-    .map((entry) => {
+    .flatMap((entry) => {
       const profilePath = path.join(profileDir, entry.name);
-      const profile = JSON.parse(readFileSync(profilePath, "utf8"));
-      return {
-        thesisId: profile.thesis_id,
-        title: profile.title || profile.thesis_id,
-        summary: profile.summary || "",
-        semanticFrame: profile.semantic_frame,
-        probabilityDirection: profile.probability_direction,
-        state: profile.state,
-        profilePath,
-        registryFilePath: resolveRepoPath(rootDir, profile.registry_file_path),
-      };
+      try {
+        const profile = JSON.parse(readFileSync(profilePath, "utf8"));
+        return {
+          thesisId: profile.thesis_id,
+          title: profile.title || profile.thesis_id,
+          summary: profile.summary || "",
+          semanticFrame: profile.semantic_frame,
+          probabilityDirection: profile.probability_direction,
+          state: profile.state,
+          profilePath,
+          registryFilePath: resolveRepoPath(rootDir, profile.registry_file_path),
+        };
+      } catch {
+        return [];
+      }
     })
     .sort((left, right) => left.thesisId.localeCompare(right.thesisId));
 }
@@ -137,19 +147,23 @@ export function buildInstalledThesisWorkflow(
 ) {
   const workspace = request.workspace || rootDir;
   const sourcePackDir =
-    request.sourcePackDir ||
+    resolveRepoPath(rootDir, request.sourcePackDir) ||
     resolveRepoPath(rootDir, thesisProfile?.source_pack_dir) ||
     defaultSourcePackDir(rootDir);
+  const thesisProfileRequestPath =
+    resolveRepoPath(rootDir, request.thesisProfilePath) ||
+    defaultThesisProfilePath(rootDir, request.thesisId);
 
   return {
     rootDir,
     sourcePackDir,
     thesisProfile,
+    thesisProfileRequestPath,
     sourceRuns: INSTALLED_SOURCE_SPECS.map((spec) => ({
       pluginId: spec.pluginId,
       pluginDir: path.join(rootDir, "lobster-intel", "plugins", spec.pluginId),
       configPath:
-        request[spec.requestField] ||
+        resolveRepoPath(rootDir, request[spec.requestField]) ||
         resolveRepoPath(
           rootDir,
           thesisProfile?.source_config_paths?.[spec.pluginId],
@@ -161,7 +175,7 @@ export function buildInstalledThesisWorkflow(
       thesisId: request.thesisId,
       workspace,
       registryFilePath:
-        request.registryFilePath ||
+        resolveRepoPath(rootDir, request.registryFilePath) ||
         resolveRepoPath(rootDir, thesisProfile?.registry_file_path),
       semanticFrame: request.semanticFrame || thesisProfile?.semantic_frame,
       probabilityDirection:
@@ -178,6 +192,11 @@ export function collectInstalledWorkflowMissingPaths(
   existsSync = () => true,
 ) {
   const missingPaths = [];
+
+  if (workflow.thesisProfileRequestPath && !workflow.thesisProfile) {
+    missingPaths.push(workflow.thesisProfileRequestPath);
+    return missingPaths;
+  }
 
   for (const sourceRun of workflow.sourceRuns) {
     if (!existsSync(sourceRun.pluginDir)) {

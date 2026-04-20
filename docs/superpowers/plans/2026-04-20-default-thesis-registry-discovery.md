@@ -2,13 +2,37 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Make `run_thesis_runtime` and the OpenClaw wrapper discover a thesis-specific target registry automatically so install-time runs default to the `registry-first` contract instead of `suppressed` compare mode.
+**Goal:** Make `run_thesis_runtime` and the OpenClaw wrapper discover a thesis-specific target registry automatically so install-time runs default to a thesis-owned registry contract instead of an implicit empty-registry input.
 
-**Architecture:** Extend runtime input loading with a deterministic default registry search rooted in `lobster-intel/data/runtime/thesis-registry/` and keyed by `thesis_id`. Keep explicit `--registry-file` overrides authoritative, add an install-ready sample registry artifact for `gooaye`, and surface the resolved registry path in CLI and plugin outputs. Update docs so the install path explains where thesis registries live and how they participate in runtime truth.
+**Architecture:** Extend runtime input loading with a deterministic default registry search rooted in `lobster-intel/data/runtime/thesis-registry/` and keyed by `thesis_id`. Keep explicit `--registry-file` overrides authoritative, add an install-ready sample registry artifact for `gooaye`, and surface the resolved registry path in CLI outputs and docs.
 
-**Tech Stack:** Python 3.11 runtime CLI, Node/OpenClaw wrapper, JSON runtime artifacts, pytest-style tests
+**Tech Stack:** Python 3.11 runtime CLI, Node/OpenClaw wrapper, JSON runtime artifacts, `pytest`
+
+**Status:** Implemented on 2026-04-20. This plan now serves as the execution record for default thesis registry discovery.
 
 ---
+
+## Execution Summary
+
+This slice landed as:
+
+- `docs/superpowers/plans/2026-04-20-default-thesis-registry-discovery.md`
+- `lobster-intel/tests/test_runtime_spine.py`
+- `lobster-intel/packages/lobster-runtime/lobster_runtime/runtime_spine.py`
+- `lobster-intel/scripts/run_thesis_runtime.py`
+- `lobster-intel/data/runtime/thesis-registry/gooaye.json`
+- `README.md`
+- `docs/INSTALL_OPENCLAW.md`
+- `lobster-intel/README.md`
+- `index.js`
+
+Verified with:
+
+- `cd /Users/knowlet/ngi-lobster && .venv/bin/python -m pytest lobster-intel/tests/test_runtime_spine.py -q`
+- `cd /Users/knowlet/ngi-lobster && .venv/bin/python -m pytest lobster-intel/tests -q`
+- `cd /Users/knowlet/ngi-lobster && .venv/bin/python lobster-intel/scripts/run_thesis_runtime.py --workspace . --thesis-id gooaye`
+- `cd /Users/knowlet/ngi-lobster && node --test tests/*.test.js`
+- `cd /Users/knowlet/ngi-lobster && node --check index.js && node --check thesis-workflow-tool.js && node --check installed-workflow-cli.js && node --check scripts/run_installed_thesis_workflow.js`
 
 ### Task 1: Lock Default Registry Discovery With Tests
 
@@ -30,7 +54,6 @@ def _install_thesis_registry(workspace: Path, thesis_id: str, entries: list[dict
 
 ```python
 registry_path = _install_thesis_registry(tmp_path, "gooaye", _target_registry())
-...
 assert payload["compare_mode"] == "full_compare"
 assert payload["input_contract"]["registry_resolution"]["mode"] == "discovered"
 assert payload["input_contract"]["registry_resolution"]["path"] == str(registry_path)
@@ -41,8 +64,8 @@ assert payload["input_contract"]["registry_resolution"]["path"] == str(registry_
 ```python
 payload = load_thesis_runtime_inputs(
     tmp_path,
-    registry_file=explicit_registry_path,
     thesis_id="gooaye",
+    registry_file=explicit_registry_path,
 )
 assert payload["registry_resolution"]["mode"] == "explicit"
 assert payload["target_registry"][0]["market_id"] == "explicit-target"
@@ -50,7 +73,7 @@ assert payload["target_registry"][0]["market_id"] == "explicit-target"
 
 - [ ] **Step 4: Run the focused test target and verify RED**
 
-Run: `python3 -m pytest lobster-intel/tests/test_runtime_spine.py -q`
+Run: `cd /Users/knowlet/ngi-lobster && python3 -m pytest lobster-intel/tests/test_runtime_spine.py -q`
 Expected: FAIL because default registry discovery is not implemented yet
 
 ### Task 2: Implement Runtime Discovery
@@ -94,7 +117,7 @@ runtime_inputs = load_thesis_runtime_inputs(
 
 - [ ] **Step 4: Run the focused test target and verify GREEN**
 
-Run: `python3 -m pytest lobster-intel/tests/test_runtime_spine.py -q`
+Run: `cd /Users/knowlet/ngi-lobster && python3 -m pytest lobster-intel/tests/test_runtime_spine.py -q`
 Expected: PASS
 
 ### Task 3: Ship Install-Ready Registry Artifacts And Docs
@@ -121,16 +144,16 @@ Expected: PASS
 ]
 ```
 
-- [ ] **Step 2: Update top-level docs to describe the default thesis registry path**
+- [ ] **Step 2: Update docs to describe the default thesis registry path**
 
-```markdown
+```md
 Default thesis registries now live under `lobster-intel/data/runtime/thesis-registry/`.
-`ngi_lobster_run_thesis_runtime` discovers `<thesis_id>.json` automatically when `--registry-file` is not provided; explicit overrides remain authoritative.
+`ngi_lobster_run_thesis_runtime` discovers `<thesis_id>.json` automatically before falling back to explicit overrides.
 ```
 
 - [ ] **Step 3: Run a direct CLI smoke and confirm discovered registry metadata**
 
-Run: `python3 lobster-intel/scripts/run_thesis_runtime.py --workspace . --thesis-id gooaye`
+Run: `cd /Users/knowlet/ngi-lobster && python3 lobster-intel/scripts/run_thesis_runtime.py --workspace . --thesis-id gooaye`
 Expected: JSON output includes `input_contract.registry_resolution.mode = "discovered"`
 
 - [ ] **Step 4: Commit**

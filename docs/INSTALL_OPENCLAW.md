@@ -219,6 +219,12 @@ The bundled thesis profiles can now also expose operator-facing metadata such as
 - `summary`
 - linked registry path and market list
 
+The install surface now treats those bundled thesis profiles as a contract instead of loose metadata:
+
+- `ngi_lobster_list_installed_theses` exposes `contractStatus` and `validationErrors`
+- `ngi_lobster_run_installed_thesis_workflow` fails closed if a thesis profile is missing or incomplete
+- the reference contract is documented in `docs/THESIS_PROFILES.md`
+
 That gives an installed OpenClaw a discovery surface before it commits to a thesis run.
 
 Default runtime thesis registries now live under:

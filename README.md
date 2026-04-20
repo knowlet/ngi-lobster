@@ -27,6 +27,7 @@ This repo is not just research notes. It is the productization track.
 - Product / plugin architecture: `lobster-intel/README.md`
 - OpenClaw install + config guide: `docs/INSTALL_OPENCLAW.md`
 - Product cut: `docs/PRODUCT_CUT_V0.md`
+- Thesis profile contract: `docs/THESIS_PROFILES.md`
 - Example environment variables: `.env.example`
 
 ## Native OpenClaw install surface
@@ -43,12 +44,14 @@ Current status:
 - `package.json` exists
 - `index.js` native wrapper entry exists
 - native tool `ngi_lobster_demo` exists for local smoke testing
-- native tool `ngi_lobster_list_installed_theses` exists to inspect bundled thesis ids, titles, and linked registry defaults before running them
-- native tool `ngi_lobster_run_installed_thesis_workflow` exists to run bundled source packs and then the thesis runtime spine
+- native tool `ngi_lobster_list_installed_theses` exists to inspect bundled thesis ids, titles, linked registry defaults, and contract health before running them
+- native tool `ngi_lobster_run_installed_thesis_workflow` exists to run bundled source packs and then the thesis runtime spine, but now fails closed when the thesis profile contract is incomplete
 - stable CLI `node scripts/run_installed_thesis_workflow.js --thesis-id <id>` exists for outside installs and cron jobs
 - package-level helper commands now exist: `npm run bootstrap-runtime` and `npm run run-installed-workflow -- --thesis-id <id>`
 - bundled thesis defaults now live under `lobster-intel/examples/thesis-profiles/` and `lobster-intel/examples/target-registries/`
+- bundled thesis profiles now act as install-surface contracts, including source config paths and runtime defaults
 - bundled thesis profiles now carry human-readable titles and summaries for operator discovery
+- installed thesis catalog entries now expose `contractStatus` and `validationErrors`
 - thesis runtime registry discovery now defaults to `lobster-intel/data/runtime/thesis-registry/<thesis_id>.json`
 - installed source trackers now persist cursor state by default under `lobster-intel/data/runtime/sources/*.json`
 - the heavy NGI runtime is still being migrated from `lobster-intel/` Python code into a fuller native OpenClaw plugin surface

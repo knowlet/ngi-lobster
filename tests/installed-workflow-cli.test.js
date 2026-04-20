@@ -71,8 +71,19 @@ test("runInstalledWorkflowCli returns a structured success payload", async () =>
     readFileSync: () =>
       JSON.stringify({
         thesis_id: "regional-escalation",
+        semantic_frame: "military_operations_end_by_deadline",
+        probability_direction: "yes_is_peace",
+        state: "ACTIVE_TRUCE",
         registry_file_path:
           "lobster-intel/examples/target-registries/regional-escalation.json",
+        source_config_paths: {
+          "official-statements-tracker":
+            "lobster-intel/examples/source-packs/official-statements.json",
+          "watchlist-tracker":
+            "lobster-intel/examples/source-packs/watchlist.json",
+          "polymarket-tracker":
+            "lobster-intel/examples/source-packs/polymarket.json",
+        },
       }),
     runSourcePlugin: async (run) => {
       sourceRuns.push(run);
@@ -129,8 +140,19 @@ test("runInstalledWorkflowCli returns exit code 2 when required files are missin
     readFileSync: () =>
       JSON.stringify({
         thesis_id: "regional-escalation",
+        semantic_frame: "military_operations_end_by_deadline",
+        probability_direction: "yes_is_peace",
+        state: "ACTIVE_TRUCE",
         registry_file_path:
           "lobster-intel/examples/target-registries/regional-escalation.json",
+        source_config_paths: {
+          "official-statements-tracker":
+            "lobster-intel/examples/source-packs/official-statements.json",
+          "watchlist-tracker":
+            "lobster-intel/examples/source-packs/watchlist.json",
+          "polymarket-tracker":
+            "lobster-intel/examples/source-packs/polymarket.json",
+        },
       }),
     runSourcePlugin: async () => {
       throw new Error("should not run");
@@ -144,4 +166,29 @@ test("runInstalledWorkflowCli returns exit code 2 when required files are missin
   assert.equal(result.payload, null);
   assert.match(result.stderr, /missing workflow input files/i);
   assert.match(result.stderr, /watchlist\.json/);
+});
+
+test("runInstalledWorkflowCli fails closed when the thesis profile contract is incomplete", async () => {
+  const result = await runInstalledWorkflowCli({
+    rootDir: "/repo",
+    argv: ["--thesis-id", "regional-escalation"],
+    existsSync: () => true,
+    readFileSync: () =>
+      JSON.stringify({
+        thesis_id: "regional-escalation",
+        probability_direction: "yes_is_peace",
+        state: "ACTIVE_TRUCE",
+      }),
+    runSourcePlugin: async () => {
+      throw new Error("should not run");
+    },
+    runThesisRuntime: async () => {
+      throw new Error("should not run");
+    },
+  });
+
+  assert.equal(result.exitCode, 1);
+  assert.equal(result.payload, null);
+  assert.match(result.stderr, /invalid thesis profile/i);
+  assert.match(result.stderr, /semanticFrame/);
 });

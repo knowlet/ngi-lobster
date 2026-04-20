@@ -55,6 +55,18 @@ export default definePluginEntry({
       };
     }
 
+    function buildInvalidProfileError(validationErrors = []) {
+      return {
+        content: [
+          {
+            type: "text",
+            text: `NGI Lobster thesis profile contract is incomplete:\n\n${validationErrors.map((item) => `- ${item}`).join("\n")}`
+          }
+        ],
+        details: { validationErrors }
+      };
+    }
+
     function readRuntimeJsonSafe(runtimePath) {
       if (!fs.existsSync(runtimePath)) {
         return {};
@@ -258,20 +270,34 @@ export default definePluginEntry({
           },
         },
         async execute(input) {
-          const request = input || {};
-          const details = request.thesisId
-            ? describeBundledThesisProfile(rootDir, request.thesisId)
-            : { theses: listBundledThesisProfiles(rootDir) };
+          try {
+            const request = input || {};
+            const details = request.thesisId
+              ? describeBundledThesisProfile(rootDir, request.thesisId)
+              : { theses: listBundledThesisProfiles(rootDir) };
 
-          return {
-            content: [
-              {
-                type: "text",
-                text: JSON.stringify(details),
-              },
-            ],
-            details,
-          };
+            return {
+              content: [
+                {
+                  type: "text",
+                  text: JSON.stringify(details),
+                },
+              ],
+              details,
+            };
+          } catch (err) {
+            return {
+              content: [
+                {
+                  type: "text",
+                  text: err?.message || "Failed to inspect installed theses."
+                }
+              ],
+              details: {
+                error: err?.message || "installed thesis inspection failure"
+              }
+            };
+          }
         },
       },
       { name: "ngi_lobster_list_installed_theses" },
@@ -562,6 +588,9 @@ export default definePluginEntry({
               }
             });
 
+            if (workflowResult.kind === "invalid_profile") {
+              return buildInvalidProfileError(workflowResult.validationErrors);
+            }
             if (workflowResult.kind === "missing_paths") {
               return buildMissingFileError(workflowResult.missingPaths);
             }

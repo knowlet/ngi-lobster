@@ -235,6 +235,12 @@ export async function runInstalledWorkflowCli({
         `ERROR: missing workflow input files:\n${workflowResult.missingPaths.join("\n")}`,
       );
     }
+    if (workflowResult.kind === "invalid_profile") {
+      return errorResult(
+        `ERROR: invalid thesis profile:\n${workflowResult.validationErrors.join("\n")}`,
+        1,
+      );
+    }
 
     return {
       exitCode: 0,

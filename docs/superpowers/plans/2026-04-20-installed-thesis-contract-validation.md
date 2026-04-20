@@ -8,7 +8,29 @@
 
 **Tech Stack:** Node.js ESM, `node:test`, OpenClaw plugin entry in `index.js`, thesis workflow helper in `thesis-workflow-tool.js`, bundled JSON fixtures under `lobster-intel/examples/`
 
+**Status:** Implemented on 2026-04-20. This plan now serves as the execution record for installed thesis contract validation.
+
 ---
+
+## Execution Summary
+
+This slice landed as:
+
+- `tests/installed-workflow-cli.test.js`
+- `tests/thesis-workflow-tool.test.js`
+- `thesis-workflow-tool.js`
+- `index.js`
+- `installed-workflow-cli.js`
+- `lobster-intel/examples/thesis-profiles/regional-escalation.json`
+- `README.md`
+- `docs/INSTALL_OPENCLAW.md`
+- `docs/THESIS_PROFILES.md`
+- `lobster-intel/README.md`
+
+Verified with:
+
+- `cd /Users/knowlet/ngi-lobster && node --test tests/*.test.js`
+- `cd /Users/knowlet/ngi-lobster && node --check index.js && node --check thesis-workflow-tool.js && node --check installed-workflow-cli.js && node --check scripts/run_installed_thesis_workflow.js`
 
 ### Task 1: Lock The Profile Contract In Tests
 

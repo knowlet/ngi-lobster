@@ -162,6 +162,7 @@ lobster-intel/examples/target-registries/
 
 These fixtures let the installed OpenClaw workflow resolve thesis-specific runtime defaults without moving decision logic into delivery code.
 The native OpenClaw wrapper can now expose those bundled thesis profiles as an install-time catalog, including human-readable `title` / `summary` metadata plus linked registry inspection.
+That catalog now also reports `contractStatus` and `validationErrors`, and the installed thesis workflow fails closed when a profile is missing required runtime defaults or per-source config declarations.
 
 Default runtime thesis registries now also live under:
 

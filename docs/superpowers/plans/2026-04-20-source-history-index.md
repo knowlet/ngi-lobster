@@ -18,21 +18,17 @@
 - [ ] **Step 1: Write the failing replay and rebuild tests**
 
 ```python
-def test_replay_source_run_returns_historical_payload(self):
-    with tempfile.TemporaryDirectory() as tmp_dir:
-        workspace = Path(tmp_dir)
-        plugin_id, run_id = install_source_run_fixture(workspace)
-        replay = replay_source_run(workspace, plugin_id, run_id)
+def test_replay_source_run_returns_historical_payload(tmp_path: Path):
+    plugin_id, run_id = install_source_run_fixture(tmp_path)
+    replay = replay_source_run(tmp_path, plugin_id, run_id)
     self.assertEqual(replay["run_id"], run_id)
     self.assertEqual(replay["evidence_item_count"], 2)
     self.assertEqual(replay["items"][0]["external_id"], "stmt-1")
 
 
-def test_rebuild_source_index_recreates_sqlite_rows(self):
-    with tempfile.TemporaryDirectory() as tmp_dir:
-        workspace = Path(tmp_dir)
-        plugin_id, _ = install_source_run_fixture(workspace)
-        result = rebuild_source_index(workspace, plugin_id)
+def test_rebuild_source_index_recreates_sqlite_rows(tmp_path: Path):
+    plugin_id, _ = install_source_run_fixture(tmp_path)
+    result = rebuild_source_index(tmp_path, plugin_id)
     self.assertEqual(result["run_count"], 2)
     self.assertEqual(result["item_count"], 3)
 ```
@@ -52,7 +48,7 @@ payload = json.loads(
             "lobster-intel/scripts/source_history.py",
             "replay",
             "--workspace",
-            str(workspace),
+            str(tmp_path),
             "--plugin-id",
             plugin_id,
             "--run-id",

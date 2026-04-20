@@ -1,0 +1,14 @@
+[
+  {
+    "market_id": "1517836",
+    "market_slug": "military-operations-end-by-june-30",
+    "market_question": "Military operations end by June 30?",
+    "semantic_frame": "military_operations_end_by_deadline",
+    "probability_direction": "yes_is_peace",
+    "aliases": [
+      "operations end by june 30",
+      "june 30 end market"
+    ],
+    "resolution_mode": "registry_first"
+  }
+]

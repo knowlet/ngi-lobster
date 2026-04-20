@@ -82,6 +82,9 @@ lobster-intel/
     watchlist-tracker/
   examples/
     source-packs/
+    thesis-packs/
+    thesis-profiles/
+    target-registries/
   data/
     evidence/
     compiled/
@@ -141,6 +144,18 @@ lobster-intel/examples/source-packs/
 - `official-statements.json`
 - `watchlist.json`
 - `polymarket.json`
+
+Bundled thesis defaults now also live under:
+
+```text
+lobster-intel/examples/thesis-packs/
+lobster-intel/examples/thesis-profiles/
+lobster-intel/examples/target-registries/
+```
+
+These fixtures let the installed OpenClaw workflow resolve thesis-specific runtime defaults without moving decision logic into delivery code.
+They also provide operator-facing metadata such as `title`, `summary`, and optional `source_config_paths`, which the native `ngi_lobster_list_installed_theses` tool now exposes with `contractStatus` and `validationErrors`.
+That means another OpenClaw can inspect whether a bundled thesis is actually runnable before invoking the installed workflow.
 
 The product intent is:
 

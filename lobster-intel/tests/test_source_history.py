@@ -21,9 +21,17 @@ for rel in [
     sys.path.insert(0, str(PACKAGES / rel))
 
 import lobster_runtime
+import lobster_runtime.source_history as source_history
 
 
-def _write_run_artifact(workspace: Path, plugin_id: str, run_id: str, ran_at_utc: str, items: list[dict], new_count: int) -> None:
+def _write_run_artifact(
+    workspace: Path,
+    plugin_id: str,
+    run_id: str,
+    ran_at_utc: str,
+    items: list[dict],
+    new_count: int,
+) -> None:
     runtime_dir = workspace / "lobster-intel" / "data" / "runtime" / "sources" / plugin_id
     runs_dir = runtime_dir / "runs"
     runs_dir.mkdir(parents=True, exist_ok=True)
@@ -95,6 +103,21 @@ def _install_source_history_fixture(workspace: Path) -> tuple[str, str]:
 
 
 class SourceHistoryTests(unittest.TestCase):
+    def test_source_history_rejects_unsafe_plugin_ids(self):
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            workspace = Path(tmp_dir)
+            with self.assertRaises(ValueError):
+                source_history.replay_source_run(workspace, "../escape", "20260420T010000Z")
+
+    def test_source_index_path_is_pure_and_does_not_create_directories(self):
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            workspace = Path(tmp_dir)
+            index_path = source_history._source_index_path(workspace, "watchlist-tracker")
+            expected = workspace / "lobster-intel" / "data" / "runtime" / "sources" / "watchlist-tracker" / "index.sqlite"
+
+            self.assertEqual(index_path, expected)
+            self.assertFalse(index_path.parent.exists())
+
     def test_replay_source_run_returns_historical_payload(self):
         replay_source_run = getattr(lobster_runtime, "replay_source_run", None)
         self.assertIsNotNone(replay_source_run, "lobster_runtime.replay_source_run should exist")
@@ -131,7 +154,6 @@ class SourceHistoryTests(unittest.TestCase):
 
             with self.assertRaises(ValueError):
                 rebuild_source_index(workspace, "../escape")
-
     def test_rebuild_source_index_recreates_sqlite_rows(self):
         rebuild_source_index = getattr(lobster_runtime, "rebuild_source_index", None)
         self.assertIsNotNone(rebuild_source_index, "lobster_runtime.rebuild_source_index should exist")

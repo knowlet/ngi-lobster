@@ -1,23 +1,27 @@
 from __future__ import annotations
 
 import json
+import os
+import re
 import sqlite3
+import tempfile
+from contextlib import closing
 from pathlib import Path
 from typing import Any
 
 
-def _validated_segment(value: str, field_name: str) -> str:
-    candidate = str(value or "")
-    path = Path(candidate)
-    if not candidate or path.is_absolute() or "/" in candidate or "\\" in candidate:
-        raise ValueError(f"invalid {field_name}: {candidate!r}")
-    if any(part in {"", ".", ".."} for part in path.parts):
-        raise ValueError(f"invalid {field_name}: {candidate!r}")
-    return candidate
+_SAFE_PATH_COMPONENT = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._-]*$")
+
+
+def _validated_path_component(value: str, *, label: str) -> str:
+    value = str(value or "")
+    if not _SAFE_PATH_COMPONENT.fullmatch(value):
+        raise ValueError(f"{label} must be a simple relative path component: {value!r}")
+    return value
 
 
 def _source_runtime_dir(workspace_dir: str | Path, plugin_id: str) -> Path:
-    safe_plugin_id = _validated_segment(plugin_id, "plugin_id")
+    safe_plugin_id = _validated_path_component(plugin_id, label="plugin_id")
     return Path(workspace_dir) / "lobster-intel" / "data" / "runtime" / "sources" / safe_plugin_id
 
 
@@ -26,7 +30,7 @@ def _source_runs_dir(workspace_dir: str | Path, plugin_id: str) -> Path:
 
 
 def _source_run_path(workspace_dir: str | Path, plugin_id: str, run_id: str) -> Path:
-    safe_run_id = _validated_segment(run_id, "run_id")
+    safe_run_id = _validated_path_component(run_id, label="run_id")
     return _source_runs_dir(workspace_dir, plugin_id) / f"{safe_run_id}.json"
 
 
@@ -83,78 +87,74 @@ def rebuild_source_index(workspace_dir: str | Path, plugin_id: str) -> dict[str,
         raise FileNotFoundError(f"missing source runs directory: {runs_dir}")
 
     index_path = _source_index_path(workspace_dir, plugin_id)
-    temp_index_path = index_path.with_suffix(".tmp")
-    if temp_index_path.exists():
-        temp_index_path.unlink()
-
+    index_path.parent.mkdir(parents=True, exist_ok=True)
     run_paths = sorted(runs_dir.glob("*.json"))
     run_count = 0
     item_count = 0
+    fd, temp_index_name = tempfile.mkstemp(
+        prefix=f"{plugin_id}.",
+        suffix=".index.sqlite.tmp",
+        dir=index_path.parent,
+    )
+    os.close(fd)
+    temp_index_path = Path(temp_index_name)
 
     try:
-        with sqlite3.connect(temp_index_path) as conn:
-            conn.execute(
-                "create table source_runs (run_id text primary key, plugin text, ran_at_utc text, artifact_path text, evidence_item_count integer, new_count integer, state_path text)"
-            )
-            conn.execute(
-                "create table source_items (item_id text primary key, run_id text, source_id text, external_id text, title text, url text, published_at_utc text, collected_at_utc text, source_type text, artifact_path text)"
-            )
-
-            for run_path in run_paths:
-                payload = _load_json(run_path)
-                evidence = payload.get("evidence") or {}
-                run_id = str(payload.get("run_id") or run_path.stem)
-                plugin = str(payload.get("plugin") or plugin_id)
-                ran_at_utc = payload.get("ran_at_utc")
-                state_path = evidence.get("state_path")
-                items = _items(payload)
-
+        with closing(sqlite3.connect(temp_index_path)) as conn:
+            with conn:
                 conn.execute(
-                    "insert into source_runs (run_id, plugin, ran_at_utc, artifact_path, evidence_item_count, new_count, state_path) values (?, ?, ?, ?, ?, ?, ?)",
-                    (
-                        run_id,
-                        plugin,
-                        ran_at_utc,
-                        str(run_path),
-                        len(items),
-                        evidence.get("new_count"),
-                        state_path,
-                    ),
+                    "create table source_runs (run_id text primary key, plugin text, ran_at_utc text, artifact_path text, evidence_item_count integer, new_count integer, state_path text)"
                 )
-                run_count += 1
+                conn.execute(
+                    "create table source_items (item_id text primary key, run_id text, source_id text, external_id text, title text, url text, published_at_utc text, collected_at_utc text, source_type text, artifact_path text)"
+                )
 
-                item_rows = []
-                for index, item in enumerate(items):
-                    external_id = item.get("external_id") or f"item-{index}"
-                    item_id = f"{run_id}:{index}:{item.get('source_id') or plugin}:{external_id}"
-                    item_rows.append(
+                for run_path in run_paths:
+                    payload = _load_json(run_path)
+                    evidence = payload.get("evidence") or {}
+                    run_id = str(payload.get("run_id") or run_path.stem)
+                    plugin = str(payload.get("plugin") or plugin_id)
+                    ran_at_utc = payload.get("ran_at_utc")
+                    state_path = evidence.get("state_path")
+                    items = _items(payload)
+
+                    conn.execute(
+                        "insert into source_runs (run_id, plugin, ran_at_utc, artifact_path, evidence_item_count, new_count, state_path) values (?, ?, ?, ?, ?, ?, ?)",
                         (
-                            item_id,
                             run_id,
-                            item.get("source_id"),
-                            external_id,
-                            item.get("title"),
-                            item.get("url"),
-                            item.get("published_at_utc"),
-                            item.get("collected_at_utc") or ran_at_utc,
-                            item.get("source_type"),
+                            plugin,
+                            ran_at_utc,
                             str(run_path),
+                            len(items),
+                            evidence.get("new_count"),
+                            state_path,
+                        ),
+                    )
+                    run_count += 1
+
+                    for index, item in enumerate(items):
+                        external_id = item.get("external_id") or f"item-{index}"
+                        item_id = f"{run_id}:{index}:{item.get('source_id') or plugin}:{external_id}"
+                        conn.execute(
+                            "insert into source_items (item_id, run_id, source_id, external_id, title, url, published_at_utc, collected_at_utc, source_type, artifact_path) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                            (
+                                item_id,
+                                run_id,
+                                item.get("source_id"),
+                                external_id,
+                                item.get("title"),
+                                item.get("url"),
+                                item.get("published_at_utc"),
+                                item.get("collected_at_utc") or ran_at_utc,
+                                item.get("source_type"),
+                                str(run_path),
+                            ),
                         )
-                    )
-
-                if item_rows:
-                    conn.executemany(
-                        "insert into source_items (item_id, run_id, source_id, external_id, title, url, published_at_utc, collected_at_utc, source_type, artifact_path) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
-                        item_rows,
-                    )
-                    item_count += len(item_rows)
-
-            conn.commit()
+                        item_count += 1
 
         temp_index_path.replace(index_path)
     except Exception:
-        if temp_index_path.exists():
-            temp_index_path.unlink()
+        temp_index_path.unlink(missing_ok=True)
         raise
 
     return {

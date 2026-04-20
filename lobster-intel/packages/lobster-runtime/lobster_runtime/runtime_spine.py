@@ -86,6 +86,14 @@ def _runtime_source_latest_path(workspace_dir: str | Path, source_key: str) -> P
     return _workspace_data_dir(workspace_dir) / "runtime" / "sources" / RUNTIME_SOURCE_PLUGIN_IDS[source_key] / "latest.json"
 
 
+def _thesis_pack_search_paths(workspace_dir: str | Path, thesis_id: str) -> list[Path]:
+    root = Path(workspace_dir) / "lobster-intel"
+    return [
+        root / "data" / "runtime" / "thesis-packs" / f"{thesis_id}.json",
+        root / "examples" / "thesis-packs" / f"{thesis_id}.json",
+    ]
+
+
 def _write_json(path: Path, payload: dict[str, Any]) -> None:
     path.write_text(json.dumps(payload, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
 
@@ -148,6 +156,7 @@ def _source_payloads(inp: ThesisRuntimeInput) -> list[tuple[str, dict[str, Any] 
 def load_thesis_runtime_inputs(
     workspace_dir: str | Path,
     *,
+    thesis_id: str | None = None,
     official_statements_path: str | Path | None = None,
     watchlist_path: str | Path | None = None,
     polymarket_path: str | Path | None = None,
@@ -186,6 +195,20 @@ def load_thesis_runtime_inputs(
     if missing_sources:
         raise FileNotFoundError("missing runtime source artifacts:\n" + "\n".join(missing_sources))
 
+    thesis_pack_payload: dict[str, Any] = {}
+    thesis_pack_resolution: dict[str, Any] = {"path": None, "mode": "empty", "exists": False}
+    if thesis_id:
+        thesis_pack_resolution["mode"] = "missing"
+        for thesis_pack_path in _thesis_pack_search_paths(workspace_dir, thesis_id):
+            if not thesis_pack_path.exists():
+                continue
+            payload = _load_json_file(thesis_pack_path)
+            if not isinstance(payload, dict):
+                continue
+            thesis_pack_resolution = {"path": str(thesis_pack_path), "mode": "discovered", "exists": True}
+            thesis_pack_payload = payload
+            break
+
     registry_payload: list[dict[str, Any]] = []
     registry_resolution: dict[str, Any] = {"path": None, "mode": "empty", "exists": False}
     if registry_file is not None:
@@ -194,6 +217,13 @@ def load_thesis_runtime_inputs(
             raise FileNotFoundError(f"missing runtime registry file: {registry_path}")
         registry_resolution = {"path": str(registry_path), "mode": "explicit", "exists": True}
         registry_payload = cast(list[dict[str, Any]], _load_json_file(registry_path))
+    elif isinstance(thesis_pack_payload.get("target_registry"), list) and thesis_pack_payload.get("target_registry"):
+        registry_payload = cast(list[dict[str, Any]], thesis_pack_payload["target_registry"])
+        registry_resolution = {
+            "path": thesis_pack_resolution["path"],
+            "mode": "thesis_pack_discovered",
+            "exists": True,
+        }
 
     return {
         "official_statements": source_payloads["official_statements"],
@@ -202,6 +232,12 @@ def load_thesis_runtime_inputs(
         "target_registry": registry_payload,
         "source_resolution": source_resolution,
         "registry_resolution": registry_resolution,
+        "thesis_pack_resolution": thesis_pack_resolution,
+        "thesis_settings": {
+            "semantic_frame": thesis_pack_payload.get("semantic_frame"),
+            "probability_direction": thesis_pack_payload.get("probability_direction"),
+            "state": thesis_pack_payload.get("state"),
+        },
     }
 
 
@@ -460,7 +496,7 @@ def _market_candidates(observations: list[dict[str, Any]]) -> list[dict[str, Any
                 "market_slug": metadata.get("market_slug") or metadata.get("slug"),
                 "market_question": metadata.get("market_question") or observation.get("extractive_rationale"),
                 "semantic_frame": metadata.get("semantic_frame"),
-                "probability_direction": metadata.get("probability_direction") or "yes_is_peace",
+                "probability_direction": metadata.get("probability_direction"),
                 "market_yes_probability": metadata.get("yes_probability"),
                 "active": metadata.get("active"),
                 "closed": metadata.get("closed"),
@@ -501,6 +537,21 @@ def _candidate_matches_registry_entry(entry: dict[str, Any], candidate: dict[str
     return False
 
 
+def _enrich_market_candidate_from_registry(
+    candidate: dict[str, Any],
+    entry: dict[str, Any],
+    inp: ThesisRuntimeInput,
+) -> dict[str, Any]:
+    enriched = dict(candidate)
+    enriched["market_slug"] = enriched.get("market_slug") or entry.get("market_slug")
+    enriched["market_question"] = enriched.get("market_question") or entry.get("market_question")
+    enriched["semantic_frame"] = enriched.get("semantic_frame") or entry.get("semantic_frame") or inp.semantic_frame
+    enriched["probability_direction"] = (
+        enriched.get("probability_direction") or entry.get("probability_direction") or inp.probability_direction
+    )
+    return enriched
+
+
 def resolve_active_target(inp: ThesisRuntimeInput, observations: list[dict[str, Any]]) -> tuple[dict[str, Any] | None, dict[str, Any] | None]:
     market_candidates = _market_candidates(observations)
     if not market_candidates:
@@ -521,7 +572,7 @@ def resolve_active_target(inp: ThesisRuntimeInput, observations: list[dict[str, 
                     "resolver_confidence": 1.0,
                     "fallback_used": False,
                 }
-                return resolved, candidate
+                return resolved, _enrich_market_candidate_from_registry(candidate, entry, inp)
 
     return None, market_candidates[0]
 

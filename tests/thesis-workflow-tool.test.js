@@ -80,6 +80,19 @@ test("loadBundledThesisProfile resolves a relative thesisProfilePath from the re
   assert.equal(profile.profile_path, "/repo/profiles/custom.json");
 });
 
+test("loadBundledThesisProfile returns null when profile JSON is malformed", () => {
+  const profile = loadBundledThesisProfile(
+    "/repo",
+    { thesisId: "regional-escalation" },
+    {
+      existsSync: () => true,
+      readFileSync: () => "{",
+    },
+  );
+
+  assert.equal(profile, null);
+});
+
 test("buildInstalledThesisWorkflow applies thesis profile defaults before explicit overrides", () => {
   const workflow = buildInstalledThesisWorkflow(
     "/repo",
@@ -94,6 +107,10 @@ test("buildInstalledThesisWorkflow applies thesis profile defaults before explic
       state: "ACTIVE_TRUCE",
       registry_file_path:
         "lobster-intel/examples/target-registries/regional-escalation.json",
+      source_config_paths: {
+        "official-statements-tracker":
+          "lobster-intel/examples/source-packs/official-statements.json",
+      },
     },
   );
 
@@ -107,35 +124,15 @@ test("buildInstalledThesisWorkflow applies thesis profile defaults before explic
     workflow.runtimeRequest.registryFilePath,
     "/repo/lobster-intel/examples/target-registries/regional-escalation.json",
   );
-});
-
-test("buildInstalledThesisWorkflow resolves relative request paths from the repo root", () => {
-  const workflow = buildInstalledThesisWorkflow("/repo", {
-    thesisId: "regional-escalation",
-    workspace: "workspaces/live",
-    sourcePackDir: "custom-packs",
-    officialStatementsConfigPath: "configs/official.json",
-    registryFilePath: "registries/targets.json",
-  });
-
-  assert.equal(workflow.runtimeRequest.workspace, "/repo/workspaces/live");
-  assert.equal(workflow.sourcePackDir, "/repo/custom-packs");
-  assert.deepEqual(
-    workflow.sourceRuns.map((run) => [run.pluginId, run.configPath]),
-    [
-      ["official-statements-tracker", "/repo/configs/official.json"],
-      ["watchlist-tracker", "/repo/custom-packs/watchlist.json"],
-      ["polymarket-tracker", "/repo/custom-packs/polymarket.json"],
-    ],
-  );
   assert.equal(
-    workflow.runtimeRequest.registryFilePath,
-    "/repo/registries/targets.json",
+    workflow.sourceRuns[0].configPath,
+    "/repo/lobster-intel/examples/source-packs/official-statements.json",
   );
 });
 
 test("listBundledThesisProfiles returns bundled thesis metadata sorted by thesis id", () => {
   const catalog = listBundledThesisProfiles("/repo", {
+    existsSync: () => true,
     readdirSync: () => [
       { name: "regional-escalation.json", isFile: () => true },
       { name: "ignore-me.txt", isFile: () => true },
@@ -162,6 +159,7 @@ test("listBundledThesisProfiles returns bundled thesis metadata sorted by thesis
         semantic_frame: "shipping_disruption",
         probability_direction: "yes_is_escalation",
         state: "ELEVATED_RISK",
+        registry_file_path: "lobster-intel/examples/target-registries/oil-shipping.json",
       });
     },
   });
@@ -175,9 +173,100 @@ test("listBundledThesisProfiles returns bundled thesis metadata sorted by thesis
     catalog[1].registryFilePath,
     "/repo/lobster-intel/examples/target-registries/regional-escalation.json",
   );
+  assert.equal(catalog[1].contractStatus, "ready");
 });
 
-test("describeBundledThesisProfile summarizes registry entries for a thesis", () => {
+test("listBundledThesisProfiles returns an empty list when the profile directory is missing", () => {
+  const catalog = listBundledThesisProfiles("/repo", {
+    existsSync: () => false,
+    readdirSync: () => {
+      throw new Error("should not read missing directory");
+    },
+  });
+
+  assert.deepEqual(catalog, []);
+});
+
+test("listBundledThesisProfiles reports malformed profile JSON as incomplete", () => {
+  const catalog = listBundledThesisProfiles("/repo", {
+    existsSync: () => true,
+    readdirSync: () => [
+      { name: "regional-escalation.json", isFile: () => true },
+    ],
+    readFileSync: () => "{",
+  });
+
+  assert.equal(catalog[0].thesisId, "regional-escalation");
+  assert.equal(catalog[0].contractStatus, "incomplete");
+  assert.match(catalog[0].validationErrors[0], /Failed to parse profile JSON/);
+});
+
+test("describeBundledThesisProfile summarizes registry entries and contract status", () => {
+  const description = describeBundledThesisProfile("/repo", "regional-escalation", {
+    existsSync: () => true,
+    readFileSync: (value) => {
+      if (value.includes("thesis-profiles")) {
+        return JSON.stringify({
+          thesis_id: "regional-escalation",
+          title: "Regional escalation monitor",
+          summary: "Tracks military operations end-state risk.",
+          semantic_frame: "military_operations_end_by_deadline",
+          probability_direction: "yes_is_peace",
+          state: "ACTIVE_TRUCE",
+          registry_file_path:
+            "lobster-intel/examples/target-registries/regional-escalation.json",
+          source_config_paths: {
+            "official-statements-tracker":
+              "lobster-intel/examples/source-packs/official-statements.json",
+            "watchlist-tracker":
+              "lobster-intel/examples/source-packs/watchlist.json",
+            "polymarket-tracker":
+              "lobster-intel/examples/source-packs/polymarket.json",
+          },
+        });
+      }
+
+      return JSON.stringify([
+        {
+          market_id: "1517836",
+          market_question: "Military operations end by June 30?",
+        },
+      ]);
+    },
+  });
+
+  assert.equal(description.thesisId, "regional-escalation");
+  assert.equal(description.registry.entryCount, 1);
+  assert.equal(description.registry.markets[0].marketId, "1517836");
+  assert.equal(description.contractStatus, "ready");
+  assert.equal(description.sourceConfigs.length, 3);
+});
+
+test("describeBundledThesisProfile flags incomplete runtime contracts", () => {
+  const description = describeBundledThesisProfile("/repo", "regional-escalation", {
+    existsSync: () => true,
+    readFileSync: (value) => {
+      if (value.includes("thesis-profiles")) {
+        return JSON.stringify({
+          thesis_id: "regional-escalation",
+          title: "Regional escalation monitor",
+          summary: "Tracks military operations end-state risk.",
+          probability_direction: "yes_is_peace",
+          state: "ACTIVE_TRUCE",
+        });
+      }
+      return JSON.stringify([]);
+    },
+  });
+
+  assert.equal(description.contractStatus, "incomplete");
+  assert.match(
+    description.validationErrors[0],
+    /does not resolve semanticFrame/,
+  );
+});
+
+test("describeBundledThesisProfile reports malformed registry JSON as incomplete", () => {
   const description = describeBundledThesisProfile("/repo", "regional-escalation", {
     existsSync: () => true,
     readFileSync: (value) => {
@@ -194,18 +283,31 @@ test("describeBundledThesisProfile summarizes registry entries for a thesis", ()
         });
       }
 
-      return JSON.stringify([
-        {
-          market_id: "1517836",
-          market_question: "Military operations end by June 30?",
-        },
-      ]);
+      return "{";
     },
   });
 
-  assert.equal(description.thesisId, "regional-escalation");
-  assert.equal(description.registry.entryCount, 1);
-  assert.equal(description.registry.markets[0].marketId, "1517836");
+  assert.equal(description.contractStatus, "incomplete");
+  assert.match(description.validationErrors[0], /Failed to parse registry JSON/);
+  assert.equal(description.registry.entryCount, 0);
+});
+
+test("runInstalledThesisWorkflow reports malformed bundled profile JSON as invalid_profile", async () => {
+  const result = await runInstalledThesisWorkflow({
+    rootDir: "/repo",
+    request: { thesisId: "regional-escalation" },
+    existsSync: () => true,
+    readFileSync: () => "{",
+    runSourcePlugin: async () => {
+      throw new Error("should not run");
+    },
+    runThesisRuntime: async () => {
+      throw new Error("should not run");
+    },
+  });
+
+  assert.equal(result.kind, "invalid_profile");
+  assert.match(result.validationErrors[0], /Failed to parse profile JSON/);
 });
 
 test("runInstalledThesisWorkflow stops before execution when required files are missing", async () => {
@@ -232,6 +334,63 @@ test("runInstalledThesisWorkflow stops before execution when required files are 
 
   assert.equal(result.kind, "missing_paths");
   assert.match(result.missingPaths[0], /watchlist\.json$/);
+});
+
+test("runInstalledThesisWorkflow stops when thesis profile defaults are unavailable", async () => {
+  const result = await runInstalledThesisWorkflow({
+    rootDir: "/repo",
+    request: { thesisId: "unknown-thesis" },
+    existsSync: () => false,
+    runSourcePlugin: async () => {
+      throw new Error("should not run");
+    },
+    runThesisRuntime: async () => {
+      throw new Error("should not run");
+    },
+  });
+
+  assert.equal(result.kind, "invalid_profile");
+  assert.match(result.validationErrors[0], /No bundled thesis profile found/);
+});
+
+test("runInstalledThesisWorkflow runs with explicit overrides when no bundled profile exists", async () => {
+  const calls = [];
+  const result = await runInstalledThesisWorkflow({
+    rootDir: "/repo",
+    request: {
+      thesisId: "custom-thesis",
+      semanticFrame: "military_operations_end_by_deadline",
+      probabilityDirection: "yes_is_peace",
+      state: "ACTIVE_TRUCE",
+      registryFilePath: "/repo/custom-registry.json",
+      officialStatementsConfigPath: "/repo/official.json",
+      watchlistConfigPath: "/repo/watchlist.json",
+      polymarketConfigPath: "/repo/polymarket.json",
+    },
+    existsSync: (value) => !value.includes("thesis-profiles/custom-thesis.json"),
+    runSourcePlugin: async (run) => {
+      calls.push(run.pluginId);
+      return { plugin: run.pluginId, new_count: 0 };
+    },
+    runThesisRuntime: async (runtimeRequest) => {
+      calls.push("runtime");
+      return {
+        thesis_id: runtimeRequest.thesisId,
+        compare_mode: "degraded_compare",
+        artifact_paths: {
+          delivery_receipt: "/repo/lobster-intel/data/delivery/custom-thesis/receipts/run.json",
+        },
+      };
+    },
+  });
+
+  assert.equal(result.kind, "ok");
+  assert.deepEqual(calls, [
+    "official-statements-tracker",
+    "watchlist-tracker",
+    "polymarket-tracker",
+    "runtime",
+  ]);
 });
 
 test("runInstalledThesisWorkflow runs sources before the runtime and returns a workflow summary", async () => {

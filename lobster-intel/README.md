@@ -82,6 +82,7 @@ lobster-intel/
     watchlist-tracker/
   examples/
     source-packs/
+    thesis-packs/
   data/
     evidence/
     compiled/
@@ -147,6 +148,25 @@ The product intent is:
 - source plugins fetch and normalize evidence
 - runtime stores cursor / source state
 - delivery remains downstream
+
+## Install-ready thesis pack examples
+
+Example thesis packs now live under:
+
+```text
+lobster-intel/examples/thesis-packs/
+```
+
+- `gooaye.json`
+
+These packs let the thesis runtime discover:
+
+- thesis semantic frame
+- probability direction
+- runtime state
+- curated target registry entries
+
+The runtime checks `lobster-intel/data/runtime/thesis-packs/<thesis-id>.json` first, then falls back to the example pack path when no runtime-managed copy exists.
 
 ## Source history tooling
 

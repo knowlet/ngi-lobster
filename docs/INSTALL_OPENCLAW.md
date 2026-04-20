@@ -26,6 +26,7 @@ If you install this repo today, you get:
 - minimal one-shot runtime
 - delivery gate for background output
 - first source plugin example: `gooaye-tracker`
+- install-ready thesis pack example: `lobster-intel/examples/thesis-packs/gooaye.json`
 - legacy NGI scripts for reference and migration
 
 What you do **not** get yet:
@@ -218,7 +219,47 @@ These trackers are still **silent-ingest only**. They are source plugins, not al
 `official-statements-tracker` now supports cursor persistence via `OFFICIAL_STATEMENTS_STATE_PATH`.
 `watchlist-tracker` and `polymarket-tracker` now support the same pattern via their respective `*_STATE_PATH` variables.
 
-## 7.3 Source history replay and index rebuild
+## 7.3 Thesis packs for runtime truth defaults
+
+The runtime now supports install-ready thesis packs under:
+
+```text
+lobster-intel/examples/thesis-packs/
+```
+
+Current example:
+
+- `gooaye.json`
+
+When you run:
+
+```bash
+python3 lobster-intel/scripts/run_thesis_runtime.py --workspace . --thesis-id gooaye
+```
+
+the runtime will discover:
+
+1. installed source artifacts under `lobster-intel/data/runtime/sources/`
+2. the thesis pack at `lobster-intel/examples/thesis-packs/gooaye.json`
+
+That thesis pack supplies:
+
+- semantic frame
+- probability direction
+- runtime state
+- curated target registry entries
+
+Explicit CLI overrides still win. If you pass `--registry-file`, `--semantic-frame`, `--probability-direction`, or `--state`, those values replace the pack defaults.
+
+If you want runtime-managed thesis config instead of example-pack defaults, promote the file into:
+
+```text
+lobster-intel/data/runtime/thesis-packs/<thesis-id>.json
+```
+
+That path is checked before the example pack path.
+
+## 7.4 Source history replay and index rebuild
 
 Installed source plugins write runtime artifacts under:
 

@@ -593,6 +593,16 @@ def test_load_thesis_runtime_inputs_rejects_non_list_registry_payload(tmp_path: 
     assert registry_path.exists()
 
 
+def test_trace_run_lineage_rejects_unsafe_thesis_id(tmp_path: Path):
+    with pytest.raises(ValueError, match="unsafe thesis_id"):
+        trace_run_lineage(tmp_path, "../../etc/passwd", "20260419T123000Z")
+
+
+def test_rebuild_runtime_index_rejects_unsafe_thesis_id(tmp_path: Path):
+    with pytest.raises(ValueError, match="unsafe thesis_id"):
+        rebuild_runtime_index(tmp_path, "../../etc/passwd")
+
+
 def test_run_thesis_runtime_cli_fails_when_installed_source_artifacts_are_missing(tmp_path: Path):
     official, _watchlist, polymarket = _source_payloads()
     source_root = tmp_path / "lobster-intel" / "data" / "runtime" / "sources"

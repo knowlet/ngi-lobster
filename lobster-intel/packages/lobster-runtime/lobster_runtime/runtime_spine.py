@@ -858,7 +858,7 @@ def _build_runtime_snapshot(
 
 
 def run_thesis_runtime(inp: ThesisRuntimeInput) -> ThesisRuntimeResult:
-    _validate_thesis_id(inp.thesis_id)
+    inp.thesis_id = cast(str, _validate_thesis_id(inp.thesis_id))
     created_at_utc = _payload_latest_ts(
         [inp.official_statements, inp.watchlist, inp.polymarket],
         inp.now_utc,
@@ -978,7 +978,7 @@ def run_thesis_runtime(inp: ThesisRuntimeInput) -> ThesisRuntimeResult:
 
 
 def _runtime_root(workspace_dir: str | Path, thesis_id: str) -> Path:
-    _validate_thesis_id(thesis_id)
+    thesis_id = cast(str, _validate_thesis_id(thesis_id))
     return _workspace_data_dir(workspace_dir) / "runtime" / thesis_id
 
 
@@ -998,6 +998,7 @@ def _load_json(path: Path) -> dict[str, Any]:
 
 
 def trace_run_lineage(workspace_dir: str | Path, thesis_id: str, run_id: str) -> dict[str, list[str]]:
+    thesis_id = cast(str, _validate_thesis_id(thesis_id))
     receipt = _load_json(_artifact_path(workspace_dir, "delivery", thesis_id, "receipts", f"{run_id}.json"))
     alert = _load_json(_artifact_path(workspace_dir, "delivery", thesis_id, "alerts", f"{run_id}.json"))
     compare_artifact = _load_json(_artifact_path(workspace_dir, "runtime", thesis_id, "compare", f"{run_id}.json"))
@@ -1024,6 +1025,7 @@ def trace_run_lineage(workspace_dir: str | Path, thesis_id: str, run_id: str) ->
 
 
 def rebuild_runtime_index(workspace_dir: str | Path, thesis_id: str) -> Path:
+    thesis_id = cast(str, _validate_thesis_id(thesis_id))
     runtime_dir = _runtime_root(workspace_dir, thesis_id)
     runs_dir = runtime_dir / "runs"
     alerts_dir = _workspace_data_dir(workspace_dir) / "delivery" / thesis_id / "alerts"

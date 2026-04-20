@@ -48,7 +48,7 @@ def main() -> None:
             polymarket_path=args.polymarket,
             registry_file=args.registry_file,
         )
-    except FileNotFoundError as exc:
+    except (FileNotFoundError, ValueError) as exc:
         print(f"ERROR: {exc}", file=sys.stderr)
         raise SystemExit(2)
     result = run_thesis_runtime(

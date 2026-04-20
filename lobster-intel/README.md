@@ -209,3 +209,29 @@ python3 lobster-intel/scripts/source_history.py rebuild-index --workspace . --pl
 Each rebuild invocation closes its SQLite handle before returning, so repeated automation runs can refresh the index without leaving descriptor cleanup to process shutdown.
 
 This keeps replayability and lineage in the runtime layer while leaving delivery downstream of the same artifact truth.
+
+## Linked-content queue processing
+
+Gooaye runtime artifacts can now expose `linked_content_queue` as downstream runtime work instead of forcing the source tracker to fetch articles or transcripts inline.
+
+Operators can process the current queue from the latest runtime artifact:
+
+```bash
+python3 lobster-intel/scripts/process_linked_content_queue.py --workspace . --thesis-id gooaye
+```
+
+Or they can point the worker at a prior runtime snapshot for backfill:
+
+```bash
+python3 lobster-intel/scripts/process_linked_content_queue.py --workspace . --thesis-id gooaye --runtime-file lobster-intel/data/runtime/gooaye/runs/<run-id>.json
+```
+
+That worker writes:
+
+- evidence artifacts under `lobster-intel/data/evidence/<thesis_id>/linked-content/`
+- compiled markdown under `lobster-intel/data/compiled/<thesis_id>/linked-content/`
+- runtime receipts under `lobster-intel/data/runtime/<thesis_id>/linked-content/`
+
+The fetch path is intentionally constrained to `http`/`https`, caps response bodies before decode, strips `script`/`style` noise from HTML text extraction, and parallelizes queue fetches while preserving deterministic artifact writes.
+
+This keeps the tracker ingest-only while making linked-content follow-up replayable and auditable from runtime truth.

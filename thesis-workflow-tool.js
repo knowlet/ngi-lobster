@@ -52,7 +52,8 @@ export function loadBundledThesisProfile(rootDir, request = {}, io = {}) {
   const existsSync = io.existsSync || fs.existsSync;
   const readFileSync = io.readFileSync || fs.readFileSync;
   const profilePath =
-    request.thesisProfilePath || defaultThesisProfilePath(rootDir, thesisId);
+    resolveRepoPath(rootDir, request.thesisProfilePath) ||
+    defaultThesisProfilePath(rootDir, thesisId);
 
   if (!existsSync(profilePath)) {
     return null;
@@ -70,9 +71,9 @@ export function buildInstalledThesisWorkflow(
   request = {},
   thesisProfile = null,
 ) {
-  const workspace = request.workspace || rootDir;
+  const workspace = resolveRepoPath(rootDir, request.workspace) || rootDir;
   const sourcePackDir =
-    request.sourcePackDir ||
+    resolveRepoPath(rootDir, request.sourcePackDir) ||
     resolveRepoPath(rootDir, thesisProfile?.source_pack_dir) ||
     defaultSourcePackDir(rootDir);
 
@@ -84,7 +85,7 @@ export function buildInstalledThesisWorkflow(
       pluginId: spec.pluginId,
       pluginDir: path.join(rootDir, "lobster-intel", "plugins", spec.pluginId),
       configPath:
-        request[spec.requestField] ||
+        resolveRepoPath(rootDir, request[spec.requestField]) ||
         resolveRepoPath(
           rootDir,
           thesisProfile?.source_config_paths?.[spec.pluginId],
@@ -96,7 +97,7 @@ export function buildInstalledThesisWorkflow(
       thesisId: request.thesisId,
       workspace,
       registryFilePath:
-        request.registryFilePath ||
+        resolveRepoPath(rootDir, request.registryFilePath) ||
         resolveRepoPath(rootDir, thesisProfile?.registry_file_path),
       semanticFrame: request.semanticFrame || thesisProfile?.semantic_frame,
       probabilityDirection:

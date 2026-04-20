@@ -54,6 +54,30 @@ test("loadBundledThesisProfile resolves the thesisId profile path by default", (
   assert.equal(profile.probability_direction, "yes_is_peace");
 });
 
+test("loadBundledThesisProfile resolves a relative thesisProfilePath from the repo root", () => {
+  let seenPath;
+  const profile = loadBundledThesisProfile(
+    "/repo",
+    {
+      thesisId: "regional-escalation",
+      thesisProfilePath: "profiles/custom.json",
+    },
+    {
+      existsSync: (value) => {
+        seenPath = value;
+        return value === "/repo/profiles/custom.json";
+      },
+      readFileSync: () =>
+        JSON.stringify({
+          thesis_id: "regional-escalation",
+        }),
+    },
+  );
+
+  assert.equal(seenPath, "/repo/profiles/custom.json");
+  assert.equal(profile.profile_path, "/repo/profiles/custom.json");
+});
+
 test("buildInstalledThesisWorkflow applies thesis profile defaults before explicit overrides", () => {
   const workflow = buildInstalledThesisWorkflow(
     "/repo",
@@ -80,6 +104,31 @@ test("buildInstalledThesisWorkflow applies thesis profile defaults before explic
   assert.equal(
     workflow.runtimeRequest.registryFilePath,
     "/repo/lobster-intel/examples/target-registries/regional-escalation.json",
+  );
+});
+
+test("buildInstalledThesisWorkflow resolves relative request paths from the repo root", () => {
+  const workflow = buildInstalledThesisWorkflow("/repo", {
+    thesisId: "regional-escalation",
+    workspace: "workspaces/live",
+    sourcePackDir: "custom-packs",
+    officialStatementsConfigPath: "configs/official.json",
+    registryFilePath: "registries/targets.json",
+  });
+
+  assert.equal(workflow.runtimeRequest.workspace, "/repo/workspaces/live");
+  assert.equal(workflow.sourcePackDir, "/repo/custom-packs");
+  assert.deepEqual(
+    workflow.sourceRuns.map((run) => [run.pluginId, run.configPath]),
+    [
+      ["official-statements-tracker", "/repo/configs/official.json"],
+      ["watchlist-tracker", "/repo/custom-packs/watchlist.json"],
+      ["polymarket-tracker", "/repo/custom-packs/polymarket.json"],
+    ],
+  );
+  assert.equal(
+    workflow.runtimeRequest.registryFilePath,
+    "/repo/registries/targets.json",
   );
 });
 

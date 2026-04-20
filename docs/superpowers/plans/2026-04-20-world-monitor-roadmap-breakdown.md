@@ -319,15 +319,17 @@ If we continue working strictly in roadmap order, the next slices should be:
    Because the fleet layer will need a thesis-owned package shape, not loose file references.
 3. **A3 Runtime Fallback Hardening**
    Because fallback semantics must be stable before any cross-thesis aggregation.
-4. **B2 Tracker Capability Surface**
+4. **A4 Real Delivery Path E2E Proof**
+   Because the runtime-spine design still requires a closeout slice that proves contract completeness and receipt evidence from real thesis runtime artifacts.
+5. **B2 Tracker Capability Surface**
    Because Phase 2 needs a reusable onboarding seam, not just replay utilities.
-5. **B3 Analyzer Interface Contract**
+6. **B3 Analyzer Interface Contract**
    Because new source families need a stable analyzer boundary into observations and fusion.
-6. **B5 Linked-Content Extraction Platform Slice**
+7. **B5 Linked-Content Extraction Platform Slice**
    Because the repo still names this as a major product gap and it unlocks richer source breadth.
-7. **B6 Firehose Platformization**
+8. **B6 Firehose Platformization**
    Because Firehose is still one of the main operator-heavy gaps blocking source scale.
-8. **C1 Multi-Thesis Registry And Pack Catalog**
+9. **C1 Multi-Thesis Registry And Pack Catalog**
    Only after the above slices stop moving foundational contracts.
 
 ## What Counts As "Roadmap Decomposed"
@@ -346,8 +348,9 @@ The most sensible next plan files to author from this breakdown are:
 - [`2026-04-20-installed-thesis-contract-validation.md`](2026-04-20-installed-thesis-contract-validation.md)
 - [`2026-04-20-default-thesis-pack-discovery.md`](2026-04-20-default-thesis-pack-discovery.md)
 - [`2026-04-20-runtime-live-search-fallback.md`](2026-04-20-runtime-live-search-fallback.md)
+- [`2026-04-20-runtime-spine-verification-gates.md`](2026-04-20-runtime-spine-verification-gates.md)
 - [`2026-04-20-tracker-capability-surface.md`](2026-04-20-tracker-capability-surface.md)
 - [`2026-04-20-analyzer-interface-contract.md`](2026-04-20-analyzer-interface-contract.md)
 - [`2026-04-20-linked-content-extraction-platform.md`](2026-04-20-linked-content-extraction-platform.md)
 
-Those six plans would turn the roadmap from a broad sequence into an actively executable queue.
+Those seven plans turn the roadmap from a broad sequence into an actively executable queue that also stays aligned to the runtime-spine design gates.

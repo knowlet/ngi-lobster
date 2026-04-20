@@ -86,7 +86,16 @@ def _runtime_source_latest_path(workspace_dir: str | Path, source_key: str) -> P
     return _workspace_data_dir(workspace_dir) / "runtime" / "sources" / RUNTIME_SOURCE_PLUGIN_IDS[source_key] / "latest.json"
 
 
+def _validate_thesis_id(thesis_id: str | None) -> str | None:
+    if thesis_id is None:
+        return None
+    if re.fullmatch(r"[A-Za-z0-9_-]+", thesis_id):
+        return thesis_id
+    raise ValueError(f"unsafe thesis_id: {thesis_id!r}")
+
+
 def _default_registry_candidates(workspace_dir: str | Path, thesis_id: str | None) -> list[Path]:
+    thesis_id = _validate_thesis_id(thesis_id)
     if not thesis_id:
         return []
     registry_root = _workspace_data_dir(workspace_dir) / "runtime" / "thesis-registry"
@@ -102,6 +111,13 @@ def _write_json(path: Path, payload: dict[str, Any]) -> None:
 
 def _load_json_file(path: Path) -> dict[str, Any] | list[Any]:
     return json.loads(path.read_text(encoding="utf-8"))
+
+
+def _load_registry_payload(path: Path) -> list[dict[str, Any]]:
+    payload = _load_json_file(path)
+    if not isinstance(payload, list) or any(not isinstance(entry, dict) for entry in payload):
+        raise ValueError(f"runtime registry file must contain a JSON list of objects: {path}")
+    return cast(list[dict[str, Any]], payload)
 
 
 def _base_artifact(
@@ -164,6 +180,7 @@ def load_thesis_runtime_inputs(
     polymarket_path: str | Path | None = None,
     registry_file: str | Path | None = None,
 ) -> dict[str, Any]:
+    _validate_thesis_id(thesis_id)
     source_specs = {
         "official_statements": official_statements_path,
         "watchlist": watchlist_path,
@@ -204,13 +221,13 @@ def load_thesis_runtime_inputs(
         if not registry_path.exists():
             raise FileNotFoundError(f"missing runtime registry file: {registry_path}")
         registry_resolution = {"path": str(registry_path), "mode": "explicit", "exists": True}
-        registry_payload = cast(list[dict[str, Any]], _load_json_file(registry_path))
+        registry_payload = _load_registry_payload(registry_path)
     else:
         for registry_path in _default_registry_candidates(workspace_dir, thesis_id):
             if not registry_path.exists():
                 continue
             registry_resolution = {"path": str(registry_path), "mode": "discovered", "exists": True}
-            registry_payload = cast(list[dict[str, Any]], _load_json_file(registry_path))
+            registry_payload = _load_registry_payload(registry_path)
             break
 
     return {
@@ -841,6 +858,7 @@ def _build_runtime_snapshot(
 
 
 def run_thesis_runtime(inp: ThesisRuntimeInput) -> ThesisRuntimeResult:
+    _validate_thesis_id(inp.thesis_id)
     created_at_utc = _payload_latest_ts(
         [inp.official_statements, inp.watchlist, inp.polymarket],
         inp.now_utc,
@@ -960,6 +978,7 @@ def run_thesis_runtime(inp: ThesisRuntimeInput) -> ThesisRuntimeResult:
 
 
 def _runtime_root(workspace_dir: str | Path, thesis_id: str) -> Path:
+    _validate_thesis_id(thesis_id)
     return _workspace_data_dir(workspace_dir) / "runtime" / thesis_id
 
 

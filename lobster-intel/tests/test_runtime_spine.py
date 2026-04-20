@@ -545,6 +545,54 @@ def test_load_thesis_runtime_inputs_prefers_explicit_registry_file(tmp_path: Pat
     assert payload["target_registry"][0]["market_id"] == "explicit-target"
 
 
+def test_load_thesis_runtime_inputs_rejects_unsafe_thesis_id(tmp_path: Path):
+    official, watchlist, polymarket = _source_payloads()
+    _install_runtime_source_artifacts(tmp_path, official, watchlist, polymarket)
+
+    with pytest.raises(ValueError, match="unsafe thesis_id"):
+        load_thesis_runtime_inputs(
+            tmp_path,
+            thesis_id="../../etc/passwd",
+        )
+
+
+def test_run_thesis_runtime_rejects_unsafe_thesis_id(tmp_path: Path):
+    official, watchlist, polymarket = _source_payloads()
+
+    with pytest.raises(ValueError, match="unsafe thesis_id"):
+        run_thesis_runtime(
+            ThesisRuntimeInput(
+                thesis_id="../../etc/passwd",
+                workspace_dir=tmp_path,
+                official_statements=official,
+                watchlist=watchlist,
+                polymarket=polymarket,
+                target_registry=_target_registry(),
+                semantic_frame="military_operations_end_by_deadline",
+                probability_direction="yes_is_peace",
+                state="ACTIVE_TRUCE",
+                now_utc="2026-04-19T12:30:00+00:00",
+            )
+        )
+
+
+def test_load_thesis_runtime_inputs_rejects_non_list_registry_payload(tmp_path: Path):
+    official, watchlist, polymarket = _source_payloads()
+    _install_runtime_source_artifacts(tmp_path, official, watchlist, polymarket)
+    registry_root = tmp_path / "lobster-intel" / "data" / "runtime" / "thesis-registry"
+    registry_root.mkdir(parents=True, exist_ok=True)
+    registry_path = registry_root / "gooaye.json"
+    registry_path.write_text(json.dumps({"market_id": "unexpected-object"}), encoding="utf-8")
+
+    with pytest.raises(ValueError, match="must contain a JSON list"):
+        load_thesis_runtime_inputs(
+            tmp_path,
+            thesis_id="gooaye",
+        )
+
+    assert registry_path.exists()
+
+
 def test_run_thesis_runtime_cli_fails_when_installed_source_artifacts_are_missing(tmp_path: Path):
     official, _watchlist, polymarket = _source_payloads()
     source_root = tmp_path / "lobster-intel" / "data" / "runtime" / "sources"

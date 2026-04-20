@@ -50,7 +50,7 @@ assert payload["target_registry"][0]["market_id"] == "explicit-target"
 
 - [ ] **Step 4: Run the focused test target and verify RED**
 
-Run: `cd /Users/knowlet/.codex/worktrees/6e6f/ngi-lobster && python3 -m pytest lobster-intel/tests/test_runtime_spine.py -q`
+Run: `python3 -m pytest lobster-intel/tests/test_runtime_spine.py -q`
 Expected: FAIL because default registry discovery is not implemented yet
 
 ### Task 2: Implement Runtime Discovery
@@ -94,7 +94,7 @@ runtime_inputs = load_thesis_runtime_inputs(
 
 - [ ] **Step 4: Run the focused test target and verify GREEN**
 
-Run: `cd /Users/knowlet/.codex/worktrees/6e6f/ngi-lobster && python3 -m pytest lobster-intel/tests/test_runtime_spine.py -q`
+Run: `python3 -m pytest lobster-intel/tests/test_runtime_spine.py -q`
 Expected: PASS
 
 ### Task 3: Ship Install-Ready Registry Artifacts And Docs
@@ -125,12 +125,12 @@ Expected: PASS
 
 ```markdown
 Default thesis registries now live under `lobster-intel/data/runtime/thesis-registry/`.
-`ngi_lobster_run_thesis_runtime` discovers `<thesis_id>.json` automatically before falling back to explicit overrides.
+`ngi_lobster_run_thesis_runtime` discovers `<thesis_id>.json` automatically when `--registry-file` is not provided; explicit overrides remain authoritative.
 ```
 
 - [ ] **Step 3: Run a direct CLI smoke and confirm discovered registry metadata**
 
-Run: `cd /Users/knowlet/.codex/worktrees/6e6f/ngi-lobster && python3 lobster-intel/scripts/run_thesis_runtime.py --workspace . --thesis-id gooaye`
+Run: `python3 lobster-intel/scripts/run_thesis_runtime.py --workspace . --thesis-id gooaye`
 Expected: JSON output includes `input_contract.registry_resolution.mode = "discovered"`
 
 - [ ] **Step 4: Commit**

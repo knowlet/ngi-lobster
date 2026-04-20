@@ -259,6 +259,33 @@ lobster-intel/data/runtime/thesis-packs/<thesis-id>.json
 
 That path is checked before the example pack path.
 
+## 7.4 Source history replay and index rebuild
+
+Installed source plugins write runtime artifacts under:
+
+```text
+lobster-intel/data/runtime/sources/<plugin-id>/
+```
+
+You can replay one stored source run without hitting the network:
+
+```bash
+python3 lobster-intel/scripts/source_history.py replay \
+  --workspace . \
+  --plugin-id watchlist-tracker \
+  --run-id 20260420T010000Z
+```
+
+You can also rebuild a local SQLite index from `runs/*.json`:
+
+```bash
+python3 lobster-intel/scripts/source_history.py rebuild-index \
+  --workspace . \
+  --plugin-id watchlist-tracker
+```
+
+This keeps source history auditable and replayable while preserving files as the primary truth contract.
+
 ## 8. Current expected local artifacts
 
 The first example plugin currently writes artifacts under:

@@ -21,16 +21,16 @@
 def test_replay_source_run_returns_historical_payload(tmp_path: Path):
     plugin_id, run_id = install_source_run_fixture(tmp_path)
     replay = replay_source_run(tmp_path, plugin_id, run_id)
-    assert replay["run_id"] == run_id
-    assert replay["evidence_item_count"] == 2
-    assert replay["items"][0]["external_id"] == "stmt-1"
+    self.assertEqual(replay["run_id"], run_id)
+    self.assertEqual(replay["evidence_item_count"], 2)
+    self.assertEqual(replay["items"][0]["external_id"], "stmt-1")
 
 
 def test_rebuild_source_index_recreates_sqlite_rows(tmp_path: Path):
     plugin_id, _ = install_source_run_fixture(tmp_path)
     result = rebuild_source_index(tmp_path, plugin_id)
-    assert result["run_count"] == 2
-    assert result["item_count"] == 3
+    self.assertEqual(result["run_count"], 2)
+    self.assertEqual(result["item_count"], 3)
 ```
 
 - [ ] **Step 2: Run the focused test file and verify RED**
@@ -57,7 +57,7 @@ payload = json.loads(
         text=True,
     )
 )
-assert payload["run_id"] == run_id
+self.assertEqual(payload["run_id"], run_id)
 ```
 
 - [ ] **Step 4: Run the focused test file again and verify RED**

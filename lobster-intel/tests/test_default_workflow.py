@@ -80,7 +80,10 @@ def test_default_workflow_runs_thesis_runtime_spine(tmp_path: Path):
     assert payload["input_contract"]["source_resolution"]["official_statements"]["mode"] == "discovered"
     assert payload["input_contract"]["source_resolution"]["watchlist"]["mode"] == "discovered"
     assert payload["input_contract"]["source_resolution"]["polymarket"]["mode"] == "discovered"
-    assert payload["input_contract"]["registry_resolution"]["mode"] == "thesis_pack_discovered"
+    assert payload["input_contract"]["registry_resolution"]["mode"] == "discovered"
+    assert payload["input_contract"]["registry_resolution"]["path"].endswith(
+        "lobster-intel/data/runtime/thesis-registry/gooaye.json"
+    )
     assert payload["input_contract"]["thesis_pack_resolution"]["mode"] == "discovered"
     assert Path(payload["artifact_paths"]["runtime_latest"]).exists()
     assert Path(payload["artifact_paths"]["delivery_receipt"]).exists()

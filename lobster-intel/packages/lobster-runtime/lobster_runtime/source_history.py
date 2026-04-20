@@ -1,8 +1,11 @@
 from __future__ import annotations
 
 import json
+import os
 import re
 import sqlite3
+import tempfile
+from contextlib import closing
 from pathlib import Path
 from typing import Any
 
@@ -82,65 +85,75 @@ def rebuild_source_index(workspace_dir: str | Path, plugin_id: str) -> dict[str,
         raise FileNotFoundError(f"missing source runs directory: {runs_dir}")
 
     index_path = _source_index_path(workspace_dir, plugin_id)
-    if index_path.exists():
-        index_path.unlink()
-
+    index_path.parent.mkdir(parents=True, exist_ok=True)
     run_paths = sorted(runs_dir.glob("*.json"))
     run_count = 0
     item_count = 0
+    fd, temp_index_name = tempfile.mkstemp(
+        prefix=f"{plugin_id}.",
+        suffix=".index.sqlite.tmp",
+        dir=index_path.parent,
+    )
+    os.close(fd)
+    temp_index_path = Path(temp_index_name)
 
-    with sqlite3.connect(index_path) as conn:
-        conn.execute(
-            "create table source_runs (run_id text primary key, plugin text, ran_at_utc text, artifact_path text, evidence_item_count integer, new_count integer, state_path text)"
-        )
-        conn.execute(
-            "create table source_items (item_id text primary key, run_id text, source_id text, external_id text, title text, url text, published_at_utc text, collected_at_utc text, source_type text, artifact_path text)"
-        )
-
-        for run_path in run_paths:
-            payload = _load_json(run_path)
-            evidence = payload.get("evidence") or {}
-            run_id = str(payload.get("run_id") or run_path.stem)
-            plugin = str(payload.get("plugin") or plugin_id)
-            ran_at_utc = payload.get("ran_at_utc")
-            state_path = evidence.get("state_path")
-            items = _items(payload)
-
-            conn.execute(
-                "insert into source_runs (run_id, plugin, ran_at_utc, artifact_path, evidence_item_count, new_count, state_path) values (?, ?, ?, ?, ?, ?, ?)",
-                (
-                    run_id,
-                    plugin,
-                    ran_at_utc,
-                    str(run_path),
-                    len(items),
-                    evidence.get("new_count"),
-                    state_path,
-                ),
-            )
-            run_count += 1
-
-            for index, item in enumerate(items):
-                external_id = item.get("external_id") or f"item-{index}"
-                item_id = f"{run_id}:{item.get('source_id') or plugin}:{external_id}"
+    try:
+        with closing(sqlite3.connect(temp_index_path)) as conn:
+            with conn:
                 conn.execute(
-                    "insert into source_items (item_id, run_id, source_id, external_id, title, url, published_at_utc, collected_at_utc, source_type, artifact_path) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
-                    (
-                        item_id,
-                        run_id,
-                        item.get("source_id"),
-                        external_id,
-                        item.get("title"),
-                        item.get("url"),
-                        item.get("published_at_utc"),
-                        item.get("collected_at_utc") or ran_at_utc,
-                        item.get("source_type"),
-                        str(run_path),
-                    ),
+                    "create table source_runs (run_id text primary key, plugin text, ran_at_utc text, artifact_path text, evidence_item_count integer, new_count integer, state_path text)"
                 )
-                item_count += 1
+                conn.execute(
+                    "create table source_items (item_id text primary key, run_id text, source_id text, external_id text, title text, url text, published_at_utc text, collected_at_utc text, source_type text, artifact_path text)"
+                )
 
-        conn.commit()
+                for run_path in run_paths:
+                    payload = _load_json(run_path)
+                    evidence = payload.get("evidence") or {}
+                    run_id = str(payload.get("run_id") or run_path.stem)
+                    plugin = str(payload.get("plugin") or plugin_id)
+                    ran_at_utc = payload.get("ran_at_utc")
+                    state_path = evidence.get("state_path")
+                    items = _items(payload)
+
+                    conn.execute(
+                        "insert into source_runs (run_id, plugin, ran_at_utc, artifact_path, evidence_item_count, new_count, state_path) values (?, ?, ?, ?, ?, ?, ?)",
+                        (
+                            run_id,
+                            plugin,
+                            ran_at_utc,
+                            str(run_path),
+                            len(items),
+                            evidence.get("new_count"),
+                            state_path,
+                        ),
+                    )
+                    run_count += 1
+
+                    for index, item in enumerate(items):
+                        external_id = item.get("external_id") or f"item-{index}"
+                        item_id = f"{run_id}:{item.get('source_id') or plugin}:{external_id}"
+                        conn.execute(
+                            "insert into source_items (item_id, run_id, source_id, external_id, title, url, published_at_utc, collected_at_utc, source_type, artifact_path) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                            (
+                                item_id,
+                                run_id,
+                                item.get("source_id"),
+                                external_id,
+                                item.get("title"),
+                                item.get("url"),
+                                item.get("published_at_utc"),
+                                item.get("collected_at_utc") or ran_at_utc,
+                                item.get("source_type"),
+                                str(run_path),
+                            ),
+                        )
+                        item_count += 1
+
+        temp_index_path.replace(index_path)
+    except Exception:
+        temp_index_path.unlink(missing_ok=True)
+        raise
 
     return {
         "plugin": plugin_id,

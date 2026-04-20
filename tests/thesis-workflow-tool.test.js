@@ -93,6 +93,24 @@ test("loadBundledThesisProfile returns null when profile JSON is malformed", () 
   assert.equal(profile, null);
 });
 
+test("buildInstalledThesisWorkflow resolves relative override paths from the repo root", () => {
+  const workflow = buildInstalledThesisWorkflow(
+    "/repo",
+    {
+      thesisId: "regional-escalation",
+      workspace: "workspace/custom",
+      sourcePackDir: "packs",
+      officialStatementsConfigPath: "configs/official.json",
+      registryFilePath: "registries/custom.json",
+    },
+  );
+
+  assert.equal(workflow.runtimeRequest.workspace, "/repo/workspace/custom");
+  assert.equal(workflow.sourcePackDir, "/repo/packs");
+  assert.equal(workflow.sourceRuns[0].configPath, "/repo/configs/official.json");
+  assert.equal(workflow.runtimeRequest.registryFilePath, "/repo/registries/custom.json");
+});
+
 test("buildInstalledThesisWorkflow applies thesis profile defaults before explicit overrides", () => {
   const workflow = buildInstalledThesisWorkflow(
     "/repo",

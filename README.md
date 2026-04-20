@@ -49,6 +49,7 @@ Current status:
 - package-level helper commands now exist: `npm run bootstrap-runtime` and `npm run run-installed-workflow -- --thesis-id <id>`
 - bundled thesis defaults now live under `lobster-intel/examples/thesis-profiles/` and `lobster-intel/examples/target-registries/`
 - bundled thesis profiles now carry human-readable titles and summaries for operator discovery
+- thesis runtime registry discovery now defaults to `lobster-intel/data/runtime/thesis-registry/<thesis_id>.json`
 - installed source trackers now persist cursor state by default under `lobster-intel/data/runtime/sources/*.json`
 - the heavy NGI runtime is still being migrated from `lobster-intel/` Python code into a fuller native OpenClaw plugin surface
 
@@ -61,6 +62,7 @@ The repo already contains:
 - a minimal plugin contract
 - a plugin loader
 - a run-once runtime path
+- a thesis runtime spine with registry-first target resolution
 - a delivery gate
 - a first ingest plugin example (`gooaye-tracker`)
 - legacy NGI scripts kept as migration references
@@ -70,4 +72,4 @@ The repo already contains:
 - linked-content extraction is still incomplete
 - OCR backfill is still incomplete
 - Firehose signal filtering still needs work
-- broader cron coverage and alerting policy still need work beyond the installed thesis workflow entrypoint
+- live NGI cron still needs to be rebuilt as a product-grade path

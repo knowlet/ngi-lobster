@@ -371,7 +371,7 @@ export default definePluginEntry({
         name: "ngi_lobster_run_thesis_runtime",
         label: "NGI Lobster Run Thesis Runtime",
         description:
-          "Run the thesis runtime spine through lobster-intel/scripts/run_thesis_runtime.py and return the runtime snapshot plus artifact paths.",
+          "Run the thesis runtime spine through lobster-intel/scripts/run_thesis_runtime.py, discovering runtime thesis registries by thesis id before applying explicit overrides, and return the runtime snapshot plus artifact paths.",
         parameters: {
           type: "object",
           additionalProperties: false,

@@ -42,6 +42,7 @@ def main() -> None:
     try:
         runtime_inputs = load_thesis_runtime_inputs(
             args.workspace,
+            thesis_id=args.thesis_id,
             official_statements_path=args.official,
             watchlist_path=args.watchlist,
             polymarket_path=args.polymarket,

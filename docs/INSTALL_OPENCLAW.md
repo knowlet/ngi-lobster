@@ -221,6 +221,13 @@ The bundled thesis profiles can now also expose operator-facing metadata such as
 
 That gives an installed OpenClaw a discovery surface before it commits to a thesis run.
 
+Default runtime thesis registries now live under:
+
+- `lobster-intel/data/runtime/thesis-registry/<thesis-id>.json`
+
+`ngi_lobster_run_thesis_runtime` and `run_thesis_runtime.py` discover that file automatically before falling back to a suppressed no-registry run.
+If you need a one-off override, pass `registryFilePath` or `--registry-file`; the explicit path still wins.
+
 The installed workflow now also wires default source cursor persistence automatically:
 
 - `lobster-intel/data/runtime/sources/official-statements.json`

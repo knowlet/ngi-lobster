@@ -147,3 +147,26 @@ The product intent is:
 - source plugins fetch and normalize evidence
 - runtime stores cursor / source state
 - delivery remains downstream
+
+## Source history tooling
+
+Source runtime artifacts under `lobster-intel/data/runtime/sources/<plugin-id>/` are now replayable from disk.
+
+Replay one stored run:
+
+```bash
+python3 lobster-intel/scripts/source_history.py replay \
+  --workspace . \
+  --plugin-id watchlist-tracker \
+  --run-id 20260420T010000Z
+```
+
+Rebuild a per-plugin SQLite index from `runs/*.json`:
+
+```bash
+python3 lobster-intel/scripts/source_history.py rebuild-index \
+  --workspace . \
+  --plugin-id watchlist-tracker
+```
+
+The generated `index.sqlite` is rebuildable and non-authoritative. The JSON artifact files remain runtime truth.

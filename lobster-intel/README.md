@@ -82,6 +82,9 @@ lobster-intel/
     watchlist-tracker/
   examples/
     source-packs/
+    thesis-packs/
+    thesis-profiles/
+    target-registries/
   data/
     evidence/
     compiled/
@@ -142,9 +145,60 @@ lobster-intel/examples/source-packs/
 - `watchlist.json`
 - `polymarket.json`
 
+Bundled thesis defaults now also live under:
+
+```text
+lobster-intel/examples/thesis-profiles/
+lobster-intel/examples/target-registries/
+```
+
+These fixtures let the installed OpenClaw workflow resolve thesis-specific runtime defaults without moving decision logic into delivery code.
+
 The product intent is:
 
 - source plugins fetch and normalize evidence
 - runtime stores cursor / source state
 - thesis registries live under `data/runtime/thesis-registry/` and resolve active targets before compare
 - delivery remains downstream
+
+## Install-ready thesis pack examples
+
+Example thesis packs now live under:
+
+```text
+lobster-intel/examples/thesis-packs/
+```
+
+- `gooaye.json`
+
+These packs let the thesis runtime discover:
+
+- thesis semantic frame
+- probability direction
+- runtime state
+- curated target registry entries
+
+The runtime checks `lobster-intel/data/runtime/thesis-packs/<thesis-id>.json` first, then falls back to the example pack path when no runtime-managed copy exists.
+
+## Source history tooling
+
+Source runtime artifacts under `lobster-intel/data/runtime/sources/<plugin-id>/` are now replayable from disk.
+
+Replay one stored run:
+
+```bash
+python3 lobster-intel/scripts/source_history.py replay \
+  --workspace . \
+  --plugin-id watchlist-tracker \
+  --run-id 20260420T010000Z
+```
+
+Rebuild a per-plugin SQLite index from `runs/*.json`:
+
+```bash
+python3 lobster-intel/scripts/source_history.py rebuild-index \
+  --workspace . \
+  --plugin-id watchlist-tracker
+```
+
+The generated `index.sqlite` is rebuildable and non-authoritative. The JSON artifact files remain runtime truth.

@@ -371,13 +371,15 @@ def ingest_market_data(cur):
                     if price and previous_close:
                         change_pct = ((price - previous_close) / previous_close) * 100
                     
-                    # Try to get volume from indicators if available
+                    # Try to get volume from indicators if available, then fall back to Yahoo meta.
                     try:
                         volumes = data["chart"]["result"][0]["indicators"]["quote"][0].get("volume", [])
                         if volumes:
                             volume = next((v for v in reversed(volumes) if v is not None), None)
                     except:
                         pass
+                    if volume is None:
+                        volume = meta.get("regularMarketVolume")
                 
                 if price:
                     cur.execute(

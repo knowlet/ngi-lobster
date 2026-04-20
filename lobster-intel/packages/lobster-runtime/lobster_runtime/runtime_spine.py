@@ -86,7 +86,16 @@ def _runtime_source_latest_path(workspace_dir: str | Path, source_key: str) -> P
     return _workspace_data_dir(workspace_dir) / "runtime" / "sources" / RUNTIME_SOURCE_PLUGIN_IDS[source_key] / "latest.json"
 
 
+def _validate_thesis_id(thesis_id: str | None) -> str | None:
+    if thesis_id is None:
+        return None
+    if re.fullmatch(r"[A-Za-z0-9_-]+", thesis_id):
+        return thesis_id
+    raise ValueError(f"unsafe thesis_id: {thesis_id!r}")
+
+
 def _default_registry_candidates(workspace_dir: str | Path, thesis_id: str | None) -> list[Path]:
+    thesis_id = _validate_thesis_id(thesis_id)
     if not thesis_id:
         return []
     registry_root = _workspace_data_dir(workspace_dir) / "runtime" / "thesis-registry"
@@ -96,12 +105,28 @@ def _default_registry_candidates(workspace_dir: str | Path, thesis_id: str | Non
     ]
 
 
+def _thesis_pack_search_paths(workspace_dir: str | Path, thesis_id: str) -> list[Path]:
+    thesis_id = cast(str, _validate_thesis_id(thesis_id))
+    root = Path(workspace_dir) / "lobster-intel"
+    return [
+        root / "data" / "runtime" / "thesis-packs" / f"{thesis_id}.json",
+        root / "examples" / "thesis-packs" / f"{thesis_id}.json",
+    ]
+
+
 def _write_json(path: Path, payload: dict[str, Any]) -> None:
     path.write_text(json.dumps(payload, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
 
 
 def _load_json_file(path: Path) -> dict[str, Any] | list[Any]:
     return json.loads(path.read_text(encoding="utf-8"))
+
+
+def _load_registry_payload(path: Path) -> list[dict[str, Any]]:
+    payload = _load_json_file(path)
+    if not isinstance(payload, list) or any(not isinstance(entry, dict) for entry in payload):
+        raise ValueError(f"runtime registry file must contain a JSON list of objects: {path}")
+    return cast(list[dict[str, Any]], payload)
 
 
 def _base_artifact(
@@ -164,6 +189,7 @@ def load_thesis_runtime_inputs(
     polymarket_path: str | Path | None = None,
     registry_file: str | Path | None = None,
 ) -> dict[str, Any]:
+    _validate_thesis_id(thesis_id)
     source_specs = {
         "official_statements": official_statements_path,
         "watchlist": watchlist_path,
@@ -197,6 +223,20 @@ def load_thesis_runtime_inputs(
     if missing_sources:
         raise FileNotFoundError("missing runtime source artifacts:\n" + "\n".join(missing_sources))
 
+    thesis_pack_payload: dict[str, Any] = {}
+    thesis_pack_resolution: dict[str, Any] = {"path": None, "mode": "empty", "exists": False}
+    if thesis_id:
+        thesis_pack_resolution["mode"] = "missing"
+        for thesis_pack_path in _thesis_pack_search_paths(workspace_dir, thesis_id):
+            if not thesis_pack_path.exists():
+                continue
+            payload = _load_json_file(thesis_pack_path)
+            if not isinstance(payload, dict):
+                continue
+            thesis_pack_resolution = {"path": str(thesis_pack_path), "mode": "discovered", "exists": True}
+            thesis_pack_payload = payload
+            break
+
     registry_payload: list[dict[str, Any]] = []
     registry_resolution: dict[str, Any] = {"path": None, "mode": "empty", "exists": False}
     if registry_file is not None:
@@ -204,14 +244,21 @@ def load_thesis_runtime_inputs(
         if not registry_path.exists():
             raise FileNotFoundError(f"missing runtime registry file: {registry_path}")
         registry_resolution = {"path": str(registry_path), "mode": "explicit", "exists": True}
-        registry_payload = cast(list[dict[str, Any]], _load_json_file(registry_path))
+        registry_payload = _load_registry_payload(registry_path)
     else:
         for registry_path in _default_registry_candidates(workspace_dir, thesis_id):
             if not registry_path.exists():
                 continue
             registry_resolution = {"path": str(registry_path), "mode": "discovered", "exists": True}
-            registry_payload = cast(list[dict[str, Any]], _load_json_file(registry_path))
+            registry_payload = _load_registry_payload(registry_path)
             break
+        if not registry_payload and isinstance(thesis_pack_payload.get("target_registry"), list) and thesis_pack_payload.get("target_registry"):
+            registry_payload = cast(list[dict[str, Any]], thesis_pack_payload["target_registry"])
+            registry_resolution = {
+                "path": thesis_pack_resolution["path"],
+                "mode": "thesis_pack_discovered",
+                "exists": True,
+            }
 
     return {
         "official_statements": source_payloads["official_statements"],
@@ -220,6 +267,12 @@ def load_thesis_runtime_inputs(
         "target_registry": registry_payload,
         "source_resolution": source_resolution,
         "registry_resolution": registry_resolution,
+        "thesis_pack_resolution": thesis_pack_resolution,
+        "thesis_settings": {
+            "semantic_frame": thesis_pack_payload.get("semantic_frame"),
+            "probability_direction": thesis_pack_payload.get("probability_direction"),
+            "state": thesis_pack_payload.get("state"),
+        },
     }
 
 
@@ -478,7 +531,7 @@ def _market_candidates(observations: list[dict[str, Any]]) -> list[dict[str, Any
                 "market_slug": metadata.get("market_slug") or metadata.get("slug"),
                 "market_question": metadata.get("market_question") or observation.get("extractive_rationale"),
                 "semantic_frame": metadata.get("semantic_frame"),
-                "probability_direction": metadata.get("probability_direction") or "yes_is_peace",
+                "probability_direction": metadata.get("probability_direction"),
                 "market_yes_probability": metadata.get("yes_probability"),
                 "active": metadata.get("active"),
                 "closed": metadata.get("closed"),
@@ -519,6 +572,21 @@ def _candidate_matches_registry_entry(entry: dict[str, Any], candidate: dict[str
     return False
 
 
+def _enrich_market_candidate_from_registry(
+    candidate: dict[str, Any],
+    entry: dict[str, Any],
+    inp: ThesisRuntimeInput,
+) -> dict[str, Any]:
+    enriched = dict(candidate)
+    enriched["market_slug"] = enriched.get("market_slug") or entry.get("market_slug")
+    enriched["market_question"] = enriched.get("market_question") or entry.get("market_question")
+    enriched["semantic_frame"] = enriched.get("semantic_frame") or entry.get("semantic_frame") or inp.semantic_frame
+    enriched["probability_direction"] = (
+        enriched.get("probability_direction") or entry.get("probability_direction") or inp.probability_direction
+    )
+    return enriched
+
+
 def resolve_active_target(inp: ThesisRuntimeInput, observations: list[dict[str, Any]]) -> tuple[dict[str, Any] | None, dict[str, Any] | None]:
     market_candidates = _market_candidates(observations)
     if not market_candidates:
@@ -539,7 +607,7 @@ def resolve_active_target(inp: ThesisRuntimeInput, observations: list[dict[str, 
                     "resolver_confidence": 1.0,
                     "fallback_used": False,
                 }
-                return resolved, candidate
+                return resolved, _enrich_market_candidate_from_registry(candidate, entry, inp)
 
     return None, market_candidates[0]
 
@@ -841,6 +909,7 @@ def _build_runtime_snapshot(
 
 
 def run_thesis_runtime(inp: ThesisRuntimeInput) -> ThesisRuntimeResult:
+    inp.thesis_id = cast(str, _validate_thesis_id(inp.thesis_id))
     created_at_utc = _payload_latest_ts(
         [inp.official_statements, inp.watchlist, inp.polymarket],
         inp.now_utc,
@@ -960,6 +1029,7 @@ def run_thesis_runtime(inp: ThesisRuntimeInput) -> ThesisRuntimeResult:
 
 
 def _runtime_root(workspace_dir: str | Path, thesis_id: str) -> Path:
+    thesis_id = cast(str, _validate_thesis_id(thesis_id))
     return _workspace_data_dir(workspace_dir) / "runtime" / thesis_id
 
 
@@ -979,6 +1049,7 @@ def _load_json(path: Path) -> dict[str, Any]:
 
 
 def trace_run_lineage(workspace_dir: str | Path, thesis_id: str, run_id: str) -> dict[str, list[str]]:
+    thesis_id = cast(str, _validate_thesis_id(thesis_id))
     receipt = _load_json(_artifact_path(workspace_dir, "delivery", thesis_id, "receipts", f"{run_id}.json"))
     alert = _load_json(_artifact_path(workspace_dir, "delivery", thesis_id, "alerts", f"{run_id}.json"))
     compare_artifact = _load_json(_artifact_path(workspace_dir, "runtime", thesis_id, "compare", f"{run_id}.json"))
@@ -1005,6 +1076,7 @@ def trace_run_lineage(workspace_dir: str | Path, thesis_id: str, run_id: str) ->
 
 
 def rebuild_runtime_index(workspace_dir: str | Path, thesis_id: str) -> Path:
+    thesis_id = cast(str, _validate_thesis_id(thesis_id))
     runtime_dir = _runtime_root(workspace_dir, thesis_id)
     runs_dir = runtime_dir / "runs"
     alerts_dir = _workspace_data_dir(workspace_dir) / "delivery" / thesis_id / "alerts"

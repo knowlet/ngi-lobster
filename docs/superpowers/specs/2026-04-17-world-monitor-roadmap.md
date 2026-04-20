@@ -2,6 +2,10 @@
 
 Date: 2026-04-17
 
+## Status Snapshot
+
+As of 2026-04-19, the baseline `Per-Thesis Runtime Core` spine has landed in the repo.
+
 Execution companion:
 
 - `docs/superpowers/plans/2026-04-20-world-monitor-roadmap-breakdown.md`

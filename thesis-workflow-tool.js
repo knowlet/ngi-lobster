@@ -12,18 +12,22 @@ const INSTALLED_SOURCE_SPECS = [
   {
     pluginId: "watchlist-tracker",
     requestField: "watchlistConfigPath",
-    stateRequestField: "watchlistStatePath",
     defaultConfig: "watchlist.json",
+    stateRequestField: "watchlistStatePath",
     defaultState: "watchlist.json",
   },
   {
     pluginId: "polymarket-tracker",
     requestField: "polymarketConfigPath",
-    stateRequestField: "polymarketStatePath",
     defaultConfig: "polymarket.json",
+    stateRequestField: "polymarketStatePath",
     defaultState: "polymarket.json",
   },
 ];
+
+function hasValue(value) {
+  return value !== undefined && value !== null && value !== "";
+}
 
 function defaultSourcePackDir(rootDir) {
   return path.join(rootDir, "lobster-intel", "examples", "source-packs");
@@ -69,18 +73,22 @@ function resolveWorkspacePath(workspace, value) {
 
 function parseJsonFile(readFileSync, filePath, label) {
   try {
-    return JSON.parse(readFileSync(filePath, "utf8"));
+    return {
+      value: JSON.parse(readFileSync(filePath, "utf8")),
+      error: null,
+    };
   } catch (err) {
-    throw new Error(
-      `Failed to parse ${label} at ${filePath}: ${err?.message || "invalid JSON"}`,
-    );
+    return {
+      value: null,
+      error: `Failed to parse ${label} JSON: ${err.message}`,
+    };
   }
 }
 
-export function loadBundledThesisProfile(rootDir, request = {}, io = {}) {
+function readBundledThesisProfile(rootDir, request = {}, io = {}) {
   const thesisId = request.thesisId;
   if (!thesisId) {
-    return null;
+    return { profile: null, error: null, profilePath: null };
   }
 
   const existsSync = io.existsSync || fs.existsSync;
@@ -88,17 +96,45 @@ export function loadBundledThesisProfile(rootDir, request = {}, io = {}) {
   const profilePath = resolveThesisProfilePath(rootDir, request);
 
   if (!existsSync(profilePath)) {
-    return null;
+    return { profile: null, error: null, profilePath };
   }
 
-  const profile = parseJsonFile(readFileSync, profilePath, "thesis profile");
+  const { value, error } = parseJsonFile(readFileSync, profilePath, "profile");
+  if (error) {
+    return {
+      profile: null,
+      error: `Failed to parse thesis profile at ${profilePath}: ${error.replace(/^Failed to parse profile JSON: /, "")}`,
+      profilePath,
+    };
+  }
+  if (!value || typeof value !== "object" || Array.isArray(value)) {
+    return {
+      profile: null,
+      error: `Failed to parse thesis profile at ${profilePath}: expected JSON object`,
+      profilePath,
+    };
+  }
+
   return {
-    ...profile,
-    profile_path: profilePath,
+    profile: {
+      ...value,
+      profile_path: profilePath,
+    },
+    error: null,
+    profilePath,
   };
 }
 
-function profileSummary(rootDir, profile, extra = {}) {
+function sourceConfigSummaries(workflow, existsSync) {
+  return workflow.sourceRuns.map((sourceRun) => ({
+    pluginId: sourceRun.pluginId,
+    configPath: sourceRun.configPath,
+    statePath: sourceRun.statePath,
+    exists: existsSync(sourceRun.configPath),
+  }));
+}
+
+function profileSummary(rootDir, profile, extras = {}) {
   return {
     thesisId: profile.thesis_id,
     title: profile.title || profile.thesis_id,
@@ -108,78 +144,80 @@ function profileSummary(rootDir, profile, extra = {}) {
     state: profile.state,
     profilePath: profile.profile_path,
     registryFilePath: resolveRepoPath(rootDir, profile.registry_file_path),
-    ...extra,
+    ...extras,
   };
 }
 
-function inspectInstalledWorkflowContract({
-  rootDir,
-  request = {},
-  thesisProfile = null,
-  workflow = null,
-  existsSync = fs.existsSync,
-}) {
+function validateInstalledWorkflowContract(request, thesisProfile, workflow) {
   const thesisId = request.thesisId || thesisProfile?.thesis_id || "unknown-thesis";
-  const profileErrors = [];
+  const errors = [];
 
   if (!thesisProfile) {
-    const profilePath = resolveThesisProfilePath(rootDir, request);
-    profileErrors.push(
-      `No bundled thesis profile found for "${thesisId}" at ${profilePath}.`,
+    if (request.thesisProfilePath) {
+      errors.push(`Provided thesis profile path does not exist: ${request.thesisProfilePath}`);
+      return errors;
+    }
+
+    const missingRuntimeFields = [];
+    if (!hasValue(workflow.runtimeRequest.semanticFrame)) {
+      missingRuntimeFields.push("semanticFrame");
+    }
+    if (!hasValue(workflow.runtimeRequest.probabilityDirection)) {
+      missingRuntimeFields.push("probabilityDirection");
+    }
+    if (!hasValue(workflow.runtimeRequest.state)) {
+      missingRuntimeFields.push("state");
+    }
+    if (!hasValue(workflow.runtimeRequest.registryFilePath)) {
+      missingRuntimeFields.push("registryFilePath");
+    }
+
+    if (missingRuntimeFields.length > 0) {
+      errors.push(
+        `No bundled thesis profile found for "${thesisId}". Provide thesisProfilePath or explicit ${missingRuntimeFields.join(", ")}.`,
+      );
+    }
+    return errors;
+  }
+
+  if (request.thesisId && thesisProfile.thesis_id !== request.thesisId) {
+    errors.push(
+      `Thesis profile "${thesisProfile.profile_path}" declares thesis_id "${thesisProfile.thesis_id}" but the request asked for "${request.thesisId}".`,
     );
-  } else {
-    if (request.thesisId && thesisProfile.thesis_id !== request.thesisId) {
-      profileErrors.push(
-        `Thesis profile "${thesisProfile.profile_path}" declares thesis_id "${thesisProfile.thesis_id}" but the request asked for "${request.thesisId}".`,
-      );
-    }
+  }
+  if (!hasValue(workflow.runtimeRequest.semanticFrame)) {
+    errors.push(`Thesis profile "${thesisId}" does not resolve semanticFrame.`);
+  }
+  if (!hasValue(workflow.runtimeRequest.probabilityDirection)) {
+    errors.push(`Thesis profile "${thesisId}" does not resolve probabilityDirection.`);
+  }
+  if (!hasValue(workflow.runtimeRequest.state)) {
+    errors.push(`Thesis profile "${thesisId}" does not resolve state.`);
+  }
+  if (!hasValue(workflow.runtimeRequest.registryFilePath)) {
+    errors.push(`Thesis profile "${thesisId}" does not resolve registryFilePath.`);
+  }
 
-    if (!workflow?.runtimeRequest.semanticFrame) {
-      profileErrors.push(
-        `Thesis profile "${thesisId}" does not resolve semanticFrame.`,
+  for (const spec of INSTALLED_SOURCE_SPECS) {
+    const hasExplicitOverride = hasValue(request[spec.requestField]);
+    const declaredSourcePath =
+      thesisProfile.source_config_paths?.[spec.pluginId] || null;
+    if (!hasExplicitOverride && !declaredSourcePath) {
+      errors.push(
+        `Thesis profile "${thesisId}" does not declare source_config_paths.${spec.pluginId}.`,
       );
-    }
-    if (!workflow?.runtimeRequest.probabilityDirection) {
-      profileErrors.push(
-        `Thesis profile "${thesisId}" does not resolve probabilityDirection.`,
-      );
-    }
-    if (!workflow?.runtimeRequest.state) {
-      profileErrors.push(`Thesis profile "${thesisId}" does not resolve state.`);
-    }
-    if (!workflow?.runtimeRequest.registryFilePath) {
-      profileErrors.push(
-        `Thesis profile "${thesisId}" does not resolve registryFilePath.`,
-      );
-    }
-
-    for (const spec of INSTALLED_SOURCE_SPECS) {
-      const hasExplicitOverride = Boolean(request[spec.requestField]);
-      const declaredSourcePath =
-        thesisProfile.source_config_paths?.[spec.pluginId] || null;
-      if (!hasExplicitOverride && !declaredSourcePath) {
-        profileErrors.push(
-          `Thesis profile "${thesisId}" does not declare source_config_paths.${spec.pluginId}.`,
-        );
-      }
     }
   }
 
-  const missingPaths =
-    profileErrors.length > 0 || !workflow
-      ? []
-      : collectInstalledWorkflowMissingPaths(workflow, existsSync);
-  const validationErrors = [
-    ...profileErrors,
-    ...missingPaths.map((item) => `Workflow input file not found: ${item}`),
-  ];
+  return errors;
+}
 
-  return {
-    contractStatus: validationErrors.length === 0 ? "ready" : "incomplete",
-    profileErrors,
-    missingPaths,
-    validationErrors,
-  };
+export function loadBundledThesisProfile(rootDir, request = {}, io = {}) {
+  const { profile, error } = readBundledThesisProfile(rootDir, request, io);
+  if (error) {
+    throw new Error(error);
+  }
+  return profile;
 }
 
 export function listBundledThesisProfiles(rootDir, io = {}) {
@@ -188,29 +226,54 @@ export function listBundledThesisProfiles(rootDir, io = {}) {
   const readFileSync = io.readFileSync || fs.readFileSync;
   const profileDir = defaultThesisProfileDir(rootDir);
 
+  if (!existsSync(profileDir)) {
+    return [];
+  }
+
   return readdirSync(profileDir, { withFileTypes: true })
     .filter((entry) => entry.isFile() && entry.name.endsWith(".json"))
     .map((entry) => {
-      const profilePath = path.join(profileDir, entry.name);
-      const profile = parseJsonFile(readFileSync, profilePath, "thesis profile");
-      const thesisProfile = {
-        ...profile,
-        profile_path: profilePath,
-      };
-      const contract = inspectInstalledWorkflowContract({
+      const thesisId = entry.name.replace(/\.json$/, "");
+      const { profile, error, profilePath } = readBundledThesisProfile(
         rootDir,
-        request: { thesisId: thesisProfile.thesis_id },
-        thesisProfile,
-        workflow: buildInstalledThesisWorkflow(
+        {
+          thesisId,
+          thesisProfilePath: path.join(profileDir, entry.name),
+        },
+        { existsSync, readFileSync },
+      );
+      if (!profile) {
+        return profileSummary(
           rootDir,
-          { thesisId: thesisProfile.thesis_id },
-          thesisProfile,
+          { thesis_id: thesisId, profile_path: profilePath },
+          {
+            contractStatus: "incomplete",
+            validationErrors: [
+              error || `Failed to load profile metadata: ${profilePath}`,
+            ],
+          },
+        );
+      }
+
+      const workflow = buildInstalledThesisWorkflow(
+        rootDir,
+        { thesisId: profile.thesis_id },
+        profile,
+      );
+      const validationErrors = [
+        ...validateInstalledWorkflowContract(
+          { thesisId: profile.thesis_id },
+          profile,
+          workflow,
         ),
-        existsSync,
-      });
-      return profileSummary(rootDir, thesisProfile, {
-        contractStatus: contract.contractStatus,
-        validationErrors: contract.validationErrors,
+        ...collectInstalledWorkflowMissingPaths(workflow, existsSync).map(
+          (missingPath) => `Missing file: ${missingPath}`,
+        ),
+      ];
+
+      return profileSummary(rootDir, profile, {
+        contractStatus: validationErrors.length === 0 ? "ready" : "incomplete",
+        validationErrors,
       });
     })
     .sort((left, right) => left.thesisId.localeCompare(right.thesisId));
@@ -219,35 +282,70 @@ export function listBundledThesisProfiles(rootDir, io = {}) {
 export function describeBundledThesisProfile(rootDir, thesisId, io = {}) {
   const existsSync = io.existsSync || fs.existsSync;
   const readFileSync = io.readFileSync || fs.readFileSync;
-  const profile = loadBundledThesisProfile(rootDir, { thesisId }, {
+  const request = { thesisId };
+  const { profile, error, profilePath } = readBundledThesisProfile(rootDir, request, {
     existsSync,
     readFileSync,
   });
   if (!profile) {
-    return null;
+    if (!error) {
+      return null;
+    }
+
+    return {
+      ...profileSummary(
+        rootDir,
+        { thesis_id: thesisId, profile_path: profilePath },
+        {
+          contractStatus: "incomplete",
+          validationErrors: [error],
+        },
+      ),
+      sourceConfigs: [],
+      registry: {
+        path: null,
+        exists: false,
+        entryCount: 0,
+        markets: [],
+      },
+    };
   }
 
-  const workflow = buildInstalledThesisWorkflow(rootDir, { thesisId }, profile);
-  const contract = inspectInstalledWorkflowContract({
-    rootDir,
-    request: { thesisId },
-    thesisProfile: profile,
-    workflow,
-    existsSync,
-  });
-  const registryPath = resolveRepoPath(rootDir, profile.registry_file_path);
-  const registryEntries =
-    registryPath && existsSync(registryPath)
-      ? parseJsonFile(readFileSync, registryPath, "thesis registry")
-      : [];
+  const workflow = buildInstalledThesisWorkflow(rootDir, request, profile);
+  const registryPath = workflow.runtimeRequest.registryFilePath;
+  const validationErrors = [
+    ...validateInstalledWorkflowContract(request, profile, workflow),
+    ...collectInstalledWorkflowMissingPaths(workflow, existsSync).map(
+      (missingPath) => `Missing file: ${missingPath}`,
+    ),
+  ];
+  let registryEntries = [];
+  if (registryPath && existsSync(registryPath)) {
+    const { value, error: registryError } = parseJsonFile(
+      readFileSync,
+      registryPath,
+      "registry",
+    );
+    if (registryError) {
+      validationErrors.push(registryError);
+    } else if (Array.isArray(value)) {
+      registryEntries = value;
+    } else {
+      validationErrors.push(
+        `Failed to parse registry JSON: expected array at ${registryPath}`,
+      );
+    }
+  }
 
   return {
     ...profileSummary(rootDir, profile, {
-      contractStatus: contract.contractStatus,
-      validationErrors: contract.validationErrors,
+      contractStatus: validationErrors.length === 0 ? "ready" : "incomplete",
+      validationErrors,
     }),
+    sourceConfigs: sourceConfigSummaries(workflow, existsSync),
     registry: {
       path: registryPath || null,
+      exists: Boolean(registryPath && existsSync(registryPath)),
       entryCount: registryEntries.length,
       markets: registryEntries.map((entry) => ({
         marketId: entry.market_id || null,
@@ -362,7 +460,7 @@ export async function runInstalledThesisWorkflow({
   runSourcePlugin,
   runThesisRuntime,
 }) {
-  const thesisProfile = loadBundledThesisProfile(rootDir, request, {
+  const { profile: thesisProfile, error: profileError } = readBundledThesisProfile(rootDir, request, {
     existsSync,
     readFileSync,
   });
@@ -371,27 +469,29 @@ export async function runInstalledThesisWorkflow({
     request,
     thesisProfile,
   );
-  const contract = inspectInstalledWorkflowContract({
-    rootDir,
+  const validationErrors = validateInstalledWorkflowContract(
     request,
     thesisProfile,
     workflow,
-    existsSync,
-  });
-  if (contract.profileErrors.length > 0) {
+  );
+  if (profileError) {
+    validationErrors.unshift(profileError);
+  }
+  if (validationErrors.length > 0) {
     return {
       kind: "invalid_profile",
-      thesisProfile,
-      validationErrors: contract.validationErrors,
+      validationErrors,
       workflow,
+      thesisProfile,
     };
   }
-  if (contract.missingPaths.length > 0) {
+
+  const missingPaths = collectInstalledWorkflowMissingPaths(workflow, existsSync);
+  if (missingPaths.length > 0) {
     return {
       kind: "missing_paths",
-      missingPaths: contract.missingPaths,
+      missingPaths,
       workflow,
-      validationErrors: contract.validationErrors,
     };
   }
 

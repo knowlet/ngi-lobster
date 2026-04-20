@@ -1,6 +1,6 @@
 # NGI Runtime Spine Design
 
-Status: validated design for MVP direction  
+Status: validated design for MVP direction; thesis-scoped baseline implemented on 2026-04-19
 Date: 2026-04-17
 
 Execution companions:
@@ -20,6 +20,29 @@ Define the MVP architecture for an installable NGI Lobster runtime that:
 - auto-delivers alerts through the OpenClaw-native heartbeat path
 
 This document defines the MVP spine only. It also establishes the contracts that later source expansion and world-monitor portfolio work must consume without rewriting runtime truth.
+
+## Implementation Snapshot
+
+As of 2026-04-19, the per-thesis runtime core described here exists in the repo as a baseline implementation centered on:
+
+- `lobster-intel/packages/lobster-runtime/lobster_runtime/runtime_spine.py`
+- `lobster-intel/scripts/run_thesis_runtime.py`
+- `lobster-intel/tests/test_runtime_spine.py`
+
+The implemented slice currently proves:
+
+- thesis-scoped evidence, observation, fusion, compare, runtime, alert, and receipt artifacts
+- compare modes `full_compare`, `degraded_compare`, and `suppressed`
+- replayable compare logic and lineage tracing from receipt back to evidence
+- a rebuildable SQLite index over runtime run artifacts
+- OpenClaw heartbeat-boundary delivery receipts through `lobster_delivery`
+
+The implemented slice does not yet prove:
+
+- a true live market search fallback beyond the currently installed market source artifacts
+- a fully separated analyzer SDK or source-platform seam per source family
+- multi-thesis scheduling and fleet operations
+- `openclaw plugins install` as the fully productized runtime/operator entrypoint
 
 ## Product Decisions Locked In
 
@@ -364,6 +387,11 @@ Rules:
 - live search expands the candidate set
 - live search does not become truth by itself
 - fallback usage must be written into the runtime snapshot and compare artifact
+
+Implementation note:
+
+- the current baseline implementation resolves against curated registry data plus the currently ingested market observation set
+- an external live-search expansion step is still a follow-on item rather than part of the shipped MVP baseline
 
 ### Resolver Output
 

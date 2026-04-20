@@ -210,6 +210,7 @@ Bundled thesis defaults are resolved from:
 
 - `lobster-intel/examples/thesis-profiles/<thesis-id>.json`
 - `lobster-intel/examples/target-registries/<thesis-id>.json`
+- `lobster-intel/examples/thesis-packs/<thesis-id>.json` when the Python thesis runtime is invoked directly
 
 That means the installed workflow can carry a stable runtime contract for `semantic_frame`, `probability_direction`, `state`, and target registry without requiring those flags on every run.
 
@@ -241,6 +242,11 @@ The installed workflow now also wires default source cursor persistence automati
 - `lobster-intel/data/runtime/sources/polymarket.json`
 
 Repeated installed-workflow runs reuse those cursor files without extra `*_STATE_PATH` environment-variable wiring.
+
+For source-runtime operations, the Python support CLI also exposes:
+
+- `python3 lobster-intel/scripts/source_history.py replay --workspace . --plugin-id watchlist-tracker --run-id <run_id>`
+- `python3 lobster-intel/scripts/source_history.py rebuild-index --workspace . --plugin-id watchlist-tracker`
 
 ## 7.2 First batch source trackers
 
@@ -286,7 +292,7 @@ lobster-intel/data/runtime/
 lobster-intel/data/delivery/
 ```
 
-Per-plugin source runtime directories now also support replay and rebuild under:
+Per-plugin source runtime directories also persist under:
 
 ```text
 lobster-intel/data/runtime/sources/<plugin-id>/latest.json

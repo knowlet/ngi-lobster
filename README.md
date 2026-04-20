@@ -48,6 +48,7 @@ Current status:
 - native tool `ngi_lobster_run_installed_thesis_workflow` exists to run bundled source packs and then the thesis runtime spine, but now fails closed when the thesis profile contract is incomplete
 - stable CLI `node scripts/run_installed_thesis_workflow.js --thesis-id <id>` exists for outside installs and cron jobs
 - package-level helper commands now exist: `npm run bootstrap-runtime` and `npm run run-installed-workflow -- --thesis-id <id>`
+- `lobster-intel/examples/thesis-packs/gooaye.json` exists for install-ready runtime defaults when the Python thesis runtime is called directly
 - bundled thesis defaults now live under `lobster-intel/examples/thesis-profiles/` and `lobster-intel/examples/target-registries/`
 - bundled thesis profiles now act as install-surface contracts, including source config paths and runtime defaults
 - bundled thesis profiles now carry human-readable titles and summaries for operator discovery
@@ -68,6 +69,7 @@ The repo already contains:
 - a thesis runtime spine with registry-first target resolution
 - a delivery gate
 - a first ingest plugin example (`gooaye-tracker`)
+- an install-ready thesis pack example for direct runtime resolution
 - legacy NGI scripts kept as migration references
 
 ## Current gaps
@@ -76,3 +78,19 @@ The repo already contains:
 - OCR backfill is still incomplete
 - Firehose signal filtering still needs work
 - live NGI cron still needs to be rebuilt as a product-grade path
+
+## Install-ready runtime defaults
+
+Default thesis runtime resolution now has an install-ready config surface:
+
+- source tracker packs live under `lobster-intel/examples/source-packs/`
+- thesis runtime packs live under `lobster-intel/examples/thesis-packs/`
+
+When you run `lobster-intel/scripts/run_thesis_runtime.py` with only `--workspace` and `--thesis-id`, the runtime can discover the matching thesis pack and use it to load:
+
+- semantic frame
+- probability direction
+- runtime state
+- curated target registry entries
+
+Operational details live in `docs/THESIS_PACKS.md`.

@@ -6,6 +6,12 @@ NGI Lobster exists to turn the current NGI workflow into an installable OpenClaw
 
 Thesis profiles are part of that install surface: they let `openclaw plugins install` carry stable runtime defaults without moving thesis decision logic into delivery code.
 
+The install path we are aiming to make real is:
+
+```text
+openclaw plugins install -> source ingest plugins -> runtime spine -> auditable artifacts -> downstream delivery
+```
+
 ## What a thesis profile is
 
 Bundled thesis profiles live under:
@@ -65,3 +71,8 @@ This keeps install-time defaults explicit and fail-closed while leaving runtime 
   }
 }
 ```
+
+## Design rule
+
+Thesis profiles define runtime defaults and install-surface wiring.
+They do not send chat messages, bypass the runtime, or move compare/alert decisions into delivery-only code.

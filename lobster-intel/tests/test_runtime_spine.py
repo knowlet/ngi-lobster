@@ -110,11 +110,11 @@ def _target_registry() -> list[dict]:
     return [
         {
             "market_id": "1517836",
-            "market_slug": "military-operations-end-by-june-30",
-            "market_question": "Military operations end by June 30?",
+            "market_slug": "trump-announces-end-of-military-operations-against-iran-by-june-30th-566-326-653-781-167-426-752-225",
+            "market_question": "Trump announces end of military operations against Iran by June 30th?",
             "semantic_frame": "military_operations_end_by_deadline",
             "probability_direction": "yes_is_peace",
-            "aliases": ["operations end by june 30", "june 30 end market"],
+            "aliases": ["military-operations-end-by-june-30", "operations end by june 30", "june 30 end market"],
             "resolution_mode": "registry_first",
         }
     ]
@@ -142,6 +142,16 @@ def _install_thesis_registry(workspace: Path, thesis_id: str, entries: list[dict
     registry_path.parent.mkdir(parents=True, exist_ok=True)
     registry_path.write_text(json.dumps(entries), encoding="utf-8")
     return registry_path
+
+
+def _thesis_pack() -> dict:
+    return {
+        "thesis_id": "gooaye",
+        "semantic_frame": "military_operations_end_by_deadline",
+        "probability_direction": "yes_is_peace",
+        "state": "ACTIVE_TRUCE",
+        "target_registry": _target_registry(),
+    }
 
 
 def test_runtime_spine_run_writes_full_artifact_chain(tmp_path: Path):
@@ -341,6 +351,92 @@ def test_runtime_index_can_be_rebuilt_from_artifacts(tmp_path: Path):
     assert rebuilt_path.exists()
 
 
+def test_load_thesis_runtime_inputs_discovers_thesis_pack_defaults(tmp_path: Path):
+    official, watchlist, polymarket = _source_payloads()
+    _install_runtime_source_artifacts(tmp_path, official, watchlist, polymarket)
+    thesis_pack_path = tmp_path / "lobster-intel" / "examples" / "thesis-packs" / "gooaye.json"
+    thesis_pack_path.parent.mkdir(parents=True, exist_ok=True)
+    thesis_pack_path.write_text(json.dumps(_thesis_pack()), encoding="utf-8")
+
+    payload = runtime_spine.load_thesis_runtime_inputs(tmp_path, thesis_id="gooaye")
+
+    assert payload["target_registry"] == _target_registry()
+    assert payload["thesis_settings"]["semantic_frame"] == "military_operations_end_by_deadline"
+    assert payload["thesis_settings"]["probability_direction"] == "yes_is_peace"
+    assert payload["thesis_settings"]["state"] == "ACTIVE_TRUCE"
+    assert payload["registry_resolution"]["mode"] == "thesis_pack_discovered"
+    assert payload["registry_resolution"]["path"].endswith("lobster-intel/examples/thesis-packs/gooaye.json")
+
+
+def test_load_thesis_runtime_inputs_marks_thesis_pack_missing_when_thesis_id_has_no_pack(tmp_path: Path):
+    official, watchlist, polymarket = _source_payloads()
+    _install_runtime_source_artifacts(tmp_path, official, watchlist, polymarket)
+
+    payload = runtime_spine.load_thesis_runtime_inputs(tmp_path, thesis_id="gooaye")
+
+    assert payload["thesis_pack_resolution"]["mode"] == "missing"
+    assert payload["thesis_pack_resolution"]["exists"] is False
+    assert payload["registry_resolution"]["mode"] == "empty"
+
+
+def test_load_thesis_runtime_inputs_skips_malformed_thesis_pack_and_uses_next_candidate(tmp_path: Path):
+    official, watchlist, polymarket = _source_payloads()
+    _install_runtime_source_artifacts(tmp_path, official, watchlist, polymarket)
+    runtime_pack_path = tmp_path / "lobster-intel" / "data" / "runtime" / "thesis-packs" / "gooaye.json"
+    example_pack_path = tmp_path / "lobster-intel" / "examples" / "thesis-packs" / "gooaye.json"
+    runtime_pack_path.parent.mkdir(parents=True, exist_ok=True)
+    example_pack_path.parent.mkdir(parents=True, exist_ok=True)
+    runtime_pack_path.write_text(json.dumps(["not", "a", "mapping"]), encoding="utf-8")
+    example_pack_path.write_text(json.dumps(_thesis_pack()), encoding="utf-8")
+
+    payload = runtime_spine.load_thesis_runtime_inputs(tmp_path, thesis_id="gooaye")
+
+    assert payload["thesis_pack_resolution"]["mode"] == "discovered"
+    assert payload["thesis_pack_resolution"]["path"].endswith("lobster-intel/examples/thesis-packs/gooaye.json")
+    assert payload["registry_resolution"]["mode"] == "thesis_pack_discovered"
+    assert payload["thesis_settings"]["semantic_frame"] == "military_operations_end_by_deadline"
+
+
+def test_resolve_active_target_prefers_registry_probability_direction_over_candidate_default():
+    inp = ThesisRuntimeInput(
+        thesis_id="gooaye",
+        workspace_dir=".",
+        target_registry=[
+            {
+                "market_id": "1517836",
+                "market_slug": "military-operations-end-by-june-30",
+                "market_question": "Military operations end by June 30?",
+                "semantic_frame": "military_operations_end_by_deadline",
+                "probability_direction": "yes_is_escalation",
+            }
+        ],
+        semantic_frame="military_operations_end_by_deadline",
+        probability_direction="yes_is_peace",
+    )
+    observations = [
+        {
+            "artifact_id": "observation:market:1517836",
+            "event_type": "market_candidate",
+            "extractive_rationale": "Military operations end by June 30?",
+            "metadata": {
+                "market_id": "1517836",
+                "market_slug": "military-operations-end-by-june-30",
+                "market_question": "Military operations end by June 30?",
+                "yes_probability": 0.55,
+                "active": True,
+                "closed": False,
+            },
+        }
+    ]
+
+    active_target, market_candidate = runtime_spine.resolve_active_target(inp, observations)
+
+    assert active_target is not None
+    assert market_candidate is not None
+    assert active_target["probability_direction"] == "yes_is_escalation"
+    assert market_candidate["probability_direction"] == "yes_is_escalation"
+
+
 def test_rebuild_runtime_index_preserves_runtime_runs_indexes(tmp_path: Path):
     official, watchlist, polymarket = _source_payloads()
     run_thesis_runtime(
@@ -512,7 +608,7 @@ def test_run_thesis_runtime_cli_discovers_installed_source_artifacts(tmp_path: P
     assert Path(payload["artifact_paths"]["runtime_latest"]).exists()
 
 
-def test_load_thesis_runtime_inputs_prefers_explicit_registry_over_discovery(tmp_path: Path):
+def test_load_thesis_runtime_inputs_prefers_explicit_registry_file(tmp_path: Path):
     official, watchlist, polymarket = _source_payloads()
     _install_runtime_source_artifacts(tmp_path, official, watchlist, polymarket)
     _install_thesis_registry(tmp_path, "gooaye", _target_registry())
@@ -522,9 +618,11 @@ def test_load_thesis_runtime_inputs_prefers_explicit_registry_over_discovery(tmp
             [
                 {
                     "market_id": "explicit-target",
-                    "market_question": "Explicit target",
+                    "market_slug": "explicit-market",
+                    "market_question": "Explicit market target?",
                     "semantic_frame": "military_operations_end_by_deadline",
                     "probability_direction": "yes_is_peace",
+                    "aliases": ["explicit target"],
                     "resolution_mode": "registry_first",
                 }
             ]
@@ -541,6 +639,64 @@ def test_load_thesis_runtime_inputs_prefers_explicit_registry_over_discovery(tmp
     assert payload["registry_resolution"]["mode"] == "explicit"
     assert payload["registry_resolution"]["path"] == str(explicit_registry_path)
     assert payload["target_registry"][0]["market_id"] == "explicit-target"
+
+
+def test_load_thesis_runtime_inputs_rejects_unsafe_thesis_id(tmp_path: Path):
+    official, watchlist, polymarket = _source_payloads()
+    _install_runtime_source_artifacts(tmp_path, official, watchlist, polymarket)
+
+    with pytest.raises(ValueError, match="unsafe thesis_id"):
+        load_thesis_runtime_inputs(
+            tmp_path,
+            thesis_id="../../etc/passwd",
+        )
+
+
+def test_run_thesis_runtime_rejects_unsafe_thesis_id(tmp_path: Path):
+    official, watchlist, polymarket = _source_payloads()
+
+    with pytest.raises(ValueError, match="unsafe thesis_id"):
+        run_thesis_runtime(
+            ThesisRuntimeInput(
+                thesis_id="../../etc/passwd",
+                workspace_dir=tmp_path,
+                official_statements=official,
+                watchlist=watchlist,
+                polymarket=polymarket,
+                target_registry=_target_registry(),
+                semantic_frame="military_operations_end_by_deadline",
+                probability_direction="yes_is_peace",
+                state="ACTIVE_TRUCE",
+                now_utc="2026-04-19T12:30:00+00:00",
+            )
+        )
+
+
+def test_load_thesis_runtime_inputs_rejects_non_list_registry_payload(tmp_path: Path):
+    official, watchlist, polymarket = _source_payloads()
+    _install_runtime_source_artifacts(tmp_path, official, watchlist, polymarket)
+    registry_root = tmp_path / "lobster-intel" / "data" / "runtime" / "thesis-registry"
+    registry_root.mkdir(parents=True, exist_ok=True)
+    registry_path = registry_root / "gooaye.json"
+    registry_path.write_text(json.dumps({"market_id": "unexpected-object"}), encoding="utf-8")
+
+    with pytest.raises(ValueError, match="must contain a JSON list"):
+        load_thesis_runtime_inputs(
+            tmp_path,
+            thesis_id="gooaye",
+        )
+
+    assert registry_path.exists()
+
+
+def test_trace_run_lineage_rejects_unsafe_thesis_id(tmp_path: Path):
+    with pytest.raises(ValueError, match="unsafe thesis_id"):
+        trace_run_lineage(tmp_path, "../../etc/passwd", "20260419T123000Z")
+
+
+def test_rebuild_runtime_index_rejects_unsafe_thesis_id(tmp_path: Path):
+    with pytest.raises(ValueError, match="unsafe thesis_id"):
+        rebuild_runtime_index(tmp_path, "../../etc/passwd")
 
 
 def test_run_thesis_runtime_cli_fails_when_installed_source_artifacts_are_missing(tmp_path: Path):

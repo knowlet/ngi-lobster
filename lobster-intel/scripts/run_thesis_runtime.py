@@ -33,9 +33,9 @@ def main() -> None:
         help="Override the polymarket runtime artifact path. Defaults to the installed workspace artifact.",
     )
     ap.add_argument("--registry-file", help="Override the runtime registry file path.")
-    ap.add_argument("--semantic-frame", default="generic_thesis_frame")
-    ap.add_argument("--probability-direction", default="yes_is_peace")
-    ap.add_argument("--state", default="ACTIVE_TRUCE")
+    ap.add_argument("--semantic-frame")
+    ap.add_argument("--probability-direction")
+    ap.add_argument("--state")
     ap.add_argument("--now-utc")
     args = ap.parse_args()
 
@@ -48,9 +48,17 @@ def main() -> None:
             polymarket_path=args.polymarket,
             registry_file=args.registry_file,
         )
-    except FileNotFoundError as exc:
+    except (FileNotFoundError, ValueError) as exc:
         print(f"ERROR: {exc}", file=sys.stderr)
         raise SystemExit(2)
+
+    thesis_settings = runtime_inputs.get("thesis_settings") or {}
+    semantic_frame = args.semantic_frame or thesis_settings.get("semantic_frame") or "generic_thesis_frame"
+    probability_direction = (
+        args.probability_direction or thesis_settings.get("probability_direction") or "yes_is_peace"
+    )
+    state = args.state or thesis_settings.get("state") or "ACTIVE_TRUCE"
+
     result = run_thesis_runtime(
         ThesisRuntimeInput(
             thesis_id=args.thesis_id,
@@ -59,9 +67,9 @@ def main() -> None:
             watchlist=runtime_inputs["watchlist"],
             polymarket=runtime_inputs["polymarket"],
             target_registry=runtime_inputs["target_registry"],
-            semantic_frame=args.semantic_frame,
-            probability_direction=args.probability_direction,
-            state=args.state,
+            semantic_frame=semantic_frame,
+            probability_direction=probability_direction,
+            state=state,
             now_utc=args.now_utc,
         )
     )
@@ -75,6 +83,12 @@ def main() -> None:
                     "workspace": str(Path(args.workspace).resolve()),
                     "source_resolution": runtime_inputs["source_resolution"],
                     "registry_resolution": runtime_inputs["registry_resolution"],
+                    "thesis_pack_resolution": runtime_inputs["thesis_pack_resolution"],
+                    "effective_runtime_settings": {
+                        "semantic_frame": semantic_frame,
+                        "probability_direction": probability_direction,
+                        "state": state,
+                    },
                 },
                 "artifact_paths": result.paths,
             },

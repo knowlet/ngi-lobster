@@ -45,6 +45,7 @@ export default definePluginEntry({
 
     function buildMissingFileError(missingPaths) {
       return {
+        ok: false,
         content: [
           {
             type: "text",
@@ -57,6 +58,7 @@ export default definePluginEntry({
 
     function buildInvalidProfileError(validationErrors = []) {
       return {
+        ok: false,
         content: [
           {
             type: "text",
@@ -100,6 +102,7 @@ export default definePluginEntry({
         const rawStdout = err?.stdout?.trim?.() || "";
         const rawStderr = err?.stderr?.trim?.() || err?.message || "";
         return {
+          ok: false,
           content: [
             {
               type: "text",
@@ -191,6 +194,7 @@ export default definePluginEntry({
             pluginDir,
             workspace,
             configPath,
+            statePath,
             stdout: rawStdout,
             stderr: rawStderr,
             exitCode: err?.code ?? null
@@ -218,6 +222,7 @@ export default definePluginEntry({
               pluginDir,
               workspace,
               configPath,
+              statePath,
               stdout: rawStdout,
               stderr: rawStderr,
               parseError: (err && err.message) || "failed to parse source plugin output"
@@ -239,6 +244,7 @@ export default definePluginEntry({
           pluginDir,
           workspace,
           configPath,
+          statePath,
           stdout: rawStdout,
           stderr: rawStderr,
           ...parsed
@@ -264,43 +270,40 @@ export default definePluginEntry({
           properties: {
             thesisId: {
               type: "string",
-              description:
-                "Optional thesis id to return a detailed single-thesis view.",
-            },
-          },
-        },
-        async execute(input) {
-          try {
-            const request = input || {};
-            const details = request.thesisId
-              ? describeBundledThesisProfile(rootDir, request.thesisId)
-              : { theses: listBundledThesisProfiles(rootDir) };
-
-            return {
-              content: [
-                {
-                  type: "text",
-                  text: JSON.stringify(details),
-                },
-              ],
-              details,
-            };
-          } catch (err) {
-            return {
-              content: [
-                {
-                  type: "text",
-                  text: err?.message || "Failed to inspect installed theses."
-                }
-              ],
-              details: {
-                error: err?.message || "installed thesis inspection failure"
-              }
-            };
+              description: "Optional thesis id to return a detailed single-thesis view."
+            }
           }
         },
+        async execute(input) {
+          const request = input || {};
+          const details = request.thesisId
+            ? describeBundledThesisProfile(rootDir, request.thesisId)
+            : { theses: listBundledThesisProfiles(rootDir) };
+          if (request.thesisId && !details) {
+            return {
+              ok: false,
+              content: [
+                {
+                  type: "text",
+                  text: `No bundled thesis found for id: ${request.thesisId}`
+                }
+              ],
+              details: { thesisId: request.thesisId }
+            };
+          }
+
+          return {
+            content: [
+              {
+                type: "text",
+                text: JSON.stringify(details)
+              }
+            ],
+            details
+          };
+        }
       },
-      { name: "ngi_lobster_list_installed_theses" },
+      { name: "ngi_lobster_list_installed_theses" }
     );
 
     api.registerTool(
@@ -316,7 +319,7 @@ export default definePluginEntry({
         },
         async execute() {
           const preflight = await ensureRuntimeReady();
-          if (preflight) return preflight;
+          if (preflight) return { ok: false, ...preflight };
 
           const scriptPath = path.join(rootDir, "scripts", "run_default_workflow.sh");
           const { stdout, stderr } = await execFileAsync(scriptPath, [], {
@@ -366,7 +369,7 @@ export default definePluginEntry({
         },
         async execute() {
           const preflight = await ensureRuntimeReady();
-          if (preflight) return preflight;
+          if (preflight) return { ok: false, ...preflight };
 
           const scriptPath = path.join(rootDir, "scripts", "run_default_workflow.sh");
           const { stdout, stderr } = await execFileAsync(scriptPath, [], {
@@ -425,7 +428,8 @@ export default definePluginEntry({
             },
             registryFilePath: {
               type: "string",
-              description: "Optional path to a JSON file with target registry entries."
+              description:
+                "Optional path to a JSON file with target registry entries. If omitted, the runtime discovers lobster-intel/data/runtime/thesis-registry/<thesisId>.json automatically."
             },
             semanticFrame: {
               type: "string",
@@ -528,7 +532,8 @@ export default definePluginEntry({
             },
             registryFilePath: {
               type: "string",
-              description: "Optional path to a JSON file with target registry entries."
+              description:
+                "Optional path to a JSON file with target registry entries. If omitted, the runtime discovers lobster-intel/data/runtime/thesis-registry/<thesisId>.json automatically."
             },
             semanticFrame: {
               type: "string",
@@ -550,7 +555,7 @@ export default definePluginEntry({
         },
         async execute(input) {
           const preflight = await ensureRuntimeReady();
-          if (preflight) return preflight;
+          if (preflight) return { ok: false, ...preflight };
 
           try {
             const request = input || {};
@@ -591,11 +596,13 @@ export default definePluginEntry({
             if (workflowResult.kind === "invalid_profile") {
               return buildInvalidProfileError(workflowResult.validationErrors);
             }
+
             if (workflowResult.kind === "missing_paths") {
               return buildMissingFileError(workflowResult.missingPaths);
             }
 
             return {
+              ok: workflowResult.kind === "ok",
               content: [
                 {
                   type: "text",

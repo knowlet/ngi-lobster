@@ -84,6 +84,7 @@ lobster-intel/
     watchlist-tracker/
   examples/
     source-packs/
+    thesis-packs/
     thesis-profiles/
     target-registries/
   data/
@@ -156,6 +157,7 @@ lobster-intel/examples/source-packs/
 Bundled thesis defaults now also live under:
 
 ```text
+lobster-intel/examples/thesis-packs/
 lobster-intel/examples/thesis-profiles/
 lobster-intel/examples/target-registries/
 ```
@@ -185,6 +187,8 @@ The product intent is:
 - source plugins fetch and normalize evidence
 - runtime stores cursor / source state
 - delivery remains downstream
+
+When the Python runtime is invoked directly with only `--workspace` and `--thesis-id`, it can also discover install-ready thesis packs from `lobster-intel/examples/thesis-packs/` and use them to recover runtime defaults plus bundled registry entries.
 
 ## Source replay and index rebuild
 

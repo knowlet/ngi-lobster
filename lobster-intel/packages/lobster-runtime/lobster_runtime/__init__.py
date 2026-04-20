@@ -39,6 +39,8 @@ __all__ = [
     "run_plugin_once_with_config",
     "run_source_plugin",
     "normalize_source_plugin_config",
+    "rebuild_source_index",
+    "replay_source_run",
     "SourceFusionArtifacts",
     "SourceFusionInput",
     "build_source_fusion_result",

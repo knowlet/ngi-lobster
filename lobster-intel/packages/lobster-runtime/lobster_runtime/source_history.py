@@ -1,13 +1,24 @@
 from __future__ import annotations
 
 import json
+import re
 import sqlite3
 from pathlib import Path
 from typing import Any
 
 
+_SAFE_PATH_COMPONENT = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._-]*$")
+
+
+def _validated_path_component(value: str, *, label: str) -> str:
+    if not _SAFE_PATH_COMPONENT.fullmatch(value):
+        raise ValueError(f"{label} must be a simple relative path component: {value!r}")
+    return value
+
+
 def _source_runtime_dir(workspace_dir: str | Path, plugin_id: str) -> Path:
-    return Path(workspace_dir) / "lobster-intel" / "data" / "runtime" / "sources" / plugin_id
+    safe_plugin_id = _validated_path_component(plugin_id, label="plugin_id")
+    return Path(workspace_dir) / "lobster-intel" / "data" / "runtime" / "sources" / safe_plugin_id
 
 
 def _source_runs_dir(workspace_dir: str | Path, plugin_id: str) -> Path:
@@ -19,9 +30,7 @@ def _source_run_path(workspace_dir: str | Path, plugin_id: str, run_id: str) -> 
 
 
 def _source_index_path(workspace_dir: str | Path, plugin_id: str) -> Path:
-    runtime_dir = _source_runtime_dir(workspace_dir, plugin_id)
-    runtime_dir.mkdir(parents=True, exist_ok=True)
-    return runtime_dir / "index.sqlite"
+    return _source_runtime_dir(workspace_dir, plugin_id) / "index.sqlite"
 
 
 def _load_json(path: Path) -> dict[str, Any]:

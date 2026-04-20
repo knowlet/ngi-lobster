@@ -5,17 +5,23 @@ const INSTALLED_SOURCE_SPECS = [
   {
     pluginId: "official-statements-tracker",
     requestField: "officialStatementsConfigPath",
+    stateRequestField: "officialStatementsStatePath",
     defaultConfig: "official-statements.json",
+    defaultState: "official-statements.json",
   },
   {
     pluginId: "watchlist-tracker",
     requestField: "watchlistConfigPath",
+    stateRequestField: "watchlistStatePath",
     defaultConfig: "watchlist.json",
+    defaultState: "watchlist.json",
   },
   {
     pluginId: "polymarket-tracker",
     requestField: "polymarketConfigPath",
+    stateRequestField: "polymarketStatePath",
     defaultConfig: "polymarket.json",
+    defaultState: "polymarket.json",
   },
 ];
 
@@ -43,6 +49,16 @@ function resolveRepoPath(rootDir, value) {
     return value;
   }
   return path.join(rootDir, value);
+}
+
+function resolveWorkspacePath(workspace, value) {
+  if (!value) {
+    return undefined;
+  }
+  if (path.isAbsolute(value)) {
+    return value;
+  }
+  return path.join(workspace, value);
 }
 
 function parseJsonFile(readFileSync, filePath, label) {
@@ -328,6 +344,20 @@ export function buildInstalledThesisWorkflow(
           thesisProfile?.source_config_paths?.[spec.pluginId],
         ) ||
         path.join(sourcePackDir, spec.defaultConfig),
+      statePath:
+        resolveWorkspacePath(workspace, request[spec.stateRequestField]) ||
+        resolveWorkspacePath(
+          workspace,
+          thesisProfile?.source_state_paths?.[spec.pluginId],
+        ) ||
+        path.join(
+          workspace,
+          "lobster-intel",
+          "data",
+          "runtime",
+          "sources",
+          spec.defaultState,
+        ),
       workspace,
     })),
     runtimeRequest: {

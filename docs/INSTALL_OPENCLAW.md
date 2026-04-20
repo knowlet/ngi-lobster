@@ -208,6 +208,14 @@ The installed thesis workflow now validates the thesis contract before it runs:
 
 Profile field expectations are documented in `docs/THESIS_PROFILES.md`.
 
+The installed workflow now also wires default source cursor persistence automatically:
+
+- `lobster-intel/data/runtime/sources/official-statements.json`
+- `lobster-intel/data/runtime/sources/watchlist.json`
+- `lobster-intel/data/runtime/sources/polymarket.json`
+
+Repeated installed-workflow runs reuse those cursor files without extra `*_STATE_PATH` environment-variable wiring.
+
 For source-runtime operations, the Python support CLI also exposes:
 
 - `python3 lobster-intel/scripts/source_history.py replay --workspace . --plugin-id watchlist-tracker --run-id <run_id>`
@@ -313,8 +321,6 @@ Before this becomes a smooth installable plugin for everyone, these still need w
 3. Firehose junk suppression / ranking
 4. reusable cron recipes
 5. a cleaner setup command
-6. source cursor persistence wired into default runtime storage
-
 ## Bottom line
 
 Another OpenClaw can already install this repo and run the first plugin example, but Firehose still requires operator setup and the full product installer does not exist yet.

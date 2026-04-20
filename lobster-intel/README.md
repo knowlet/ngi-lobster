@@ -157,6 +157,14 @@ These fixtures let the installed OpenClaw workflow resolve thesis-specific runti
 They also provide operator-facing metadata such as `title`, `summary`, and optional `source_config_paths`, which the native `ngi_lobster_list_installed_theses` tool now exposes with `contractStatus` and `validationErrors`.
 That means another OpenClaw can inspect whether a bundled thesis is actually runnable before invoking the installed workflow.
 
+The installed workflow also auto-wires source cursor persistence into:
+
+- `lobster-intel/data/runtime/sources/official-statements.json`
+- `lobster-intel/data/runtime/sources/watchlist.json`
+- `lobster-intel/data/runtime/sources/polymarket.json`
+
+That keeps repeated installed runs replayable and auditable without pushing cursor logic into delivery code or relying on ad hoc host env wiring.
+
 The product intent is:
 
 - source plugins fetch and normalize evidence

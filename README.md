@@ -50,6 +50,7 @@ Current status:
 - bundled thesis defaults now live under `lobster-intel/examples/thesis-profiles/` and `lobster-intel/examples/target-registries/`
 - thesis runtime registry discovery now defaults to `lobster-intel/data/runtime/thesis-registry/<thesis_id>.json`
 - thesis profiles are now validated before the installed workflow runs, so incomplete defaults fail closed instead of silently falling back to generic runtime settings
+- installed source trackers now persist cursor state by default under `lobster-intel/data/runtime/sources/*.json`
 - the heavy NGI runtime is still being migrated from `lobster-intel/` Python code into a fuller native OpenClaw plugin surface
 
 So the install surface is starting to look right, but runtime feature parity is not finished yet.

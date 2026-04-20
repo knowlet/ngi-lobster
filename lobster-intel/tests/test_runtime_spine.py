@@ -109,11 +109,11 @@ def _target_registry() -> list[dict]:
     return [
         {
             "market_id": "1517836",
-            "market_slug": "military-operations-end-by-june-30",
-            "market_question": "Military operations end by June 30?",
+            "market_slug": "trump-announces-end-of-military-operations-against-iran-by-june-30th-566-326-653-781-167-426-752-225",
+            "market_question": "Trump announces end of military operations against Iran by June 30th?",
             "semantic_frame": "military_operations_end_by_deadline",
             "probability_direction": "yes_is_peace",
-            "aliases": ["operations end by june 30", "june 30 end market"],
+            "aliases": ["military-operations-end-by-june-30", "operations end by june 30", "june 30 end market"],
             "resolution_mode": "registry_first",
         }
     ]
@@ -134,6 +134,16 @@ def _install_runtime_source_artifacts(
         source_dir = source_root / source_id
         source_dir.mkdir(parents=True, exist_ok=True)
         (source_dir / "latest.json").write_text(json.dumps(payload), encoding="utf-8")
+
+
+def _thesis_pack() -> dict:
+    return {
+        "thesis_id": "gooaye",
+        "semantic_frame": "military_operations_end_by_deadline",
+        "probability_direction": "yes_is_peace",
+        "state": "ACTIVE_TRUCE",
+        "target_registry": _target_registry(),
+    }
 
 
 def test_runtime_spine_run_writes_full_artifact_chain(tmp_path: Path):
@@ -331,6 +341,23 @@ def test_runtime_index_can_be_rebuilt_from_artifacts(tmp_path: Path):
     db_path.unlink()
     rebuilt_path = rebuild_runtime_index(tmp_path, "gooaye")
     assert rebuilt_path.exists()
+
+
+def test_load_thesis_runtime_inputs_discovers_thesis_pack_defaults(tmp_path: Path):
+    official, watchlist, polymarket = _source_payloads()
+    _install_runtime_source_artifacts(tmp_path, official, watchlist, polymarket)
+    thesis_pack_path = tmp_path / "lobster-intel" / "examples" / "thesis-packs" / "gooaye.json"
+    thesis_pack_path.parent.mkdir(parents=True, exist_ok=True)
+    thesis_pack_path.write_text(json.dumps(_thesis_pack()), encoding="utf-8")
+
+    payload = runtime_spine.load_thesis_runtime_inputs(tmp_path, thesis_id="gooaye")
+
+    assert payload["target_registry"] == _target_registry()
+    assert payload["thesis_settings"]["semantic_frame"] == "military_operations_end_by_deadline"
+    assert payload["thesis_settings"]["probability_direction"] == "yes_is_peace"
+    assert payload["thesis_settings"]["state"] == "ACTIVE_TRUCE"
+    assert payload["registry_resolution"]["mode"] == "thesis_pack_discovered"
+    assert payload["registry_resolution"]["path"].endswith("lobster-intel/examples/thesis-packs/gooaye.json")
 
 
 def test_rebuild_runtime_index_preserves_runtime_runs_indexes(tmp_path: Path):

@@ -43,6 +43,7 @@ Current status:
 - `package.json` exists
 - `index.js` native wrapper entry exists
 - native tool `ngi_lobster_demo` exists for local smoke testing
+- `lobster-intel/examples/thesis-packs/gooaye.json` exists for install-ready thesis defaults
 - the heavy NGI runtime is still being migrated from `lobster-intel/` Python code into a fuller native OpenClaw plugin surface
 
 So the install surface is starting to look right, but runtime feature parity is not finished yet.
@@ -56,6 +57,7 @@ The repo already contains:
 - a run-once runtime path
 - a delivery gate
 - a first ingest plugin example (`gooaye-tracker`)
+- an install-ready thesis pack example for runtime target resolution
 - legacy NGI scripts kept as migration references
 
 ## Current gaps
@@ -64,3 +66,19 @@ The repo already contains:
 - OCR backfill is still incomplete
 - Firehose signal filtering still needs work
 - live NGI cron still needs to be rebuilt as a product-grade path
+
+## Install-ready runtime defaults
+
+Default thesis runtime resolution now has an install-ready config surface:
+
+- source tracker packs live under `lobster-intel/examples/source-packs/`
+- thesis runtime packs live under `lobster-intel/examples/thesis-packs/`
+
+When you run the default workflow or `lobster-intel/scripts/run_thesis_runtime.py` with only `--workspace` and `--thesis-id`, the runtime discovers installed source artifacts plus the matching thesis pack and uses that pack to load:
+
+- semantic frame
+- probability direction
+- runtime state
+- curated target registry entries
+
+Operational details live in [docs/THESIS_PACKS.md](/Users/knowlet/.codex/worktrees/0357/ngi-lobster/docs/THESIS_PACKS.md).

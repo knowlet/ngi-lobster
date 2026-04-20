@@ -304,12 +304,24 @@ lobster-intel/data/runtime/sources/<plugin-id>/index.sqlite
 
 ## 9. Cron status
 
-There is **not yet** a final reusable cron recipe for outside installs.
+There is now a stable installed-workflow entrypoint for outside installs:
+
+```bash
+node scripts/run_installed_thesis_workflow.js --thesis-id regional-escalation
+```
+
+That command reuses the same bundled source packs, bundled thesis defaults, source cursor paths, and thesis runtime contracts as the native OpenClaw tool surface, but it can be called directly by local cron.
+
+Example cron line:
+
+```cron
+*/15 * * * * cd /path/to/ngi-lobster && /usr/bin/env node scripts/run_installed_thesis_workflow.js --thesis-id regional-escalation >> lobster-intel/data/runtime/regional-escalation-cron.log 2>&1
+```
 
 Current recommendation:
 
-- first validate `run_once`
-- then wire a local cron / OpenClaw cron after confirming paths and outputs
+- first run the CLI manually and inspect the JSON result plus artifact paths
+- then wire local cron or OpenClaw cron against that stable entrypoint
 - keep background output behind the delivery gate
 
 ## 10. What still needs productization
@@ -319,7 +331,7 @@ Before this becomes a smooth installable plugin for everyone, these still need w
 1. linked-content extraction
 2. OCR backfill loop
 3. Firehose junk suppression / ranking
-4. reusable cron recipes
+4. additional cron recipes beyond the installed thesis workflow
 5. a cleaner setup command
 ## Bottom line
 

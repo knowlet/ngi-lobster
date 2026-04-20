@@ -47,6 +47,7 @@ Current status:
 - native tool `ngi_lobster_list_installed_theses` exists to list bundled thesis ids, profile defaults, contract health, and linked registry paths
 - native tool `ngi_lobster_run_installed_thesis_workflow` exists to run bundled source packs and then the thesis runtime spine
 - `lobster-intel/examples/thesis-packs/gooaye.json` exists for install-ready thesis defaults
+- stable CLI `node scripts/run_installed_thesis_workflow.js --thesis-id <id>` exists for outside installs and cron jobs
 - bundled thesis defaults now live under `lobster-intel/examples/thesis-profiles/` and `lobster-intel/examples/target-registries/`
 - thesis runtime registry discovery now defaults to `lobster-intel/data/runtime/thesis-registry/<thesis_id>.json`
 - thesis profiles are now validated before the installed workflow runs, so incomplete defaults fail closed instead of silently falling back to generic runtime settings
@@ -74,6 +75,7 @@ The repo already contains:
 - OCR backfill is still incomplete
 - Firehose signal filtering still needs work
 - live NGI cron still needs to be rebuilt as a product-grade path
+- broader cron coverage and alerting policy still need work beyond the installed thesis workflow entrypoint
 
 ## Install-ready runtime defaults
 

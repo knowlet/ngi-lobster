@@ -14,6 +14,7 @@ _SAFE_PATH_COMPONENT = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._-]*$")
 
 
 def _validated_path_component(value: str, *, label: str) -> str:
+    value = str(value or "")
     if not _SAFE_PATH_COMPONENT.fullmatch(value):
         raise ValueError(f"{label} must be a simple relative path component: {value!r}")
     return value
@@ -29,7 +30,8 @@ def _source_runs_dir(workspace_dir: str | Path, plugin_id: str) -> Path:
 
 
 def _source_run_path(workspace_dir: str | Path, plugin_id: str, run_id: str) -> Path:
-    return _source_runs_dir(workspace_dir, plugin_id) / f"{run_id}.json"
+    safe_run_id = _validated_path_component(run_id, label="run_id")
+    return _source_runs_dir(workspace_dir, plugin_id) / f"{safe_run_id}.json"
 
 
 def _source_index_path(workspace_dir: str | Path, plugin_id: str) -> Path:
@@ -132,7 +134,7 @@ def rebuild_source_index(workspace_dir: str | Path, plugin_id: str) -> dict[str,
 
                     for index, item in enumerate(items):
                         external_id = item.get("external_id") or f"item-{index}"
-                        item_id = f"{run_id}:{item.get('source_id') or plugin}:{external_id}"
+                        item_id = f"{run_id}:{index}:{item.get('source_id') or plugin}:{external_id}"
                         conn.execute(
                             "insert into source_items (item_id, run_id, source_id, external_id, title, url, published_at_utc, collected_at_utc, source_type, artifact_path) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
                             (

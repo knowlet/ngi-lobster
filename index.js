@@ -583,7 +583,7 @@ export default definePluginEntry({
             }
 
             return {
-              ok: false,
+              ok: workflowResult.kind === "ok",
               content: [
                 {
                   type: "text",

@@ -56,6 +56,18 @@ export default definePluginEntry({
       };
     }
 
+    function buildInvalidProfileError(validationErrors) {
+      return {
+        content: [
+          {
+            type: "text",
+            text: `NGI Lobster thesis profile is incomplete:\n\n${validationErrors.map((item) => `- ${item}`).join("\n")}`
+          }
+        ],
+        details: { validationErrors }
+      };
+    }
+
     function readRuntimeJsonSafe(runtimePath) {
       if (!fs.existsSync(runtimePath)) {
         return {};
@@ -501,7 +513,8 @@ export default definePluginEntry({
             },
             registryFilePath: {
               type: "string",
-              description: "Optional path to a JSON file with target registry entries."
+              description:
+                "Optional path to a JSON file with target registry entries. If omitted, the runtime discovers lobster-intel/data/runtime/thesis-registry/<thesisId>.json automatically."
             },
             semanticFrame: {
               type: "string",
@@ -560,6 +573,10 @@ export default definePluginEntry({
                 return result.details;
               }
             });
+
+            if (workflowResult.kind === "invalid_profile") {
+              return buildInvalidProfileError(workflowResult.validationErrors);
+            }
 
             if (workflowResult.kind === "missing_paths") {
               return buildMissingFileError(workflowResult.missingPaths);

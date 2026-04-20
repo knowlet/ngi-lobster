@@ -343,11 +343,11 @@ This breakdown is complete only if future work follows these rules:
 
 The most sensible next plan files to author from this breakdown are:
 
-- `2026-04-20-installed-thesis-contract-validation.md`
-- `2026-04-20-default-thesis-pack-discovery.md`
-- `2026-04-20-runtime-live-search-fallback.md`
-- `2026-04-20-tracker-capability-surface.md`
-- `2026-04-20-analyzer-interface-contract.md`
-- `2026-04-20-linked-content-extraction-platform.md`
+- [`2026-04-20-installed-thesis-contract-validation.md`](2026-04-20-installed-thesis-contract-validation.md)
+- [`2026-04-20-default-thesis-pack-discovery.md`](2026-04-20-default-thesis-pack-discovery.md)
+- [`2026-04-20-runtime-live-search-fallback.md`](2026-04-20-runtime-live-search-fallback.md)
+- [`2026-04-20-tracker-capability-surface.md`](2026-04-20-tracker-capability-surface.md)
+- [`2026-04-20-analyzer-interface-contract.md`](2026-04-20-analyzer-interface-contract.md)
+- [`2026-04-20-linked-content-extraction-platform.md`](2026-04-20-linked-content-extraction-platform.md)
 
 Those six plans would turn the roadmap from a broad sequence into an actively executable queue.

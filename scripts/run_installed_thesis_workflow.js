@@ -30,4 +30,8 @@ if (result.exitCode !== 0) {
   process.exit(result.exitCode);
 }
 
-console.log(JSON.stringify(result.payload));
+if (result.stdout) {
+  console.log(result.stdout);
+} else {
+  console.log(JSON.stringify(result.payload));
+}

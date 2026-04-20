@@ -2,9 +2,18 @@ import test from "node:test";
 import assert from "node:assert/strict";
 
 import {
+  formatInstalledWorkflowCliHelp,
   parseInstalledWorkflowCliArgs,
   runInstalledWorkflowCli,
 } from "../installed-workflow-cli.js";
+
+test("formatInstalledWorkflowCliHelp describes the packaged command", () => {
+  const help = formatInstalledWorkflowCliHelp();
+
+  assert.match(help, /Usage:/);
+  assert.match(help, /run_installed_thesis_workflow\.js/);
+  assert.match(help, /--thesis-id/);
+});
 
 test("parseInstalledWorkflowCliArgs maps CLI flags into workflow request fields", () => {
   const request = parseInstalledWorkflowCliArgs([
@@ -97,6 +106,19 @@ test("runInstalledWorkflowCli returns a structured success payload", async () =>
       "/tmp/workspace/lobster-intel/data/runtime/sources/polymarket.json",
     ],
   );
+});
+
+test("runInstalledWorkflowCli returns help output for --help", async () => {
+  const result = await runInstalledWorkflowCli({
+    rootDir: "/repo",
+    argv: ["--help"],
+  });
+
+  assert.equal(result.exitCode, 0);
+  assert.equal(result.payload, null);
+  assert.equal(result.stderr, "");
+  assert.match(result.stdout, /Usage:/);
+  assert.match(result.stdout, /--thesis-id/);
 });
 
 test("runInstalledWorkflowCli returns exit code 2 when required files are missing", async () => {

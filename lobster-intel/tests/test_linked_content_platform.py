@@ -1,11 +1,17 @@
+import http.server
 import json
+import socketserver
 import subprocess
 import sys
 import tempfile
+import threading
 import unittest
+import urllib.request
+from contextlib import contextmanager
 from pathlib import Path
+from unittest.mock import MagicMock, patch
 
-from lobster_ingest.linked_content import process_linked_content_queue
+from lobster_ingest.linked_content import extract_linked_content, process_linked_content_queue
 
 
 def _runtime_payload(linked_url: str | None = "https://example.com/story") -> dict:
@@ -27,7 +33,83 @@ def _runtime_payload(linked_url: str | None = "https://example.com/story") -> di
     }
 
 
+@contextmanager
+def _serve_bytes(body: bytes, *, content_type: str = "text/html; charset=utf-8"):
+    class Handler(http.server.BaseHTTPRequestHandler):
+        def do_GET(self) -> None:  # noqa: N802 - stdlib handler name
+            self.send_response(200)
+            self.send_header("Content-Type", content_type)
+            self.send_header("Content-Length", str(len(body)))
+            self.end_headers()
+            self.wfile.write(body)
+
+        def log_message(self, format: str, *args) -> None:  # noqa: A003 - stdlib signature
+            return
+
+    class ReusableTCPServer(socketserver.TCPServer):
+        allow_reuse_address = True
+
+    with ReusableTCPServer(("127.0.0.1", 0), Handler) as server:
+        thread = threading.Thread(target=server.serve_forever, daemon=True)
+        thread.start()
+        try:
+            host, port = server.server_address
+            yield f"http://{host}:{port}/story"
+        finally:
+            server.shutdown()
+            thread.join()
+
+
 class LinkedContentPlatformTests(unittest.TestCase):
+    def test_extract_linked_content_rejects_file_urls(self):
+        with tempfile.TemporaryDirectory() as temp_dir:
+            article_path = Path(temp_dir) / "article.html"
+            article_path.write_text("<html><body>not allowed</body></html>", encoding="utf-8")
+
+            with self.assertRaisesRegex(ValueError, "Unsupported URL scheme"):
+                extract_linked_content(article_path.resolve().as_uri())
+
+    def test_extract_linked_content_strips_script_and_style_content(self):
+        with _serve_bytes(
+            b"""
+            <html>
+              <head>
+                <title>Example Article</title>
+                <style>body { color: red; }</style>
+              </head>
+              <body>
+                <script>window.alert('noise');</script>
+                <article>Signal <b>text</b></article>
+              </body>
+            </html>
+            """
+        ) as url:
+            extracted = extract_linked_content(url)
+
+        self.assertEqual(extracted["title"], "Example Article")
+        self.assertIn("Signal text", extracted["content"])
+        self.assertNotIn("window.alert", extracted["content"])
+        self.assertNotIn("color: red", extracted["content"])
+
+    def test_extract_linked_content_sets_user_agent_and_read_limit(self):
+        response = MagicMock()
+        response.__enter__.return_value = response
+        response.__exit__.return_value = False
+        response.read.return_value = b"plain text body"
+        response.headers.get_content_type.return_value = "text/plain"
+
+        with patch("lobster_ingest.linked_content.urllib.request.urlopen", return_value=response) as mock_urlopen:
+            extracted = extract_linked_content("https://example.com/story")
+
+        request = mock_urlopen.call_args.args[0]
+        timeout = mock_urlopen.call_args.kwargs["timeout"]
+
+        self.assertIsInstance(request, urllib.request.Request)
+        self.assertIn("Mozilla/5.0", request.get_header("User-agent"))
+        self.assertEqual(timeout, 15)
+        response.read.assert_called_once_with(10_000_001)
+        self.assertEqual(extracted["content"], "plain text body")
+
     def test_process_linked_content_queue_writes_artifacts(self):
         with tempfile.TemporaryDirectory() as temp_dir:
             workspace = Path(temp_dir)
@@ -82,6 +164,49 @@ class LinkedContentPlatformTests(unittest.TestCase):
         self.assertEqual(receipt["processed_count"], 0)
         self.assertEqual(receipt["status"], "no_items")
 
+    def test_process_linked_content_queue_extracts_multiple_items_in_parallel(self):
+        runtime_payload = {
+            "run_id": "gooaye-20260420T000000Z",
+            "linked_content_queue": [
+                {
+                    "post_id": str(index),
+                    "url": f"https://t.me/gooaye/{index}",
+                    "linked_url": f"https://example.com/story-{index}",
+                    "site_name": "Example News",
+                    "title": f"Story {index}",
+                }
+                for index in range(3)
+            ],
+        }
+        barrier = threading.Barrier(3)
+        thread_ids: list[int] = []
+
+        def extractor(url: str) -> dict:
+            thread_ids.append(threading.get_ident())
+            barrier.wait(timeout=0.5)
+            return {
+                "url": url,
+                "title": f"Title for {url}",
+                "content": f"Body for {url}",
+                "content_type": "text/plain",
+            }
+
+        with tempfile.TemporaryDirectory() as temp_dir:
+            workspace = Path(temp_dir)
+            result = process_linked_content_queue(
+                workspace_dir=workspace,
+                thesis_id="gooaye",
+                runtime_payload=runtime_payload,
+                extractor=extractor,
+                now_utc="2026-04-20T00:00:00+00:00",
+            )
+
+            first_evidence = json.loads((workspace / result["evidence_paths"][0]).read_text(encoding="utf-8"))
+
+        self.assertEqual(result["processed_count"], 3)
+        self.assertNotIn("error", first_evidence["extracted"])
+        self.assertGreater(len(set(thread_ids)), 1)
+
     def test_process_linked_content_queue_cli_reads_latest_runtime_artifact(self):
         repo = Path(__file__).resolve().parents[2]
         script_path = repo / "lobster-intel" / "scripts" / "process_linked_content_queue.py"
@@ -89,34 +214,31 @@ class LinkedContentPlatformTests(unittest.TestCase):
 
         with tempfile.TemporaryDirectory() as temp_dir:
             workspace = Path(temp_dir)
-            article_path = workspace / "article.html"
-            article_path.write_text(
-                "<html><head><title>CLI Article</title></head><body><article>CLI extracted body</article></body></html>",
-                encoding="utf-8",
-            )
+            with _serve_bytes(
+                b"<html><head><title>CLI Article</title></head><body><article>CLI extracted body</article></body></html>"
+            ) as linked_url:
+                runtime_dir = workspace / "lobster-intel" / "data" / "runtime" / "gooaye"
+                runtime_dir.mkdir(parents=True, exist_ok=True)
+                latest_path = runtime_dir / "latest.json"
+                latest_path.write_text(
+                    json.dumps(_runtime_payload(linked_url), ensure_ascii=False, indent=2),
+                    encoding="utf-8",
+                )
 
-            runtime_dir = workspace / "lobster-intel" / "data" / "runtime" / "gooaye"
-            runtime_dir.mkdir(parents=True, exist_ok=True)
-            latest_path = runtime_dir / "latest.json"
-            latest_path.write_text(
-                json.dumps(_runtime_payload(article_path.resolve().as_uri()), ensure_ascii=False, indent=2),
-                encoding="utf-8",
-            )
-
-            completed = subprocess.run(
-                [
-                    sys.executable,
-                    str(script_path),
-                    "--workspace",
-                    str(workspace),
-                    "--thesis-id",
-                    "gooaye",
-                ],
-                cwd=repo,
-                text=True,
-                capture_output=True,
-                check=False,
-            )
+                completed = subprocess.run(
+                    [
+                        sys.executable,
+                        str(script_path),
+                        "--workspace",
+                        str(workspace),
+                        "--thesis-id",
+                        "gooaye",
+                    ],
+                    cwd=repo,
+                    text=True,
+                    capture_output=True,
+                    check=False,
+                )
 
             self.assertEqual(completed.returncode, 0, completed.stderr)
             payload = json.loads(completed.stdout)

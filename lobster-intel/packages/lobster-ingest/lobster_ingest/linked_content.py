@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from concurrent.futures import ThreadPoolExecutor
 import json
 import re
 import urllib.parse
@@ -10,8 +11,16 @@ from typing import Any, Callable
 
 
 _HTML_TAG = re.compile(r"<[^>]+>")
+_SCRIPT_STYLE_TAG = re.compile(r"<(script|style)\b[^>]*>.*?</\1>", re.IGNORECASE | re.DOTALL)
 _SPACE = re.compile(r"\s+")
 _SAFE_NAME = re.compile(r"[^A-Za-z0-9._-]+")
+_SUPPORTED_URL_SCHEMES = {"http", "https"}
+_DEFAULT_USER_AGENT = (
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+    "AppleWebKit/537.36 (KHTML, like Gecko) "
+    "Chrome/120.0.0.0 Safari/537.36"
+)
+_MAX_RESPONSE_BYTES = 10_000_000
 
 
 def _now_utc(value: str | None = None) -> str:
@@ -73,21 +82,23 @@ def _extract_title(html: str) -> str | None:
 
 
 def _plain_text(value: str) -> str:
+    value = _SCRIPT_STYLE_TAG.sub(" ", value)
     without_tags = _HTML_TAG.sub(" ", value)
     return _SPACE.sub(" ", without_tags).strip()
 
 
 def extract_linked_content(url: str) -> dict[str, Any]:
     parsed = urllib.parse.urlparse(url)
-    if parsed.scheme == "file":
-        content_path = Path(urllib.request.url2pathname(parsed.path))
-        raw = content_path.read_text(encoding="utf-8")
-        content_type = "text/html" if content_path.suffix.lower() in {".htm", ".html"} else "text/plain"
-    else:
-        with urllib.request.urlopen(url, timeout=15) as response:
-            raw_bytes = response.read()
-            content_type = response.headers.get_content_type()
-        raw = raw_bytes.decode("utf-8", errors="replace")
+    if parsed.scheme not in _SUPPORTED_URL_SCHEMES:
+        raise ValueError(f"Unsupported URL scheme: {parsed.scheme or '<missing>'}")
+
+    req = urllib.request.Request(url, headers={"User-Agent": _DEFAULT_USER_AGENT})
+    with urllib.request.urlopen(req, timeout=15) as response:
+        raw_bytes = response.read(_MAX_RESPONSE_BYTES + 1)
+        if len(raw_bytes) > _MAX_RESPONSE_BYTES:
+            raise ValueError(f"Response exceeds max size of {_MAX_RESPONSE_BYTES} bytes")
+        content_type = response.headers.get_content_type()
+    raw = raw_bytes.decode("utf-8", errors="replace")
 
     is_html = "html" in content_type.lower() or "<html" in raw.lower()
     text_content = _plain_text(raw) if is_html else raw.strip()
@@ -165,6 +176,33 @@ def _write_receipt(
     return _relative_path(run_path, workspace_dir)
 
 
+def _extract_queue_item(
+    item: dict[str, Any],
+    *,
+    extractor: Callable[[str], dict[str, Any]],
+) -> dict[str, Any]:
+    linked_url = str(item.get("linked_url") or item.get("url") or "").strip()
+    if not linked_url:
+        return {
+            "url": None,
+            "title": None,
+            "content": "",
+            "content_type": None,
+            "error": "missing linked_url",
+        }
+
+    try:
+        return extractor(linked_url)
+    except Exception as exc:  # pragma: no cover - defensive audit path
+        return {
+            "url": linked_url,
+            "title": None,
+            "content": "",
+            "content_type": None,
+            "error": str(exc),
+        }
+
+
 def process_linked_content_queue(
     *,
     workspace_dir: str | Path,
@@ -199,29 +237,18 @@ def process_linked_content_queue(
     paths = _ensure_dirs(workspace_dir, thesis_id)
     evidence_paths: list[str] = []
     compiled_paths: list[str] = []
+    max_workers = min(4, len(queue))
 
-    for index, item in enumerate(queue):
-        linked_url = str(item.get("linked_url") or item.get("url") or "").strip()
-        if not linked_url:
-            extracted = {
-                "url": None,
-                "title": None,
-                "content": "",
-                "content_type": None,
-                "error": "missing linked_url",
-            }
-        else:
-            try:
-                extracted = extractor(linked_url)
-            except Exception as exc:  # pragma: no cover - defensive audit path
-                extracted = {
-                    "url": linked_url,
-                    "title": None,
-                    "content": "",
-                    "content_type": None,
-                    "error": str(exc),
-                }
+    def extract_item(item: dict[str, Any]) -> dict[str, Any]:
+        return _extract_queue_item(item, extractor=extractor)
 
+    if max_workers == 1:
+        extracted_items = [extract_item(item) for item in queue]
+    else:
+        with ThreadPoolExecutor(max_workers=max_workers) as executor:
+            extracted_items = list(executor.map(extract_item, queue))
+
+    for index, (item, extracted) in enumerate(zip(queue, extracted_items)):
         stem = _item_stem(source_run_id, item, index)
         evidence_path = paths["evidence"] / f"{stem}.json"
         compiled_path = paths["compiled"] / f"{stem}.md"

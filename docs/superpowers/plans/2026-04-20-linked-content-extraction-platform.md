@@ -8,6 +8,8 @@
 
 **Tech Stack:** Python 3.11, stdlib `json`/`pathlib`, existing Gooaye ingest pipeline, pytest, CLI script under `lobster-intel/scripts/`
 
+**Status:** Implemented on 2026-04-20. Post-review hardening on 2026-04-20 tightened extraction to `http`/`https`, capped response size before decode, removed `script`/`style` noise from HTML text output, and parallelized queue fetches while preserving artifact write order.
+
 ---
 
 ### Task 1: Lock The Queue-Processing Contract In Tests

@@ -232,4 +232,6 @@ That worker writes:
 - compiled markdown under `lobster-intel/data/compiled/<thesis_id>/linked-content/`
 - runtime receipts under `lobster-intel/data/runtime/<thesis_id>/linked-content/`
 
+The fetch path is intentionally constrained to `http`/`https`, caps response bodies before decode, strips `script`/`style` noise from HTML text extraction, and parallelizes queue fetches while preserving deterministic artifact writes.
+
 This keeps the tracker ingest-only while making linked-content follow-up replayable and auditable from runtime truth.

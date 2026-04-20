@@ -83,6 +83,8 @@ lobster-intel/
   examples/
     source-packs/
     thesis-packs/
+    thesis-profiles/
+    target-registries/
   data/
     evidence/
     compiled/
@@ -142,6 +144,15 @@ lobster-intel/examples/source-packs/
 - `official-statements.json`
 - `watchlist.json`
 - `polymarket.json`
+
+Bundled thesis defaults now also live under:
+
+```text
+lobster-intel/examples/thesis-profiles/
+lobster-intel/examples/target-registries/
+```
+
+These fixtures let the installed OpenClaw workflow resolve thesis-specific runtime defaults without moving decision logic into delivery code.
 
 The product intent is:
 

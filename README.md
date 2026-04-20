@@ -43,7 +43,9 @@ Current status:
 - `package.json` exists
 - `index.js` native wrapper entry exists
 - native tool `ngi_lobster_demo` exists for local smoke testing
+- native tool `ngi_lobster_run_installed_thesis_workflow` exists to run bundled source packs and then the thesis runtime spine
 - `lobster-intel/examples/thesis-packs/gooaye.json` exists for install-ready thesis defaults
+- bundled thesis defaults also live under `lobster-intel/examples/thesis-profiles/` and `lobster-intel/examples/target-registries/`
 - the heavy NGI runtime is still being migrated from `lobster-intel/` Python code into a fuller native OpenClaw plugin surface
 
 So the install surface is starting to look right, but runtime feature parity is not finished yet.

@@ -202,4 +202,6 @@ They can also rebuild a local SQLite index from `runs/*.json` without rerunning 
 python3 lobster-intel/scripts/source_history.py rebuild-index --workspace . --plugin-id watchlist-tracker
 ```
 
+Each rebuild invocation closes its SQLite handle before returning, so repeated automation runs can refresh the index without leaving descriptor cleanup to process shutdown.
+
 This keeps replayability and lineage in the runtime layer while leaving delivery downstream of the same artifact truth.

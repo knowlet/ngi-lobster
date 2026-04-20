@@ -31,7 +31,6 @@ If you install this repo today, you get:
 
 What you do **not** get yet:
 
-- a polished one-command installer
 - a fully packaged OpenClaw plugin registry entry
 - stable OCR backfill
 - stable linked-content transcript/article extraction
@@ -49,6 +48,24 @@ If the repo is private, use the owner-approved account or token.
 ## 2. Python requirement
 
 - Python `>= 3.11`
+
+## 2.1 Cleaner local commands
+
+The repo now exposes cleaner package-level commands for the current install surface:
+
+```bash
+npm run bootstrap-runtime
+npm run run-installed-workflow -- --thesis-id regional-escalation
+```
+
+Both commands are now self-describing via `--help`.
+
+If you prefer executable bins after package install, these are also exposed:
+
+```bash
+ngi-lobster-bootstrap-runtime
+ngi-lobster-run-installed-workflow --thesis-id regional-escalation
+```
 
 ## 3. Recommended layout on the host
 
@@ -332,7 +349,7 @@ Before this becomes a smooth installable plugin for everyone, these still need w
 2. OCR backfill loop
 3. Firehose junk suppression / ranking
 4. additional cron recipes beyond the installed thesis workflow
-5. a cleaner setup command
+5. broader install packaging beyond the current package commands
 ## Bottom line
 
 Another OpenClaw can already install this repo and run the first plugin example, but Firehose still requires operator setup and the full product installer does not exist yet.

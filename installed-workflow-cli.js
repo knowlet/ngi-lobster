@@ -50,9 +50,33 @@ function resolvePythonPath(rootDir, existsSync = fs.existsSync) {
 function errorResult(stderr, exitCode = 2) {
   return {
     exitCode,
+    stdout: "",
     stderr,
     payload: null,
   };
+}
+
+export function formatInstalledWorkflowCliHelp() {
+  return [
+    "Usage:",
+    "  node scripts/run_installed_thesis_workflow.js --thesis-id <id> [options]",
+    "",
+    "Key options:",
+    "  --thesis-id <id>",
+    "  --workspace <path>",
+    "  --source-pack-dir <path>",
+    "  --official-statements-config <path>",
+    "  --official-statements-state <path>",
+    "  --watchlist-config <path>",
+    "  --watchlist-state <path>",
+    "  --polymarket-config <path>",
+    "  --polymarket-state <path>",
+    "  --registry-file <path>",
+    "  --semantic-frame <value>",
+    "  --probability-direction <value>",
+    "  --state <value>",
+    "  --now-utc <iso8601>",
+  ].join("\n");
 }
 
 async function execJsonCli({ command, args, cwd, env, fallbackText }) {
@@ -178,6 +202,15 @@ export async function runInstalledWorkflowCli({
 }) {
   let request;
   try {
+    if (argv.includes("--help") || argv.includes("-h")) {
+      return {
+        exitCode: 0,
+        stdout: formatInstalledWorkflowCliHelp(),
+        stderr: "",
+        payload: null,
+      };
+    }
+
     request = parseInstalledWorkflowCliArgs(argv);
   } catch (err) {
     return errorResult(`ERROR: ${err.message}`);
@@ -205,6 +238,7 @@ export async function runInstalledWorkflowCli({
 
     return {
       exitCode: 0,
+      stdout: "",
       stderr: "",
       payload: {
         thesis_id: workflowResult.workflow.runtimeRequest.thesisId,

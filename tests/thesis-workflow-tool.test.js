@@ -3,6 +3,8 @@ import assert from "node:assert/strict";
 
 import {
   buildInstalledThesisWorkflow,
+  describeBundledThesisProfile,
+  listBundledThesisProfiles,
   loadBundledThesisProfile,
   runInstalledThesisWorkflow,
 } from "../thesis-workflow-tool.js";
@@ -116,6 +118,84 @@ test("buildInstalledThesisWorkflow applies thesis profile defaults before explic
     workflow.runtimeRequest.registryFilePath,
     "/repo/lobster-intel/examples/target-registries/regional-escalation.json",
   );
+});
+
+test("listBundledThesisProfiles returns bundled thesis metadata sorted by thesis id", () => {
+  const catalog = listBundledThesisProfiles("/repo", {
+    readdirSync: () => [
+      { name: "regional-escalation.json", isFile: () => true },
+      { name: "ignore-me.txt", isFile: () => true },
+      { name: "oil-shipping.json", isFile: () => true },
+    ],
+    readFileSync: (value) => {
+      if (value.endsWith("regional-escalation.json")) {
+        return JSON.stringify({
+          thesis_id: "regional-escalation",
+          title: "Regional escalation monitor",
+          summary: "Tracks military operations end-state risk.",
+          semantic_frame: "military_operations_end_by_deadline",
+          probability_direction: "yes_is_peace",
+          state: "ACTIVE_TRUCE",
+          registry_file_path:
+            "lobster-intel/examples/target-registries/regional-escalation.json",
+        });
+      }
+
+      return JSON.stringify({
+        thesis_id: "oil-shipping",
+        title: "Oil shipping disruption",
+        summary: "Tracks chokepoint disruption risk.",
+        semantic_frame: "shipping_disruption",
+        probability_direction: "yes_is_escalation",
+        state: "ELEVATED_RISK",
+      });
+    },
+  });
+
+  assert.deepEqual(
+    catalog.map((entry) => entry.thesisId),
+    ["oil-shipping", "regional-escalation"],
+  );
+  assert.equal(catalog[1].title, "Regional escalation monitor");
+  assert.equal(
+    catalog[1].registryFilePath,
+    "/repo/lobster-intel/examples/target-registries/regional-escalation.json",
+  );
+});
+
+test("describeBundledThesisProfile summarizes registry entries for a thesis", () => {
+  const description = describeBundledThesisProfile(
+    "/repo",
+    "regional-escalation",
+    {
+      existsSync: () => true,
+      readFileSync: (value) => {
+        if (value.includes("thesis-profiles")) {
+          return JSON.stringify({
+            thesis_id: "regional-escalation",
+            title: "Regional escalation monitor",
+            summary: "Tracks military operations end-state risk.",
+            semantic_frame: "military_operations_end_by_deadline",
+            probability_direction: "yes_is_peace",
+            state: "ACTIVE_TRUCE",
+            registry_file_path:
+              "lobster-intel/examples/target-registries/regional-escalation.json",
+          });
+        }
+
+        return JSON.stringify([
+          {
+            market_id: "1517836",
+            market_question: "Military operations end by June 30?",
+          },
+        ]);
+      },
+    },
+  );
+
+  assert.equal(description.thesisId, "regional-escalation");
+  assert.equal(description.registry.entryCount, 1);
+  assert.equal(description.registry.markets[0].marketId, "1517836");
 });
 
 test("runInstalledThesisWorkflow stops before execution when required files are missing", async () => {

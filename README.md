@@ -43,10 +43,12 @@ Current status:
 - `package.json` exists
 - `index.js` native wrapper entry exists
 - native tool `ngi_lobster_demo` exists for local smoke testing
+- native tool `ngi_lobster_list_installed_theses` exists to inspect bundled thesis ids, titles, and linked registry defaults before running them
 - native tool `ngi_lobster_run_installed_thesis_workflow` exists to run bundled source packs and then the thesis runtime spine
 - stable CLI `node scripts/run_installed_thesis_workflow.js --thesis-id <id>` exists for outside installs and cron jobs
 - package-level helper commands now exist: `npm run bootstrap-runtime` and `npm run run-installed-workflow -- --thesis-id <id>`
 - bundled thesis defaults now live under `lobster-intel/examples/thesis-profiles/` and `lobster-intel/examples/target-registries/`
+- bundled thesis profiles now carry human-readable titles and summaries for operator discovery
 - installed source trackers now persist cursor state by default under `lobster-intel/data/runtime/sources/*.json`
 - the heavy NGI runtime is still being migrated from `lobster-intel/` Python code into a fuller native OpenClaw plugin surface
 

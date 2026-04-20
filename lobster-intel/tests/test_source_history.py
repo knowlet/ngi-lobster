@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import sqlite3
 import subprocess
 import sys
 import tempfile
@@ -125,6 +126,80 @@ class SourceHistoryTests(unittest.TestCase):
         self.assertEqual(rebuilt["plugin"], plugin_id)
         self.assertEqual(rebuilt["run_count"], 2)
         self.assertEqual(rebuilt["item_count"], 3)
+
+    def test_rebuild_source_index_allows_duplicate_external_ids_in_one_run(self):
+        rebuild_source_index = getattr(lobster_runtime, "rebuild_source_index", None)
+        self.assertIsNotNone(rebuild_source_index, "lobster_runtime.rebuild_source_index should exist")
+
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            workspace = Path(tmp_dir)
+            plugin_id = "official-statements-tracker"
+            _write_run_artifact(
+                workspace,
+                plugin_id,
+                "20260420T030000Z",
+                "2026-04-20T03:00:00+00:00",
+                [
+                    {
+                        "source_id": "official-feed",
+                        "source_type": "official_statement",
+                        "external_id": "dup-1",
+                        "title": "Duplicate A",
+                        "url": "https://example.com/a",
+                    },
+                    {
+                        "source_id": "official-feed",
+                        "source_type": "official_statement",
+                        "external_id": "dup-1",
+                        "title": "Duplicate B",
+                        "url": "https://example.com/b",
+                    },
+                ],
+                2,
+            )
+
+            rebuilt = rebuild_source_index(workspace, plugin_id)
+            with sqlite3.connect(rebuilt["index_path"]) as conn:
+                item_rows = conn.execute(
+                    "select item_id, external_id, title from source_items order by title"
+                ).fetchall()
+
+        self.assertEqual(rebuilt["item_count"], 2)
+        self.assertEqual(len(item_rows), 2)
+        self.assertEqual(item_rows[0][1], "dup-1")
+        self.assertEqual(item_rows[1][1], "dup-1")
+        self.assertNotEqual(item_rows[0][0], item_rows[1][0])
+
+    def test_rebuild_source_index_preserves_existing_index_on_failure(self):
+        rebuild_source_index = getattr(lobster_runtime, "rebuild_source_index", None)
+        self.assertIsNotNone(rebuild_source_index, "lobster_runtime.rebuild_source_index should exist")
+
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            workspace = Path(tmp_dir)
+            plugin_id, _ = _install_source_history_fixture(workspace)
+            rebuilt = rebuild_source_index(workspace, plugin_id)
+            index_path = Path(rebuilt["index_path"])
+
+            with sqlite3.connect(index_path) as conn:
+                baseline_counts = (
+                    conn.execute("select count(*) from source_runs").fetchone()[0],
+                    conn.execute("select count(*) from source_items").fetchone()[0],
+                )
+
+            broken_run = workspace / "lobster-intel" / "data" / "runtime" / "sources" / plugin_id / "runs" / "20260420T020000Z.json"
+            broken_run.write_text("{not-valid-json\n", encoding="utf-8")
+
+            with self.assertRaises(json.JSONDecodeError):
+                rebuild_source_index(workspace, plugin_id)
+
+            self.assertTrue(index_path.exists())
+            with sqlite3.connect(index_path) as conn:
+                after_counts = (
+                    conn.execute("select count(*) from source_runs").fetchone()[0],
+                    conn.execute("select count(*) from source_items").fetchone()[0],
+                )
+
+        self.assertEqual(after_counts, baseline_counts)
 
     def test_source_history_cli_supports_replay_and_rebuild(self):
         script_path = ROOT / "scripts" / "source_history.py"

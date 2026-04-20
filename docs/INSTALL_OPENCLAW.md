@@ -280,6 +280,16 @@ lobster-intel/data/runtime/
 lobster-intel/data/delivery/
 ```
 
+Per-plugin source runtime directories now also support replay and rebuild under:
+
+```text
+lobster-intel/data/runtime/sources/<plugin-id>/latest.json
+lobster-intel/data/runtime/sources/<plugin-id>/runs/<run_id>.json
+lobster-intel/data/runtime/sources/<plugin-id>/index.sqlite
+```
+
+`latest.json` and `runs/*.json` are the truth artifacts. `index.sqlite` is derived state and can be rebuilt from those files with `source_history.py rebuild-index`.
+
 ## 9. Cron status
 
 There is now a stable installed-workflow entrypoint for outside installs:

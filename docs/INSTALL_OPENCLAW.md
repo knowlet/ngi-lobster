@@ -185,6 +185,11 @@ Their jobs are:
 - `ngi_lobster_run_default_workflow`: run the default installed workflow and write artifacts/digest
 - `ngi_lobster_run_thesis_runtime`: run the thesis runtime spine against installed source artifacts or explicit overrides
 
+For source-runtime operations, the Python support CLI also exposes:
+
+- `python3 lobster-intel/scripts/source_history.py replay --workspace . --plugin-id watchlist-tracker --run-id <run_id>`
+- `python3 lobster-intel/scripts/source_history.py rebuild-index --workspace . --plugin-id watchlist-tracker`
+
 ## 7.2 First batch source trackers
 
 The repo now includes these installable ingest plugins:
@@ -228,6 +233,16 @@ lobster-intel/data/compiled/
 lobster-intel/data/runtime/
 lobster-intel/data/delivery/
 ```
+
+Source plugin runs also persist under:
+
+```text
+lobster-intel/data/runtime/sources/<plugin-id>/latest.json
+lobster-intel/data/runtime/sources/<plugin-id>/runs/<run_id>.json
+lobster-intel/data/runtime/sources/<plugin-id>/index.sqlite
+```
+
+`latest.json` and `runs/*.json` are the truth artifacts. `index.sqlite` is derived state and can be rebuilt from those files with `source_history.py rebuild-index`.
 
 ## 9. Cron status
 

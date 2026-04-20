@@ -45,6 +45,7 @@ export default definePluginEntry({
 
     function buildMissingFileError(missingPaths) {
       return {
+        ok: false,
         content: [
           {
             type: "text",
@@ -123,6 +124,7 @@ export default definePluginEntry({
           parsed = JSON.parse(rawStdout);
         } catch (err) {
           return {
+            ok: false,
             content: [
               {
                 type: "text",
@@ -270,6 +272,18 @@ export default definePluginEntry({
           const details = request.thesisId
             ? describeBundledThesisProfile(rootDir, request.thesisId)
             : { theses: listBundledThesisProfiles(rootDir) };
+          if (request.thesisId && !details) {
+            return {
+              ok: false,
+              content: [
+                {
+                  type: "text",
+                  text: `No bundled thesis found for id: ${request.thesisId}`
+                }
+              ],
+              details: { thesisId: request.thesisId }
+            };
+          }
 
           return {
             content: [
@@ -298,7 +312,7 @@ export default definePluginEntry({
         },
         async execute() {
           const preflight = await ensureRuntimeReady();
-          if (preflight) return preflight;
+          if (preflight) return { ok: false, ...preflight };
 
           const scriptPath = path.join(rootDir, "scripts", "run_default_workflow.sh");
           const { stdout, stderr } = await execFileAsync(scriptPath, [], {
@@ -348,7 +362,7 @@ export default definePluginEntry({
         },
         async execute() {
           const preflight = await ensureRuntimeReady();
-          if (preflight) return preflight;
+          if (preflight) return { ok: false, ...preflight };
 
           const scriptPath = path.join(rootDir, "scripts", "run_default_workflow.sh");
           const { stdout, stderr } = await execFileAsync(scriptPath, [], {
@@ -522,7 +536,7 @@ export default definePluginEntry({
         },
         async execute(input) {
           const preflight = await ensureRuntimeReady();
-          if (preflight) return preflight;
+          if (preflight) return { ok: false, ...preflight };
 
           try {
             const request = input || {};
@@ -569,6 +583,7 @@ export default definePluginEntry({
             }
 
             return {
+              ok: false,
               content: [
                 {
                   type: "text",

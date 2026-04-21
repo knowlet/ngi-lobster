@@ -238,7 +238,7 @@ When operators already know the suppressed legacy-control run id and the positiv
   --proof-id heartbeat:positive-20260421T000500Z
 ```
 
-This reads the matching `runtime/runs/<run-id>.json` artifacts, emits the dispatcher alert/receipt records under `lobster-intel/data/delivery/<thesis-id>/`, then writes the shared bundle artifact under `bundles/` and prints one machine-readable summary for operator review.
+This reads the matching `runtime/runs/<run-id>.json` artifacts, emits the dispatcher alert/receipt records under `lobster-intel/data/delivery/<thesis-id>/`, stamps the same shared `e2e_run_id` onto those dispatcher artifacts, then writes the shared bundle artifact under `bundles/` and prints one machine-readable summary for operator review.
 
 ## Source history operations
 

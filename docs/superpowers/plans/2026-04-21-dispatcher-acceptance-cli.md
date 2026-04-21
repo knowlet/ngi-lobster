@@ -8,7 +8,7 @@
 
 **Tech Stack:** Python 3.11+, stdlib `argparse`/`json`/`pathlib`, pytest
 
-**Status:** Implemented in the writable workspace on 2026-04-21 and verified with `PYTHONPATH=lobster-intel/packages/lobster-core:lobster-intel/packages/lobster-delivery:lobster-intel/packages/lobster-ingest:lobster-intel/packages/lobster-plugins:lobster-intel/packages/lobster-runtime ./.venv/bin/python -m pytest lobster-intel/tests/test_dispatcher_acceptance_cli.py -q` (`1 passed`).
+**Status:** Implemented in the writable workspace on 2026-04-21. Follow-up on 2026-04-21 preserved the shared `bundle_id` as `alert_disposition.e2e_run_id` on the written dispatcher artifacts as well, verified with `PYTHONPATH=lobster-intel/packages/lobster-core:lobster-intel/packages/lobster-delivery:lobster-intel/packages/lobster-ingest:lobster-intel/packages/lobster-plugins:lobster-intel/packages/lobster-runtime ./.venv/bin/python -m pytest lobster-intel/tests/test_dispatcher_artifact_writer.py -q` (`6 passed`).
 
 ---
 

@@ -48,12 +48,14 @@ def main(argv: list[str]) -> int:
         workspace_dir=args.workspace,
         thesis_id=args.thesis_id,
         runtime_payload=suppressed_runtime,
+        e2e_run_id=args.bundle_id,
         now_utc=args.now_utc,
     )
     positive = write_dispatcher_artifacts(
         workspace_dir=args.workspace,
         thesis_id=args.thesis_id,
         runtime_payload=positive_runtime,
+        e2e_run_id=args.bundle_id,
         delivery_receipt={
             "sink": args.sink,
             "delivery_status": args.delivery_status,

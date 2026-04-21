@@ -396,6 +396,69 @@ class DispatcherArtifactWriterTests(unittest.TestCase):
             "heartbeat:positive-20260421T000500Z",
         )
 
+    def test_dispatcher_acceptance_cli_persists_shared_e2e_run_id_into_alert_artifacts(self):
+        repo = Path(__file__).resolve().parents[2]
+        script_path = repo / "lobster-intel" / "scripts" / "run_dispatcher_acceptance.py"
+        self.assertTrue(script_path.exists(), f"missing CLI script: {script_path}")
+
+        with tempfile.TemporaryDirectory() as temp_dir:
+            workspace = Path(temp_dir)
+            thesis_id, suppressed_run_id, positive_run_id = _install_real_runtime_spine_workspace(workspace)
+
+            stdout = io.StringIO()
+            old_argv = sys.argv
+            try:
+                sys.argv = [
+                    str(script_path),
+                    "--workspace",
+                    str(workspace),
+                    "--thesis-id",
+                    thesis_id,
+                    "--bundle-id",
+                    "bundle-20260421-runtime-path",
+                    "--suppressed-run-id",
+                    suppressed_run_id,
+                    "--positive-run-id",
+                    positive_run_id,
+                    "--sink",
+                    "openclaw_heartbeat",
+                    "--delivery-status",
+                    "delivered",
+                    "--proof-boundary",
+                    "openclaw_heartbeat",
+                    "--proof-id",
+                    "heartbeat:positive-20260421T000500Z",
+                    "--now-utc",
+                    "2026-04-21T00:02:00+00:00",
+                ]
+                with patch("sys.stdout", stdout):
+                    namespace: dict[str, object] = {
+                        "__name__": "__main__",
+                        "__file__": str(script_path),
+                    }
+                    with self.assertRaises(SystemExit) as exit_info:
+                        exec(script_path.read_text(encoding="utf-8"), namespace)
+            finally:
+                sys.argv = old_argv
+
+            payload = json.loads(stdout.getvalue())
+            suppressed_alert = json.loads(
+                (workspace / payload["suppressed"]["alert_artifact_path"]).read_text(encoding="utf-8")
+            )
+            delivered_alert = json.loads(
+                (workspace / payload["positive"]["alert_artifact_path"]).read_text(encoding="utf-8")
+            )
+
+        self.assertEqual(exit_info.exception.code, 0)
+        self.assertEqual(
+            suppressed_alert["alert_disposition"]["e2e_run_id"],
+            "bundle-20260421-runtime-path",
+        )
+        self.assertEqual(
+            delivered_alert["alert_disposition"]["e2e_run_id"],
+            "bundle-20260421-runtime-path",
+        )
+
 
 if __name__ == "__main__":
     unittest.main()

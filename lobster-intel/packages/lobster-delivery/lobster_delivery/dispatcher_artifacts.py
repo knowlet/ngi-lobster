@@ -121,6 +121,7 @@ def write_dispatcher_artifacts(
     thesis_id: str,
     runtime_payload: dict[str, Any],
     delivery_receipt: dict[str, Any] | None = None,
+    e2e_run_id: str | None = None,
     now_utc: str | None = None,
 ) -> dict[str, Any]:
     run_id = str(runtime_payload.get("run_id") or "").strip()
@@ -137,6 +138,8 @@ def write_dispatcher_artifacts(
     decision = str(disposition.get("decision") or "").strip()
     if not decision:
         raise ValueError("runtime_payload.alert_disposition.decision is required")
+    if e2e_run_id and _missing(disposition.get("e2e_run_id")) and _missing(disposition.get("e2e_bundle_id")):
+        disposition["e2e_run_id"] = e2e_run_id
 
     recorded_at_utc = _now_utc(now_utc)
     delivery_root = _delivery_root(workspace_dir, thesis_id)
@@ -186,6 +189,7 @@ def write_dispatcher_artifacts(
             "thesis_id": thesis_id,
             "run_id": run_id,
             "alert_artifact_id": alert_artifact_id,
+            "e2e_run_id": disposition.get("e2e_run_id"),
             "sink": normalized_receipt["sink"],
             "delivery_status": normalized_receipt["delivery_status"],
             "delivery_proof": normalized_receipt["delivery_proof"],

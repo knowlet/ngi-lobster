@@ -3,16 +3,23 @@ from .gate import deliver_heartbeat_payload
 from .dispatcher_artifacts import write_dispatcher_artifacts
 from .dispatcher_bundle import load_dispatcher_e2e_bundle, load_dispatcher_payloads, write_dispatcher_e2e_bundle
 from .gate import validate_background_output
-from .runtime_contract import build_runtime_contract_view, load_runtime_contract_bundle
+from .runtime_contract import (
+    build_runtime_contract_view,
+    build_runtime_target_audit_view,
+    load_runtime_contract_bundle,
+    load_runtime_target_audit,
+)
 
 __all__ = [
     "build_alert_contract_view",
     "build_e2e_contract_bundle_view",
     "build_runtime_contract_view",
+    "build_runtime_target_audit_view",
     "deliver_heartbeat_payload",
     "load_dispatcher_e2e_bundle",
     "load_dispatcher_payloads",
     "load_runtime_contract_bundle",
+    "load_runtime_target_audit",
     "validate_background_output",
     "write_dispatcher_artifacts",
     "write_dispatcher_e2e_bundle",

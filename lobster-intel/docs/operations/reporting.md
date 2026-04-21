@@ -122,6 +122,22 @@ Use the two verifiers for different jobs:
 
 The runtime-backed verifier prints one fail-closed machine-readable view and exits non-zero when any required runtime, compare, alert, or receipt field is missing.
 
+When PO needs to confirm a reviewed run still points at the same active target as the current runtime contract, run the target audit against `runtime/<thesis-id>/latest.json`:
+
+```bash
+./.venv/bin/python lobster-intel/scripts/verify_runtime_target_audit.py \
+  --workspace . \
+  --thesis-id gooaye \
+  --run-id 20260419T123000Z
+```
+
+Behavior:
+- reads `runtime/<thesis-id>/latest.json` as the current source of truth for the active target contract
+- compares that latest active target against `runtime/runs/<run-id>.json` and `runtime/compare/<run-id>.json`
+- fails closed when the audited run no longer points at the same runtime target id as the latest contract
+- allows suppressed legacy fixtures to keep a divergent `market_target_id`, but still requires `compare.runtime_target_id` to match the latest active target
+- also requires positive-control runs to keep `market_target_id` aligned with the latest active target
+
 Before running the runtime verifier or dispatcher bundle builder, emit the real dispatcher delivery artifacts from the runtime payload:
 
 ```bash

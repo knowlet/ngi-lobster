@@ -241,6 +241,17 @@ When operators already know the suppressed legacy-control run id and the positiv
 
 This reads the matching `runtime/runs/<run-id>.json` artifacts, emits the dispatcher alert/receipt records under `lobster-intel/data/delivery/<thesis-id>/`, stamps the same shared `e2e_run_id` onto those dispatcher artifacts, then writes the shared bundle artifact under `bundles/` and prints one machine-readable summary for operator review.
 
+When you need to prove an audited run still uses the same active target as the current runtime contract, run:
+
+```bash
+./.venv/bin/python lobster-intel/scripts/verify_runtime_target_audit.py \
+  --workspace . \
+  --thesis-id gooaye \
+  --run-id 20260419T123000Z
+```
+
+This compares `runtime/<thesis-id>/latest.json` against the selected `runtime/runs/<run-id>.json` and `runtime/compare/<run-id>.json`, then fails closed if the run drifted away from the current active target contract.
+
 ## Source history operations
 
 Runtime source artifacts under `lobster-intel/data/runtime/sources/<plugin-id>/runs/` are now replayable and indexable.

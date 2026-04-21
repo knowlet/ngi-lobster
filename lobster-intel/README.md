@@ -256,7 +256,7 @@ When operators already know the suppressed legacy-control run id and the positiv
   --positive-run-id positive-20260421T000500Z
 ```
 
-This reads the matching `runtime/runs/<run-id>.json` artifacts, reuses the persisted `delivery/receipts/<positive-run-id>.json` proof for the positive-control path by default, emits the dispatcher alert/receipt records under `lobster-intel/data/delivery/<thesis-id>/`, stamps the same shared `e2e_run_id` onto those dispatcher artifacts, records `target_contract_match` alongside `runtime_target_id` and `alert_target_id`, then writes the shared bundle artifact under `bundles/` and prints one machine-readable summary for operator review.
+This reads the matching `runtime/runs/<run-id>.json` artifacts, reuses the persisted `delivery/receipts/<positive-run-id>.json` proof for the positive-control path by default, emits the dispatcher alert/receipt records under `lobster-intel/data/delivery/<thesis-id>/`, stamps the same shared `e2e_run_id` onto those dispatcher artifacts, records `target_contract_match` alongside `runtime_target_id` and `alert_target_id`, then writes the shared bundle artifact under `bundles/` and prints one machine-readable summary for operator review. Receipt reuse fails closed if the persisted receipt payload no longer matches the requested `thesis_id` or `positive_run_id`.
 
 When operators need to override missing or corrected receipt fields, the explicit flags remain available:
 

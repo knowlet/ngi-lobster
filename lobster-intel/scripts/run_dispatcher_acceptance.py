@@ -31,8 +31,31 @@ def _load_optional_json(path: str | Path) -> dict | None:
     return _load_json(resolved)
 
 
+def _validate_persisted_receipt(receipt: dict, *, thesis_id: str, run_id: str) -> dict:
+    persisted_run_id = str(receipt.get("run_id") or "").strip()
+    persisted_thesis_id = str(receipt.get("thesis_id") or "").strip()
+    mismatches: list[str] = []
+    if persisted_run_id and persisted_run_id != run_id:
+        mismatches.append(f"run_id={persisted_run_id!r}")
+    if persisted_thesis_id and persisted_thesis_id != thesis_id:
+        mismatches.append(f"thesis_id={persisted_thesis_id!r}")
+    if mismatches:
+        mismatch_summary = ", ".join(mismatches)
+        raise ValueError(
+            "persisted receipt metadata does not match requested positive run: "
+            f"expected thesis_id={thesis_id!r}, run_id={run_id!r}; got {mismatch_summary}"
+        )
+    return receipt
+
+
 def _resolve_delivery_receipt(args: argparse.Namespace, receipts_root: Path) -> dict | None:
     receipt = _load_optional_json(receipts_root / f"{args.positive_run_id}.json") or {}
+    if receipt:
+        receipt = _validate_persisted_receipt(
+            receipt,
+            thesis_id=args.thesis_id,
+            run_id=args.positive_run_id,
+        )
     if args.sink:
         receipt["sink"] = args.sink
     if args.delivery_status:
@@ -67,32 +90,37 @@ def main(argv: list[str]) -> int:
 
     runtime_root = Path(args.workspace) / "lobster-intel" / "data" / "runtime" / args.thesis_id / "runs"
     receipts_root = Path(args.workspace) / "lobster-intel" / "data" / "delivery" / args.thesis_id / "receipts"
-    suppressed_runtime = _load_json(runtime_root / f"{args.suppressed_run_id}.json")
-    positive_runtime = _load_json(runtime_root / f"{args.positive_run_id}.json")
-    delivery_receipt = _resolve_delivery_receipt(args, receipts_root)
+    try:
+        suppressed_runtime = _load_json(runtime_root / f"{args.suppressed_run_id}.json")
+        positive_runtime = _load_json(runtime_root / f"{args.positive_run_id}.json")
+        delivery_receipt = _resolve_delivery_receipt(args, receipts_root)
 
-    suppressed = write_dispatcher_artifacts(
-        workspace_dir=args.workspace,
-        thesis_id=args.thesis_id,
-        runtime_payload=suppressed_runtime,
-        e2e_run_id=args.bundle_id,
-        now_utc=args.now_utc,
-    )
-    positive = write_dispatcher_artifacts(
-        workspace_dir=args.workspace,
-        thesis_id=args.thesis_id,
-        runtime_payload=positive_runtime,
-        e2e_run_id=args.bundle_id,
-        delivery_receipt=delivery_receipt,
-        now_utc=args.now_utc,
-    )
-    bundle = write_dispatcher_e2e_bundle(
-        workspace_dir=args.workspace,
-        thesis_id=args.thesis_id,
-        run_ids=[args.suppressed_run_id, args.positive_run_id],
-        bundle_id=args.bundle_id,
-        now_utc=args.now_utc,
-    )
+        suppressed = write_dispatcher_artifacts(
+            workspace_dir=args.workspace,
+            thesis_id=args.thesis_id,
+            runtime_payload=suppressed_runtime,
+            e2e_run_id=args.bundle_id,
+            now_utc=args.now_utc,
+        )
+        positive = write_dispatcher_artifacts(
+            workspace_dir=args.workspace,
+            thesis_id=args.thesis_id,
+            runtime_payload=positive_runtime,
+            e2e_run_id=args.bundle_id,
+            delivery_receipt=delivery_receipt,
+            now_utc=args.now_utc,
+        )
+        bundle = write_dispatcher_e2e_bundle(
+            workspace_dir=args.workspace,
+            thesis_id=args.thesis_id,
+            run_ids=[args.suppressed_run_id, args.positive_run_id],
+            bundle_id=args.bundle_id,
+            now_utc=args.now_utc,
+        )
+    except (FileNotFoundError, ValueError) as exc:
+        print(f"error: {exc}", file=sys.stderr)
+        return 1
+
     print(
         json.dumps(
             {

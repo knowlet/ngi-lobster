@@ -8,6 +8,8 @@
 
 **Tech Stack:** Python 3.11+, stdlib `json`/`pathlib`, pytest, Markdown docs
 
+**Status:** Implemented in the writable workspace on 2026-04-22.
+
 ---
 
 ### Task 1: Lock The Receipt-Reuse Contract
@@ -15,22 +17,22 @@
 **Files:**
 - Modify: `lobster-intel/tests/test_dispatcher_acceptance_cli.py`
 
-- [ ] Add a focused CLI test that seeds a real runtime receipt and runs `run_dispatcher_acceptance.py` without explicit proof arguments.
-- [ ] Verify the command succeeds, writes dispatcher artifacts plus the shared bundle, and preserves the existing `delivery_proof.proof_id`.
+- [x] Add a focused CLI test that seeds a real runtime receipt and runs `run_dispatcher_acceptance.py` without explicit proof arguments.
+- [x] Verify the command succeeds, writes dispatcher artifacts plus the shared bundle, and preserves the existing `delivery_proof.proof_id`.
 
 ### Task 2: Reuse Persisted Runtime Receipts
 
 **Files:**
 - Modify: `lobster-intel/scripts/run_dispatcher_acceptance.py`
 
-- [ ] Add a helper that loads `lobster-intel/data/delivery/<thesis-id>/receipts/<run-id>.json` when present.
-- [ ] Make positive-control receipt arguments optional and merge any explicit overrides onto the persisted receipt payload.
-- [ ] Fail closed with a clear error when the positive run still lacks a complete delivery receipt after merge.
+- [x] Add a helper that loads `lobster-intel/data/delivery/<thesis-id>/receipts/<run-id>.json` when present.
+- [x] Make positive-control receipt arguments optional and merge any explicit overrides onto the persisted receipt payload.
+- [x] Fail closed with a clear error when the positive run still lacks a complete delivery receipt after merge.
 
 ### Task 3: Document The Preferred Acceptance Path
 
 **Files:**
 - Modify: `lobster-intel/README.md`
 
-- [ ] Update the dispatcher acceptance section to state that operators should reuse persisted runtime receipts by default.
-- [ ] Keep the explicit proof flags documented as an override path, not the primary flow.
+- [x] Update the dispatcher acceptance section to state that operators should reuse persisted runtime receipts by default.
+- [x] Keep the explicit proof flags documented as an override path, not the primary flow.

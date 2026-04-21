@@ -24,6 +24,31 @@ def _load_json(path: str | Path) -> dict:
     return json.loads(Path(path).read_text(encoding="utf-8"))
 
 
+def _load_optional_json(path: str | Path) -> dict | None:
+    resolved = Path(path)
+    if not resolved.exists():
+        return None
+    return _load_json(resolved)
+
+
+def _resolve_delivery_receipt(args: argparse.Namespace, receipts_root: Path) -> dict | None:
+    receipt = _load_optional_json(receipts_root / f"{args.positive_run_id}.json") or {}
+    if args.sink:
+        receipt["sink"] = args.sink
+    if args.delivery_status:
+        receipt["delivery_status"] = args.delivery_status
+
+    delivery_proof = dict(receipt.get("delivery_proof") or {})
+    if args.proof_boundary:
+        delivery_proof["boundary"] = args.proof_boundary
+    if args.proof_id:
+        delivery_proof["proof_id"] = args.proof_id
+    if delivery_proof:
+        receipt["delivery_proof"] = delivery_proof
+
+    return receipt or None
+
+
 def main(argv: list[str]) -> int:
     parser = argparse.ArgumentParser(
         description="Materialize real dispatcher artifacts and one shared E2E bundle from runtime runs."
@@ -33,16 +58,18 @@ def main(argv: list[str]) -> int:
     parser.add_argument("--bundle-id", required=True)
     parser.add_argument("--suppressed-run-id", required=True)
     parser.add_argument("--positive-run-id", required=True)
-    parser.add_argument("--sink", required=True)
-    parser.add_argument("--delivery-status", required=True)
-    parser.add_argument("--proof-boundary", required=True)
-    parser.add_argument("--proof-id", required=True)
+    parser.add_argument("--sink")
+    parser.add_argument("--delivery-status")
+    parser.add_argument("--proof-boundary")
+    parser.add_argument("--proof-id")
     parser.add_argument("--now-utc")
     args = parser.parse_args(argv[1:])
 
     runtime_root = Path(args.workspace) / "lobster-intel" / "data" / "runtime" / args.thesis_id / "runs"
+    receipts_root = Path(args.workspace) / "lobster-intel" / "data" / "delivery" / args.thesis_id / "receipts"
     suppressed_runtime = _load_json(runtime_root / f"{args.suppressed_run_id}.json")
     positive_runtime = _load_json(runtime_root / f"{args.positive_run_id}.json")
+    delivery_receipt = _resolve_delivery_receipt(args, receipts_root)
 
     suppressed = write_dispatcher_artifacts(
         workspace_dir=args.workspace,
@@ -56,14 +83,7 @@ def main(argv: list[str]) -> int:
         thesis_id=args.thesis_id,
         runtime_payload=positive_runtime,
         e2e_run_id=args.bundle_id,
-        delivery_receipt={
-            "sink": args.sink,
-            "delivery_status": args.delivery_status,
-            "delivery_proof": {
-                "boundary": args.proof_boundary,
-                "proof_id": args.proof_id,
-            },
-        },
+        delivery_receipt=delivery_receipt,
         now_utc=args.now_utc,
     )
     bundle = write_dispatcher_e2e_bundle(

@@ -252,14 +252,25 @@ When operators already know the suppressed legacy-control run id and the positiv
   --thesis-id gooaye \
   --bundle-id bundle-20260421-operator \
   --suppressed-run-id legacy-20260421T000000Z \
+  --positive-run-id positive-20260421T000500Z
+```
+
+This reads the matching `runtime/runs/<run-id>.json` artifacts, reuses the persisted `delivery/receipts/<positive-run-id>.json` proof for the positive-control path by default, emits the dispatcher alert/receipt records under `lobster-intel/data/delivery/<thesis-id>/`, stamps the same shared `e2e_run_id` onto those dispatcher artifacts, then writes the shared bundle artifact under `bundles/` and prints one machine-readable summary for operator review.
+
+When operators need to override missing or corrected receipt fields, the explicit flags remain available:
+
+```bash
+./.venv/bin/python lobster-intel/scripts/run_dispatcher_acceptance.py \
+  --workspace . \
+  --thesis-id gooaye \
+  --bundle-id bundle-20260421-operator \
+  --suppressed-run-id legacy-20260421T000000Z \
   --positive-run-id positive-20260421T000500Z \
   --sink openclaw_heartbeat \
   --delivery-status delivered \
   --proof-boundary openclaw_heartbeat \
   --proof-id heartbeat:positive-20260421T000500Z
 ```
-
-This reads the matching `runtime/runs/<run-id>.json` artifacts, emits the dispatcher alert/receipt records under `lobster-intel/data/delivery/<thesis-id>/`, stamps the same shared `e2e_run_id` onto those dispatcher artifacts, then writes the shared bundle artifact under `bundles/` and prints one machine-readable summary for operator review.
 
 To fail closed on the persisted acceptance artifact itself, point the verifier at the written bundle:
 

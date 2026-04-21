@@ -98,6 +98,22 @@ def _install_real_runtime_spine_workspace(tmp_path: Path) -> tuple[str, str, str
             "compare_artifact_id": f"compare:{thesis_id}:{positive_run_id}",
         },
     )
+    _write_json(
+        delivery_root / "receipts" / f"{positive_run_id}.json",
+        {
+            "artifact_id": f"receipt:{thesis_id}:{positive_run_id}",
+            "run_id": positive_run_id,
+            "contract_version": "ngi_runtime_spine.v1",
+            "sink": "openclaw_heartbeat",
+            "delivery_status": "delivered",
+            "alert_artifact_id": f"alert:{thesis_id}:{positive_run_id}",
+            "delivery_proof": {
+                "boundary": "openclaw_heartbeat",
+                "proof_id": f"heartbeat:{positive_run_id}",
+                "sink_message_id": f"heartbeat:{positive_run_id}",
+            },
+        },
+    )
 
     return thesis_id, suppressed_run_id, positive_run_id
 
@@ -144,3 +160,37 @@ def test_run_dispatcher_acceptance_cli_writes_artifacts_and_bundle(tmp_path: Pat
     assert (tmp_path / payload["suppressed"]["alert_artifact_path"]).exists()
     assert (tmp_path / payload["positive"]["receipt_artifact_path"]).exists()
     assert (tmp_path / payload["bundle"]["bundle_artifact_path"]).exists()
+
+
+def test_run_dispatcher_acceptance_cli_reuses_persisted_runtime_receipt(tmp_path: Path):
+    thesis_id, suppressed_run_id, positive_run_id = _install_real_runtime_spine_workspace(tmp_path)
+    script_path = ROOT / "lobster-intel" / "scripts" / "run_dispatcher_acceptance.py"
+
+    completed = subprocess.run(
+        [
+            sys.executable,
+            str(script_path),
+            "--workspace",
+            str(tmp_path),
+            "--thesis-id",
+            thesis_id,
+            "--bundle-id",
+            "bundle-20260422-reuse",
+            "--suppressed-run-id",
+            suppressed_run_id,
+            "--positive-run-id",
+            positive_run_id,
+        ],
+        cwd=ROOT,
+        text=True,
+        capture_output=True,
+        check=False,
+    )
+
+    assert completed.returncode == 0, completed.stderr
+    payload = json.loads(completed.stdout)
+    receipt_path = tmp_path / payload["positive"]["receipt_artifact_path"]
+    receipt_payload = json.loads(receipt_path.read_text(encoding="utf-8"))
+
+    assert receipt_payload["delivery_proof"]["proof_id"] == f"heartbeat:{positive_run_id}"
+    assert payload["bundle"]["bundle"]["fixtures"][1]["delivery_proof"]["proof_id"] == f"heartbeat:{positive_run_id}"

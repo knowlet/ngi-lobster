@@ -102,6 +102,25 @@ Behavior:
 - exits `0` only when the bundle contains both `suppressed` and `would_send` fixtures with matching `contract_version` and `e2e_run_id`
 - exits non-zero when the bundle is incomplete, so CI or review scripts can fail closed
 
+## One-shot dispatcher acceptance path
+
+When the operator already knows which suppressed runtime run and which positive-control runtime run should compose the acceptance bundle, use the wrapper CLI below to execute the dispatcher path in one command:
+
+```bash
+python3 lobster-intel/scripts/run_dispatcher_acceptance.py \
+  --workspace . \
+  --thesis-id gooaye \
+  --bundle-id bundle-20260422-acceptance \
+  --suppressed-run-id legacy-20260421T000000Z \
+  --positive-run-id positive-20260421T000500Z
+```
+
+Behavior:
+- reads `runtime/runs/<suppressed-run-id>.json` and `runtime/runs/<positive-run-id>.json`
+- writes the suppressed dispatcher alert plus the positive-control dispatcher alert/receipt artifacts
+- reuses the persisted positive-control receipt by default, but fails closed if `thesis_id`, `run_id`, or `contract_version` no longer match the requested run
+- writes one auditable dispatcher bundle under `lobster-intel/data/delivery/<thesis-id>/bundles/<bundle-id>.json`
+
 ## Recommended pipeline
 
 1. gather runtime state

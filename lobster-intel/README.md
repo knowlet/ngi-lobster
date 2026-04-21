@@ -235,3 +235,20 @@ That worker writes:
 The fetch path is intentionally constrained to `http`/`https`, caps response bodies before decode, strips `script`/`style` noise from HTML text extraction, and parallelizes queue fetches while preserving deterministic artifact writes.
 
 This keeps the tracker ingest-only while making linked-content follow-up replayable and auditable from runtime truth.
+
+## Dispatcher acceptance bundle
+
+When operators already know the suppressed legacy-control run id and the positive-control run id that should compose the current P0 acceptance cut, materialize the dispatcher artifacts plus one shared E2E bundle in one command:
+
+```bash
+python3 lobster-intel/scripts/run_dispatcher_acceptance.py \
+  --workspace . \
+  --thesis-id gooaye \
+  --bundle-id bundle-20260422-acceptance \
+  --suppressed-run-id legacy-20260421T000000Z \
+  --positive-run-id positive-20260421T000500Z
+```
+
+The wrapper reuses `delivery/receipts/<positive-run-id>.json` by default, writes dispatcher alert/receipt artifacts, and emits one shared bundle under `lobster-intel/data/delivery/<thesis-id>/bundles/`.
+
+Receipt reuse fails closed when the persisted receipt metadata no longer matches the requested positive-control run. The current guard checks `thesis_id`, `run_id`, and `contract_version` before reusing the delivery proof.

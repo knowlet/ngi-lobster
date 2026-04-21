@@ -128,12 +128,13 @@ def write_dispatcher_artifacts(
         raise ValueError("runtime_payload.run_id is required")
 
     disposition = dict(runtime_payload.get("alert_disposition") or {})
-    if not disposition:
-        disposition = _project_runtime_disposition(
+    if not disposition or _missing(disposition.get("decision")):
+        projected = _project_runtime_disposition(
             workspace_dir=workspace_dir,
             thesis_id=thesis_id,
             runtime_payload=runtime_payload,
         )
+        disposition = {**projected, **disposition}
     decision = str(disposition.get("decision") or "").strip()
     if not decision:
         raise ValueError("runtime_payload.alert_disposition.decision is required")
@@ -185,7 +186,9 @@ def write_dispatcher_artifacts(
             "recorded_at_utc": recorded_at_utc,
             "thesis_id": thesis_id,
             "run_id": run_id,
+            "contract_version": disposition.get("contract_version") or normalized_runtime_payload.get("contract_version"),
             "alert_artifact_id": alert_artifact_id,
+            "e2e_run_id": disposition.get("e2e_run_id"),
             "sink": normalized_receipt["sink"],
             "delivery_status": normalized_receipt["delivery_status"],
             "delivery_proof": normalized_receipt["delivery_proof"],

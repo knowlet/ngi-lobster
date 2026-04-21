@@ -17,7 +17,12 @@ for rel in [
 ]:
     sys.path.insert(0, str(PACKAGES / rel))
 
-from lobster_delivery import build_runtime_contract_view, load_runtime_contract_bundle
+from lobster_delivery import (
+    build_runtime_contract_view,
+    build_runtime_target_audit_view,
+    load_runtime_contract_bundle,
+    load_runtime_target_audit,
+)
 
 
 def _write_json(path: Path, payload: dict) -> None:
@@ -181,3 +186,136 @@ def test_verify_runtime_contract_bundle_cli_accepts_real_runtime_run(tmp_path: P
     payload = json.loads(completed.stdout)
     assert payload["status"] == "ok"
     assert payload["view"]["runtime"]["artifact_id"] == f"runtime:gooaye:{run_id}"
+
+
+def test_build_runtime_target_audit_view_accepts_run_aligned_with_latest_runtime_target():
+    result = build_runtime_target_audit_view(
+        latest_runtime_snapshot={
+            "run_id": "20260419T123500Z",
+            "active_target": {
+                "market_id": "1517836",
+                "market_question": "Trump announces end of military operations against Iran by June 30th?",
+            },
+        },
+        runtime_snapshot={
+            "artifact_id": "runtime:gooaye:20260419T123000Z",
+            "run_id": "20260419T123000Z",
+            "active_target": {
+                "market_id": "1517836",
+                "market_question": "Trump announces end of military operations against Iran by June 30th?",
+            },
+        },
+        compare_artifact={
+            "artifact_id": "compare:gooaye:20260419T123000Z",
+            "runtime_target_id": "1517836",
+            "market_target_id": "legacy-430",
+        },
+        alert_artifact={
+            "artifact_id": "alert:gooaye:20260419T123000Z",
+            "should_send": False,
+            "reason_code": "legacy_target_mismatch",
+        },
+    )
+
+    assert result["status"] == "ok"
+    assert result["view"]["same_target_as_latest"] is True
+    assert result["view"]["latest_run_id"] == "20260419T123500Z"
+    assert result["view"]["audited_run_id"] == "20260419T123000Z"
+
+
+def test_build_runtime_target_audit_view_fails_closed_when_compare_runtime_target_drifts_from_latest():
+    result = build_runtime_target_audit_view(
+        latest_runtime_snapshot={
+            "run_id": "20260419T123500Z",
+            "active_target": {
+                "market_id": "1517836",
+                "market_question": "Trump announces end of military operations against Iran by June 30th?",
+            },
+        },
+        runtime_snapshot={
+            "artifact_id": "runtime:gooaye:20260419T123000Z",
+            "run_id": "20260419T123000Z",
+            "active_target": {
+                "market_id": "1517836",
+                "market_question": "Trump announces end of military operations against Iran by June 30th?",
+            },
+        },
+        compare_artifact={
+            "artifact_id": "compare:gooaye:20260419T123000Z",
+            "runtime_target_id": "legacy-430",
+            "market_target_id": "legacy-430",
+        },
+        alert_artifact={
+            "artifact_id": "alert:gooaye:20260419T123000Z",
+            "should_send": False,
+            "reason_code": "legacy_target_mismatch",
+        },
+    )
+
+    assert result["status"] == "audit_failed"
+    assert "compare.runtime_target_id_mismatch_latest" in result["issues"]
+
+
+def test_load_runtime_target_audit_reads_workspace_artifacts(tmp_path: Path):
+    run_id = _install_runtime_contract_fixture(tmp_path)
+    latest_path = tmp_path / "lobster-intel" / "data" / "runtime" / "gooaye" / "latest.json"
+    latest_path.write_text(
+        json.dumps(
+            {
+                "artifact_id": "runtime:gooaye:20260419T123500Z",
+                "run_id": "20260419T123500Z",
+                "active_target": {
+                    "market_id": "1517836",
+                    "market_question": "Trump announces end of military operations against Iran by June 30th?",
+                },
+            },
+            indent=2,
+        ),
+        encoding="utf-8",
+    )
+
+    result = load_runtime_target_audit(tmp_path, "gooaye", run_id)
+
+    assert result["status"] == "ok"
+    assert result["view"]["same_target_as_latest"] is True
+
+
+def test_verify_runtime_target_audit_cli_accepts_aligned_runtime_run(tmp_path: Path):
+    run_id = _install_runtime_contract_fixture(tmp_path)
+    latest_path = tmp_path / "lobster-intel" / "data" / "runtime" / "gooaye" / "latest.json"
+    latest_path.write_text(
+        json.dumps(
+            {
+                "artifact_id": "runtime:gooaye:20260419T123500Z",
+                "run_id": "20260419T123500Z",
+                "active_target": {
+                    "market_id": "1517836",
+                    "market_question": "Trump announces end of military operations against Iran by June 30th?",
+                },
+            },
+            indent=2,
+        ),
+        encoding="utf-8",
+    )
+
+    completed = subprocess.run(
+        [
+            sys.executable,
+            "lobster-intel/scripts/verify_runtime_target_audit.py",
+            "--workspace",
+            str(tmp_path),
+            "--thesis-id",
+            "gooaye",
+            "--run-id",
+            run_id,
+        ],
+        cwd=ROOT.parent,
+        text=True,
+        capture_output=True,
+        check=False,
+    )
+
+    assert completed.returncode == 0, completed.stderr
+    payload = json.loads(completed.stdout)
+    assert payload["status"] == "ok"
+    assert payload["view"]["latest_target"]["market_id"] == "1517836"

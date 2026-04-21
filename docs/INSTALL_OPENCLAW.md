@@ -254,6 +254,16 @@ For Gooaye image follow-up work, process the queued OCR / image-understanding it
 
 This consumes `image_analysis_queue` from `lobster-intel/data/runtime/<thesis-id>/latest.json` and writes separate evidence, compiled markdown, and runtime receipt artifacts. Missing `image_url` values or OCR adapter errors are recorded in the artifact payload instead of silently mutating the source ingest record.
 
+When you need to backfill historical queued image work instead of only the latest runtime artifact, run:
+
+```bash
+./.venv/bin/python lobster-intel/scripts/backfill_visual_evidence_queue.py \
+  --workspace . \
+  --thesis-id gooaye
+```
+
+That command scans `lobster-intel/data/runtime/<thesis-id>/runs/*.json`, skips runs that already have a matching visual-evidence receipt under `runtime/<thesis-id>/visual-evidence/runs/`, skips empty queues, and prints one machine-readable backlog summary.
+
 When a runtime artifact exposes `linked_content_queue`, keep the fetch/extraction step downstream of the source plugin:
 
 ```bash
@@ -339,11 +349,10 @@ Current recommendation:
 Before this becomes a smooth installable plugin for everyone, these still need work:
 
 1. linked-content extraction
-2. OCR backfill loop
-3. Firehose junk suppression / ranking
-4. reusable cron recipes
-5. a cleaner setup command
-6. source cursor persistence wired into default runtime storage
+2. Firehose junk suppression / ranking
+3. reusable cron recipes
+4. a cleaner setup command
+5. source cursor persistence wired into default runtime storage
 
 ## Bottom line
 

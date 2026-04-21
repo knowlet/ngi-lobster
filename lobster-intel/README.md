@@ -185,6 +185,16 @@ Run it with:
 The source ingest step still only declares pending image-analysis work. The downstream worker writes a separate audit trail and fails closed when queued items are missing `image_url` or the OCR adapter errors.
 Its JSON result and runtime receipt also expose `processed_count`, `success_count`, and `error_count` so operators can see queue health without opening every evidence artifact.
 
+When operators need to backfill historical runtime runs instead of just the latest queue, use:
+
+```bash
+./.venv/bin/python lobster-intel/scripts/backfill_visual_evidence_queue.py \
+  --workspace . \
+  --thesis-id gooaye
+```
+
+This scans `lobster-intel/data/runtime/<thesis-id>/runs/*.json`, skips runs that already have a matching visual-evidence receipt under `runtime/<thesis-id>/visual-evidence/runs/`, skips runs whose `image_analysis_queue` is empty, and prints one JSON summary for the processed backlog.
+
 ## Dispatcher artifact writing
 
 Runtime payloads can now be materialized into real dispatcher delivery artifacts before PO review or contract verification.

@@ -1,13 +1,10 @@
-import http.server
 import json
-import socketserver
-import subprocess
+import io
 import sys
 import tempfile
 import threading
 import unittest
 import urllib.request
-from contextlib import contextmanager
 from pathlib import Path
 from unittest.mock import MagicMock, patch
 
@@ -33,31 +30,13 @@ def _runtime_payload(linked_url: str | None = "https://example.com/story") -> di
     }
 
 
-@contextmanager
-def _serve_bytes(body: bytes, *, content_type: str = "text/html; charset=utf-8"):
-    class Handler(http.server.BaseHTTPRequestHandler):
-        def do_GET(self) -> None:  # noqa: N802 - stdlib handler name
-            self.send_response(200)
-            self.send_header("Content-Type", content_type)
-            self.send_header("Content-Length", str(len(body)))
-            self.end_headers()
-            self.wfile.write(body)
-
-        def log_message(self, format: str, *args) -> None:  # noqa: A003 - stdlib signature
-            return
-
-    class ReusableTCPServer(socketserver.TCPServer):
-        allow_reuse_address = True
-
-    with ReusableTCPServer(("127.0.0.1", 0), Handler) as server:
-        thread = threading.Thread(target=server.serve_forever, daemon=True)
-        thread.start()
-        try:
-            host, port = server.server_address
-            yield f"http://{host}:{port}/story"
-        finally:
-            server.shutdown()
-            thread.join()
+def _mock_response(body: bytes, *, content_type: str = "text/html; charset=utf-8") -> MagicMock:
+    response = MagicMock()
+    response.__enter__.return_value = response
+    response.__exit__.return_value = False
+    response.read.return_value = body
+    response.headers.get_content_type.return_value = content_type
+    return response
 
 
 class LinkedContentPlatformTests(unittest.TestCase):
@@ -70,7 +49,7 @@ class LinkedContentPlatformTests(unittest.TestCase):
                 extract_linked_content(article_path.resolve().as_uri())
 
     def test_extract_linked_content_strips_script_and_style_content(self):
-        with _serve_bytes(
+        response = _mock_response(
             b"""
             <html>
               <head>
@@ -83,8 +62,9 @@ class LinkedContentPlatformTests(unittest.TestCase):
               </body>
             </html>
             """
-        ) as url:
-            extracted = extract_linked_content(url)
+        )
+        with patch("lobster_ingest.linked_content.urllib.request.urlopen", return_value=response):
+            extracted = extract_linked_content("https://example.com/story")
 
         self.assertEqual(extracted["title"], "Example Article")
         self.assertIn("Signal text", extracted["content"])
@@ -214,34 +194,38 @@ class LinkedContentPlatformTests(unittest.TestCase):
 
         with tempfile.TemporaryDirectory() as temp_dir:
             workspace = Path(temp_dir)
-            with _serve_bytes(
+            runtime_dir = workspace / "lobster-intel" / "data" / "runtime" / "gooaye"
+            runtime_dir.mkdir(parents=True, exist_ok=True)
+            latest_path = runtime_dir / "latest.json"
+            latest_path.write_text(
+                json.dumps(_runtime_payload("https://example.com/story"), ensure_ascii=False, indent=2),
+                encoding="utf-8",
+            )
+
+            stdout = io.StringIO()
+            response = _mock_response(
                 b"<html><head><title>CLI Article</title></head><body><article>CLI extracted body</article></body></html>"
-            ) as linked_url:
-                runtime_dir = workspace / "lobster-intel" / "data" / "runtime" / "gooaye"
-                runtime_dir.mkdir(parents=True, exist_ok=True)
-                latest_path = runtime_dir / "latest.json"
-                latest_path.write_text(
-                    json.dumps(_runtime_payload(linked_url), ensure_ascii=False, indent=2),
-                    encoding="utf-8",
-                )
+            )
+            old_argv = sys.argv
+            try:
+                sys.argv = [
+                    str(script_path),
+                    "--workspace",
+                    str(workspace),
+                    "--thesis-id",
+                    "gooaye",
+                ]
+                with patch("urllib.request.urlopen", return_value=response):
+                    with patch("sys.stdout", stdout):
+                        namespace: dict[str, object] = {
+                            "__name__": "__main__",
+                            "__file__": str(script_path),
+                        }
+                        exec(script_path.read_text(encoding="utf-8"), namespace)
+            finally:
+                sys.argv = old_argv
 
-                completed = subprocess.run(
-                    [
-                        sys.executable,
-                        str(script_path),
-                        "--workspace",
-                        str(workspace),
-                        "--thesis-id",
-                        "gooaye",
-                    ],
-                    cwd=repo,
-                    text=True,
-                    capture_output=True,
-                    check=False,
-                )
-
-            self.assertEqual(completed.returncode, 0, completed.stderr)
-            payload = json.loads(completed.stdout)
+            payload = json.loads(stdout.getvalue())
 
             self.assertEqual(payload["processed_count"], 1)
             self.assertEqual(payload["status"], "processed")

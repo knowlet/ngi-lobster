@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from concurrent.futures import ThreadPoolExecutor
 import json
 import re
 from datetime import datetime, timezone
@@ -180,9 +181,18 @@ def process_visual_evidence_queue(
     paths = _ensure_dirs(workspace_dir, thesis_id)
     evidence_paths: list[str] = []
     compiled_paths: list[str] = []
+    max_workers = min(4, len(queue))
 
-    for index, item in enumerate(queue):
-        ocr_result = _run_ocr(item, ocr_adapter=ocr_adapter)
+    def run_item(item: dict[str, Any]) -> dict[str, Any]:
+        return _run_ocr(item, ocr_adapter=ocr_adapter)
+
+    if max_workers == 1:
+        ocr_results = [run_item(item) for item in queue]
+    else:
+        with ThreadPoolExecutor(max_workers=max_workers) as executor:
+            ocr_results = list(executor.map(run_item, queue))
+
+    for index, (item, ocr_result) in enumerate(zip(queue, ocr_results)):
         stem = _item_stem(source_run_id, item, index)
         evidence_path = paths["evidence"] / f"{stem}.json"
         compiled_path = paths["compiled"] / f"{stem}.md"

@@ -8,7 +8,7 @@
 
 **Tech Stack:** Python 3.11+, stdlib `json`/`pathlib`/`argparse`, existing `lobster-ingest` package, pytest
 
-**Status:** Implemented in the writable workspace on 2026-04-21 and re-verified with `./.venv/bin/python -m pytest lobster-intel/tests/test_visual_evidence_platform.py lobster-intel/tests/test_gooaye_pipeline.py lobster-intel/tests/test_linked_content_platform.py -q` (`12 passed`). Committed in the repo-backed workspace during the 2026-04-21 automation run; push remains blocked by network access in this environment.
+**Status:** Implemented in the writable workspace on 2026-04-21 and re-verified with `./.venv/bin/python -m pytest lobster-intel/tests/test_visual_evidence_platform.py lobster-intel/tests/test_gooaye_pipeline.py lobster-intel/tests/test_linked_content_platform.py -q` (`12 passed`). Post-review hardening on 2026-04-21 parallelized OCR queue execution while preserving artifact write order. Committed in the repo-backed workspace during the 2026-04-21 automation run; push remains blocked by network access in this environment.
 
 ---
 

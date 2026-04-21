@@ -2,6 +2,7 @@ import io
 import json
 import sys
 import tempfile
+import threading
 import unittest
 from pathlib import Path
 from unittest.mock import patch
@@ -112,6 +113,47 @@ class VisualEvidencePlatformTests(unittest.TestCase):
         self.assertEqual(result["processed_count"], 1)
         self.assertEqual(evidence["ocr"]["error"], "missing image_url")
         self.assertEqual(evidence["ocr"]["ocr_text"], "")
+
+    def test_process_visual_evidence_queue_processes_multiple_items_in_parallel(self):
+        runtime_payload = {
+            "run_id": "gooaye-20260421T000000Z",
+            "image_analysis_queue": [
+                {
+                    "post_id": str(index),
+                    "url": f"https://t.me/gooaye/{index}",
+                    "image_url": f"https://example.com/chart-{index}.png",
+                }
+                for index in range(3)
+            ],
+        }
+        barrier = threading.Barrier(3)
+        thread_ids: list[int] = []
+
+        def ocr_adapter(item: dict[str, object]) -> dict[str, object]:
+            thread_ids.append(threading.get_ident())
+            barrier.wait(timeout=0.5)
+            return {
+                "image_url": item["image_url"],
+                "ocr_text": f"OCR for {item['image_url']}",
+                "summary": f"Summary for {item['post_id']}",
+            }
+
+        with tempfile.TemporaryDirectory() as temp_dir:
+            workspace = Path(temp_dir)
+            result = process_visual_evidence_queue(
+                workspace_dir=workspace,
+                thesis_id="gooaye",
+                runtime_payload=runtime_payload,
+                ocr_adapter=ocr_adapter,
+                now_utc="2026-04-21T00:00:00+00:00",
+            )
+
+            first_evidence = json.loads((workspace / result["evidence_paths"][0]).read_text(encoding="utf-8"))
+
+        self.assertEqual(result["status"], "processed")
+        self.assertEqual(result["processed_count"], 3)
+        self.assertEqual(first_evidence["image_item"]["post_id"], "0")
+        self.assertGreater(len(set(thread_ids)), 1)
 
     def test_process_visual_evidence_queue_cli_reads_latest_runtime_artifact(self):
         repo = Path(__file__).resolve().parents[2]

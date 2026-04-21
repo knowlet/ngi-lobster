@@ -11,6 +11,8 @@ from typing import Any, cast
 
 from lobster_delivery import deliver_heartbeat_payload
 
+from .monitor import TARGET_CONTRACT_MISMATCH_REASON
+
 
 SUPPORTED_DIRECTION_NORMALIZATIONS = {
     ("yes_is_peace", "yes_is_escalation"),
@@ -691,7 +693,7 @@ def compare_targets(
             fallback_reason_codes.append("numeric_direction_mismatch")
 
     if runtime_target_id != market_target_id:
-        fallback_reason_codes.append("target_identity_mismatch")
+        fallback_reason_codes.append(TARGET_CONTRACT_MISMATCH_REASON)
         compare_mode = "suppressed"
         alignment_confidence = 0.15
     elif semantic_alignment_status == "mismatch":

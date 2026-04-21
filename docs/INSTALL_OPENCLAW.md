@@ -377,6 +377,23 @@ When PO needs to confirm an already-reviewed run still points at the same active
 
 That command reads `lobster-intel/data/runtime/<thesis-id>/latest.json` as the current source of truth, compares it against the audited `runtime/runs/<run-id>.json` and `runtime/compare/<run-id>.json`, and exits non-zero if `compare.runtime_target_id` no longer matches the latest active target. Suppressed legacy fixtures may still keep a divergent `market_target_id`, but the runtime-facing target id must remain aligned with the latest contract.
 
+## 8.2 Dispatcher acceptance cut
+
+When you already know the suppressed runtime run and the positive-control runtime run that should compose the current dispatcher acceptance cut, materialize the full dispatcher path in one command:
+
+```bash
+python3 lobster-intel/scripts/run_dispatcher_acceptance.py \
+  --workspace . \
+  --thesis-id gooaye \
+  --bundle-id bundle-20260422-acceptance \
+  --suppressed-run-id legacy-20260421T000000Z \
+  --positive-run-id positive-20260421T000500Z
+```
+
+That wrapper reads both runtime artifacts, reuses the persisted positive-control receipt by default, writes dispatcher alert/receipt artifacts, and emits one shared bundle under `lobster-intel/data/delivery/<thesis-id>/bundles/`.
+
+Receipt reuse now fails closed unless the persisted receipt still matches the requested positive run on `thesis_id`, `run_id`, and `contract_version`.
+
 ## 9. Cron status
 
 There is **not yet** a final reusable cron recipe for outside installs.

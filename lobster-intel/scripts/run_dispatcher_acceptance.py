@@ -31,14 +31,26 @@ def _load_optional_json(path: str | Path) -> dict | None:
     return _load_json(resolved)
 
 
-def _validate_persisted_receipt(receipt: dict, *, thesis_id: str, run_id: str) -> dict:
+def _validate_persisted_receipt(
+    receipt: dict,
+    *,
+    thesis_id: str,
+    run_id: str,
+    contract_version: str | None,
+) -> dict:
     persisted_run_id = str(receipt.get("run_id") or "").strip()
     persisted_thesis_id = str(receipt.get("thesis_id") or "").strip()
+    persisted_contract_version = str(receipt.get("contract_version") or "").strip()
     mismatches: list[str] = []
     if persisted_run_id and persisted_run_id != run_id:
         mismatches.append(f"run_id={persisted_run_id!r}")
     if persisted_thesis_id and persisted_thesis_id != thesis_id:
         mismatches.append(f"thesis_id={persisted_thesis_id!r}")
+    if contract_version and persisted_contract_version and persisted_contract_version != contract_version:
+        raise ValueError(
+            "persisted receipt contract_version does not match requested positive run: "
+            f"expected {contract_version!r}, got {persisted_contract_version!r}"
+        )
     if mismatches:
         mismatch_summary = ", ".join(mismatches)
         raise ValueError(
@@ -48,13 +60,19 @@ def _validate_persisted_receipt(receipt: dict, *, thesis_id: str, run_id: str) -
     return receipt
 
 
-def _resolve_delivery_receipt(args: argparse.Namespace, receipts_root: Path) -> dict | None:
+def _resolve_delivery_receipt(
+    args: argparse.Namespace,
+    *,
+    positive_runtime: dict,
+    receipts_root: Path,
+) -> dict | None:
     receipt = _load_optional_json(receipts_root / f"{args.positive_run_id}.json") or {}
     if receipt:
         receipt = _validate_persisted_receipt(
             receipt,
             thesis_id=args.thesis_id,
             run_id=args.positive_run_id,
+            contract_version=str(positive_runtime.get("contract_version") or "").strip() or None,
         )
     if args.sink:
         receipt["sink"] = args.sink
@@ -72,9 +90,21 @@ def _resolve_delivery_receipt(args: argparse.Namespace, receipts_root: Path) -> 
     return receipt or None
 
 
+def _with_bundle_id(runtime_payload: dict, bundle_id: str) -> dict:
+    enriched = dict(runtime_payload)
+    disposition = dict(enriched.get("alert_disposition") or {})
+    if not disposition:
+        enriched["alert_disposition"] = {"e2e_run_id": bundle_id}
+        return enriched
+    if not disposition.get("e2e_run_id"):
+        disposition["e2e_run_id"] = bundle_id
+    enriched["alert_disposition"] = disposition
+    return enriched
+
+
 def main(argv: list[str]) -> int:
     parser = argparse.ArgumentParser(
-        description="Materialize real dispatcher artifacts and one shared E2E bundle from runtime runs."
+        description="Materialize one dispatcher acceptance bundle from a suppressed and positive runtime run."
     )
     parser.add_argument("--workspace", default=".")
     parser.add_argument("--thesis-id", required=True)
@@ -93,20 +123,22 @@ def main(argv: list[str]) -> int:
     try:
         suppressed_runtime = _load_json(runtime_root / f"{args.suppressed_run_id}.json")
         positive_runtime = _load_json(runtime_root / f"{args.positive_run_id}.json")
-        delivery_receipt = _resolve_delivery_receipt(args, receipts_root)
+        delivery_receipt = _resolve_delivery_receipt(
+            args,
+            positive_runtime=positive_runtime,
+            receipts_root=receipts_root,
+        )
 
         suppressed = write_dispatcher_artifacts(
             workspace_dir=args.workspace,
             thesis_id=args.thesis_id,
-            runtime_payload=suppressed_runtime,
-            e2e_run_id=args.bundle_id,
+            runtime_payload=_with_bundle_id(suppressed_runtime, args.bundle_id),
             now_utc=args.now_utc,
         )
         positive = write_dispatcher_artifacts(
             workspace_dir=args.workspace,
             thesis_id=args.thesis_id,
-            runtime_payload=positive_runtime,
-            e2e_run_id=args.bundle_id,
+            runtime_payload=_with_bundle_id(positive_runtime, args.bundle_id),
             delivery_receipt=delivery_receipt,
             now_utc=args.now_utc,
         )

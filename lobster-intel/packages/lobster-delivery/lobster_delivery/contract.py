@@ -12,6 +12,8 @@ REQUIRED_BASE_FIELDS = (
     "alert_target_id",
     "contract_version",
     "e2e_run_id",
+    "p_ai",
+    "market_yes_probability",
 )
 
 E2E_RUN_ID_ALIASES = (

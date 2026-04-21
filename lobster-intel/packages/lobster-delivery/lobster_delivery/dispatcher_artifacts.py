@@ -115,7 +115,7 @@ def _validate_delivery_receipt(delivery_receipt: dict[str, Any] | None) -> dict[
     return normalized
 
 
-def write_dispatcher_artifacts(
+def build_dispatcher_artifact_payloads(
     *,
     workspace_dir: str | Path,
     thesis_id: str,
@@ -140,11 +140,6 @@ def write_dispatcher_artifacts(
         raise ValueError("runtime_payload.alert_disposition.decision is required")
 
     recorded_at_utc = _now_utc(now_utc)
-    delivery_root = _delivery_root(workspace_dir, thesis_id)
-    alerts_root = delivery_root / "alerts"
-    receipts_root = delivery_root / "receipts"
-    alerts_root.mkdir(parents=True, exist_ok=True)
-    receipts_root.mkdir(parents=True, exist_ok=True)
 
     alert_artifact_id = f"alert:{thesis_id}:{run_id}"
     compare_artifact_id = f"compare:{thesis_id}:{run_id}"
@@ -175,10 +170,8 @@ def write_dispatcher_artifacts(
         "compare_artifact_id": compare_artifact_id,
         **normalized_runtime_payload,
     }
-    alert_path = alerts_root / f"{run_id}.json"
-    alert_path.write_text(json.dumps(alert_payload, ensure_ascii=False, indent=2), encoding="utf-8")
 
-    receipt_path: Path | None = None
+    receipt_payload: dict[str, Any] | None = None
     if decision == "would_send":
         receipt_payload = {
             "schema": "lobster.delivery.dispatcher_receipt.v1",
@@ -193,12 +186,50 @@ def write_dispatcher_artifacts(
             "delivery_status": normalized_receipt["delivery_status"],
             "delivery_proof": normalized_receipt["delivery_proof"],
         }
+
+    return {
+        "decision": decision,
+        "run_id": run_id,
+        "alert_payload": alert_payload,
+        "receipt_payload": receipt_payload,
+    }
+
+
+def write_dispatcher_artifacts(
+    *,
+    workspace_dir: str | Path,
+    thesis_id: str,
+    runtime_payload: dict[str, Any],
+    delivery_receipt: dict[str, Any] | None = None,
+    now_utc: str | None = None,
+) -> dict[str, Any]:
+    rendered = build_dispatcher_artifact_payloads(
+        workspace_dir=workspace_dir,
+        thesis_id=thesis_id,
+        runtime_payload=runtime_payload,
+        delivery_receipt=delivery_receipt,
+        now_utc=now_utc,
+    )
+
+    run_id = rendered["run_id"]
+    delivery_root = _delivery_root(workspace_dir, thesis_id)
+    alerts_root = delivery_root / "alerts"
+    receipts_root = delivery_root / "receipts"
+    alerts_root.mkdir(parents=True, exist_ok=True)
+    receipts_root.mkdir(parents=True, exist_ok=True)
+
+    alert_path = alerts_root / f"{run_id}.json"
+    alert_path.write_text(json.dumps(rendered["alert_payload"], ensure_ascii=False, indent=2), encoding="utf-8")
+
+    receipt_payload = rendered["receipt_payload"]
+    receipt_path: Path | None = None
+    if receipt_payload is not None:
         receipt_path = receipts_root / f"{run_id}.json"
         receipt_path.write_text(json.dumps(receipt_payload, ensure_ascii=False, indent=2), encoding="utf-8")
 
     return {
         "status": "ok",
-        "decision": decision,
+        "decision": rendered["decision"],
         "alert_artifact_path": _relative_path(alert_path, workspace_dir),
         "receipt_artifact_path": None if receipt_path is None else _relative_path(receipt_path, workspace_dir),
     }

@@ -183,6 +183,7 @@ Run it with:
 ```
 
 The source ingest step still only declares pending image-analysis work. The downstream worker writes a separate audit trail and fails closed when queued items are missing `image_url` or the OCR adapter errors.
+Its JSON result and runtime receipt also expose `processed_count`, `success_count`, and `error_count` so operators can see queue health without opening every evidence artifact.
 
 ## Dispatcher artifact writing
 

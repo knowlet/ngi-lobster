@@ -124,6 +124,8 @@ def _write_receipt(
     recorded_at_utc: str,
     status: str,
     processed_count: int,
+    success_count: int,
+    error_count: int,
     evidence_paths: list[str],
     compiled_paths: list[str],
 ) -> str:
@@ -135,6 +137,8 @@ def _write_receipt(
         "source_run_id": source_run_id,
         "status": status,
         "processed_count": processed_count,
+        "success_count": success_count,
+        "error_count": error_count,
         "evidence_paths": evidence_paths,
         "compiled_paths": compiled_paths,
     }
@@ -167,12 +171,16 @@ def process_visual_evidence_queue(
             recorded_at_utc=recorded_at_utc,
             status="no_items",
             processed_count=0,
+            success_count=0,
+            error_count=0,
             evidence_paths=[],
             compiled_paths=[],
         )
         return {
             "status": "no_items",
             "processed_count": 0,
+            "success_count": 0,
+            "error_count": 0,
             "evidence_paths": [],
             "compiled_paths": [],
             "receipt_path": receipt_path,
@@ -191,6 +199,9 @@ def process_visual_evidence_queue(
     else:
         with ThreadPoolExecutor(max_workers=max_workers) as executor:
             ocr_results = list(executor.map(run_item, queue))
+
+    error_count = sum(1 for result in ocr_results if result.get("error"))
+    success_count = len(ocr_results) - error_count
 
     for index, (item, ocr_result) in enumerate(zip(queue, ocr_results)):
         stem = _item_stem(source_run_id, item, index)
@@ -225,12 +236,16 @@ def process_visual_evidence_queue(
         recorded_at_utc=recorded_at_utc,
         status="processed",
         processed_count=len(queue),
+        success_count=success_count,
+        error_count=error_count,
         evidence_paths=evidence_paths,
         compiled_paths=compiled_paths,
     )
     return {
         "status": "processed",
         "processed_count": len(queue),
+        "success_count": success_count,
+        "error_count": error_count,
         "evidence_paths": evidence_paths,
         "compiled_paths": compiled_paths,
         "receipt_path": receipt_path,

@@ -60,12 +60,16 @@ class VisualEvidencePlatformTests(unittest.TestCase):
 
         self.assertEqual(result["status"], "processed")
         self.assertEqual(result["processed_count"], 1)
+        self.assertEqual(result["success_count"], 1)
+        self.assertEqual(result["error_count"], 0)
         self.assertTrue(evidence_exists)
         self.assertTrue(compiled_exists)
         self.assertTrue(receipt_exists)
         self.assertEqual(evidence["image_item"]["post_id"], "6059")
         self.assertEqual(evidence["ocr"]["summary"], "Comparison chart between US and EU FSD features")
         self.assertEqual(receipt["source_run_id"], "gooaye-20260421T000000Z")
+        self.assertEqual(receipt["success_count"], 1)
+        self.assertEqual(receipt["error_count"], 0)
 
     def test_process_visual_evidence_queue_records_empty_receipt(self):
         with tempfile.TemporaryDirectory() as temp_dir:
@@ -83,9 +87,13 @@ class VisualEvidencePlatformTests(unittest.TestCase):
 
         self.assertEqual(result["status"], "no_items")
         self.assertEqual(result["processed_count"], 0)
+        self.assertEqual(result["success_count"], 0)
+        self.assertEqual(result["error_count"], 0)
         self.assertEqual(result["evidence_paths"], [])
         self.assertEqual(receipt["status"], "no_items")
         self.assertEqual(receipt["processed_count"], 0)
+        self.assertEqual(receipt["success_count"], 0)
+        self.assertEqual(receipt["error_count"], 0)
 
     def test_process_visual_evidence_queue_fails_closed_when_image_url_missing(self):
         with tempfile.TemporaryDirectory() as temp_dir:
@@ -111,6 +119,8 @@ class VisualEvidencePlatformTests(unittest.TestCase):
 
         self.assertEqual(result["status"], "processed")
         self.assertEqual(result["processed_count"], 1)
+        self.assertEqual(result["success_count"], 0)
+        self.assertEqual(result["error_count"], 1)
         self.assertEqual(evidence["ocr"]["error"], "missing image_url")
         self.assertEqual(evidence["ocr"]["ocr_text"], "")
 
@@ -152,6 +162,8 @@ class VisualEvidencePlatformTests(unittest.TestCase):
 
         self.assertEqual(result["status"], "processed")
         self.assertEqual(result["processed_count"], 3)
+        self.assertEqual(result["success_count"], 3)
+        self.assertEqual(result["error_count"], 0)
         self.assertEqual(first_evidence["image_item"]["post_id"], "0")
         self.assertGreater(len(set(thread_ids)), 1)
 
@@ -199,6 +211,8 @@ class VisualEvidencePlatformTests(unittest.TestCase):
 
         self.assertEqual(payload["status"], "processed")
         self.assertEqual(payload["processed_count"], 1)
+        self.assertEqual(payload["success_count"], 1)
+        self.assertEqual(payload["error_count"], 0)
         self.assertTrue(receipt_exists)
 
 

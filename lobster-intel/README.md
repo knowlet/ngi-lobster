@@ -241,6 +241,15 @@ When operators already know the suppressed legacy-control run id and the positiv
 
 This reads the matching `runtime/runs/<run-id>.json` artifacts, emits the dispatcher alert/receipt records under `lobster-intel/data/delivery/<thesis-id>/`, stamps the same shared `e2e_run_id` onto those dispatcher artifacts, then writes the shared bundle artifact under `bundles/` and prints one machine-readable summary for operator review.
 
+To fail closed on the persisted acceptance artifact itself, point the verifier at the written bundle:
+
+```bash
+./.venv/bin/python lobster-intel/scripts/verify_alert_contract_bundle.py \
+  lobster-intel/data/delivery/gooaye/bundles/bundle-20260421-operator.json
+```
+
+The verifier now accepts either raw runtime-style payload fixtures or the persisted `lobster.delivery.dispatcher_e2e_bundle.v1` artifact and always rechecks the same shared contract fields from the bundle contents.
+
 When you need to prove an audited run still uses the same active target as the current runtime contract, run:
 
 ```bash

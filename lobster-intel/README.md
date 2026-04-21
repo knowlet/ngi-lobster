@@ -251,4 +251,4 @@ python3 lobster-intel/scripts/run_dispatcher_acceptance.py \
 
 The wrapper reuses `delivery/receipts/<positive-run-id>.json` by default, writes dispatcher alert/receipt artifacts, and emits one shared bundle under `lobster-intel/data/delivery/<thesis-id>/bundles/`.
 
-Receipt reuse fails closed when the persisted receipt metadata no longer matches the requested positive-control run. The current guard checks `thesis_id`, `run_id`, and `contract_version` before reusing the delivery proof.
+Receipt reuse fails closed when the persisted receipt metadata is incomplete or no longer matches the requested positive-control run. The current guard requires `thesis_id`, `run_id`, and `contract_version` before reusing the delivery proof.

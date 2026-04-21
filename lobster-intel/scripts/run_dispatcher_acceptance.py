@@ -42,12 +42,25 @@ def _validate_persisted_receipt(
     persisted_thesis_id = str(receipt.get("thesis_id") or "").strip()
     persisted_contract_version = str(receipt.get("contract_version") or "").strip()
 
+    required_missing: list[str] = []
+    if not persisted_run_id:
+        required_missing.append("run_id")
+    if not persisted_thesis_id:
+        required_missing.append("thesis_id")
+    if contract_version and not persisted_contract_version:
+        required_missing.append("contract_version")
+    if required_missing:
+        raise ValueError(
+            "persisted receipt missing required metadata: "
+            + ", ".join(required_missing)
+        )
+
     mismatches: list[str] = []
-    if persisted_run_id and persisted_run_id != run_id:
+    if persisted_run_id != run_id:
         mismatches.append(f"run_id={persisted_run_id!r}")
-    if persisted_thesis_id and persisted_thesis_id != thesis_id:
+    if persisted_thesis_id != thesis_id:
         mismatches.append(f"thesis_id={persisted_thesis_id!r}")
-    if contract_version and persisted_contract_version and persisted_contract_version != contract_version:
+    if contract_version and persisted_contract_version != contract_version:
         raise ValueError(
             "persisted receipt contract_version does not match requested positive run: "
             f"expected {contract_version!r}, got {persisted_contract_version!r}"

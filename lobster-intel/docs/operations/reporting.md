@@ -118,7 +118,7 @@ python3 lobster-intel/scripts/run_dispatcher_acceptance.py \
 Behavior:
 - reads `runtime/runs/<suppressed-run-id>.json` and `runtime/runs/<positive-run-id>.json`
 - writes the suppressed dispatcher alert plus the positive-control dispatcher alert/receipt artifacts
-- reuses the persisted positive-control receipt by default, but fails closed if `thesis_id`, `run_id`, or `contract_version` no longer match the requested run
+- reuses the persisted positive-control receipt by default, but fails closed if `thesis_id`, `run_id`, or `contract_version` are missing or no longer match the requested run
 - writes one auditable dispatcher bundle under `lobster-intel/data/delivery/<thesis-id>/bundles/<bundle-id>.json`
 
 ## Recommended pipeline

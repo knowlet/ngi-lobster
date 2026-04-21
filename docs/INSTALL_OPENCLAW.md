@@ -168,7 +168,7 @@ Current v0 wrapper also exposes a minimal tool:
 Their jobs are:
 
 - `ngi_lobster_demo`: smoke-test the local runtime path
-- `ngi_lobster_run_default_workflow`: run the default installed workflow, execute the thesis runtime spine, and write runtime plus delivery artifacts
+- `ngi_lobster_run_default_workflow`: run the default installed workflow, preserve the generated digest surface, execute the thesis runtime spine, and write runtime plus delivery artifacts
 
 ## 7.2 First batch source trackers
 

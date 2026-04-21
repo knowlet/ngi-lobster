@@ -735,6 +735,18 @@ def _load_prior_runtime_snapshot(workspace_dir: str | Path, thesis_id: str) -> d
     return json.loads(latest_path.read_text(encoding="utf-8"))
 
 
+def _carry_forward_ingest_artifacts(
+    runtime_snapshot: dict[str, Any],
+    prior_runtime_snapshot: dict[str, Any] | None,
+) -> None:
+    if not isinstance(prior_runtime_snapshot, dict):
+        return
+
+    for field in ("digest_path", "latest_digest_path"):
+        if runtime_snapshot.get(field) is None and prior_runtime_snapshot.get(field):
+            runtime_snapshot[field] = prior_runtime_snapshot[field]
+
+
 def _alert_severity(ngi_gap: float | None) -> str:
     magnitude = abs(ngi_gap or 0.0)
     if magnitude >= 0.25:
@@ -948,6 +960,7 @@ def run_thesis_runtime(inp: ThesisRuntimeInput) -> ThesisRuntimeResult:
         compare_artifact=compare_artifact,
     )
     prior_runtime_snapshot = _load_prior_runtime_snapshot(inp.workspace_dir, inp.thesis_id)
+    _carry_forward_ingest_artifacts(runtime_snapshot, prior_runtime_snapshot)
     alert_artifact = _decide_alert(
         inp=inp,
         run_id=run_id,
@@ -971,6 +984,10 @@ def run_thesis_runtime(inp: ThesisRuntimeInput) -> ThesisRuntimeResult:
         "alert": str(alert_path),
         "delivery_receipt": str(receipt_path),
     }
+    if runtime_snapshot.get("digest_path"):
+        paths["digest"] = str(runtime_snapshot["digest_path"])
+    if runtime_snapshot.get("latest_digest_path"):
+        paths["latest_digest"] = str(runtime_snapshot["latest_digest_path"])
 
     delivery_payload = _delivery_payload(
         inp=inp,

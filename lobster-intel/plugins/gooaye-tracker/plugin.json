@@ -11,16 +11,6 @@
     "ocr",
     "image_understanding"
   ],
-  "tracker": {
-    "source_family": "telegram_channel",
-    "default_source_type": "telegram_post",
-    "replayable": true,
-    "state_mode": "cursor_json",
-    "follow_up_queues": [
-      "linked_content_queue",
-      "image_analysis_queue"
-    ]
-  },
   "required_env": [],
   "recommended_schedule": "every 5m",
   "produces": [

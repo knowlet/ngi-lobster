@@ -5,22 +5,6 @@ ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 VENV="$ROOT/.venv"
 PY_BIN="$(which python3 || true)"
 
-if [ "${1-}" = "--help" ] || [ "${1-}" = "-h" ]; then
-  cat <<'EOF'
-Usage:
-  ./scripts/bootstrap_runtime.sh
-
-Purpose:
-  Create or reuse the local .venv, upgrade packaging tools, install lobster-intel editable,
-  and install runtime dependencies needed by the current NGI Lobster setup.
-
-Requirements:
-  - python3 on PATH
-  - Python >= 3.11
-EOF
-  exit 0
-fi
-
 if [ -z "$PY_BIN" ]; then
   echo "ERROR: python3 not found on PATH. Please install Python 3.11+ and retry." >&2
   exit 2

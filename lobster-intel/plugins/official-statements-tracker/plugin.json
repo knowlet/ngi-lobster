@@ -7,13 +7,6 @@
     "ingest": "plugin.py:ingest"
   },
   "capabilities": [],
-  "tracker": {
-    "source_family": "rss_feed",
-    "default_source_type": "official_statement",
-    "replayable": true,
-    "state_mode": "cursor_json",
-    "follow_up_queues": []
-  },
   "required_env": ["OFFICIAL_STATEMENTS_FEEDS_JSON"],
   "recommended_schedule": "every 15m",
   "produces": [

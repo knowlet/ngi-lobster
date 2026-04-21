@@ -94,6 +94,9 @@ python scripts/verify_alert_contract_bundle.py examples/e2e_alert_contract_bundl
 The example file shows the exact minimum machine-readable shape PO expects from one shared E2E run record:
 - one `suppressed` legacy fixture with `reason_code=legacy_target_mismatch`
 - one `would_send` positive-control fixture with `delivery_proof`
+  - `delivery_proof.boundary` identifies the real sink boundary
+  - `delivery_proof.proof_id` is the canonical receipt id surfaced to consumers
+  - legacy sink-specific ids such as `sink_message_id` may still be present, but verifier output normalizes one stable `proof_id`
 - matching `contract_version` and `e2e_run_id` across both fixtures
 
 Behavior:
@@ -101,6 +104,100 @@ Behavior:
 - prints the machine-readable bundle view to stdout
 - exits `0` only when the bundle contains both `suppressed` and `would_send` fixtures with matching `contract_version` and `e2e_run_id`
 - exits non-zero when the bundle is incomplete, so CI or review scripts can fail closed
+
+## Runtime artifact verification
+
+Use the runtime verifier when you want to inspect one real thesis run directly from workspace artifacts instead of hand-curated payload snapshots:
+
+```bash
+./.venv/bin/python lobster-intel/scripts/verify_runtime_contract_bundle.py \
+  --workspace . \
+  --thesis-id gooaye \
+  --run-id 20260419T123000Z
+```
+
+Use the two verifiers for different jobs:
+- `verify_alert_contract_bundle.py` checks curated review fixtures or a prebuilt example bundle.
+- `verify_runtime_contract_bundle.py` reconstructs the contract view from `runtime/runs`, `runtime/compare`, `delivery/alerts`, and `delivery/receipts`.
+
+The runtime-backed verifier prints one fail-closed machine-readable view and exits non-zero when any required runtime, compare, alert, or receipt field is missing.
+
+When PO needs to confirm a reviewed run still points at the same active target as the current runtime contract, run the target audit against `runtime/<thesis-id>/latest.json`:
+
+```bash
+./.venv/bin/python lobster-intel/scripts/verify_runtime_target_audit.py \
+  --workspace . \
+  --thesis-id gooaye \
+  --run-id 20260419T123000Z
+```
+
+Behavior:
+- reads `runtime/<thesis-id>/latest.json` as the current source of truth for the active target contract
+- compares that latest active target against `runtime/runs/<run-id>.json` and `runtime/compare/<run-id>.json`
+- fails closed when the audited run no longer points at the same runtime target id as the latest contract
+- allows suppressed legacy fixtures to keep a divergent `market_target_id`, but still requires `compare.runtime_target_id` to match the latest active target
+- also requires positive-control runs to keep `market_target_id` aligned with the latest active target
+
+Before running the runtime verifier or dispatcher bundle builder, emit the real dispatcher delivery artifacts from the runtime payload:
+
+```bash
+./.venv/bin/python lobster-intel/scripts/write_dispatcher_artifact.py \
+  --workspace . \
+  --thesis-id gooaye \
+  --runtime-file lobster-intel/data/runtime/gooaye/runs/positive-20260421T000500Z.json \
+  --sink openclaw_heartbeat \
+  --delivery-status delivered \
+  --proof-boundary openclaw_heartbeat \
+  --proof-id heartbeat:positive-20260421T000500Z
+```
+
+For suppressed runs, omit the receipt flags and the writer will emit only `alerts/<run-id>.json`.
+When the input file is a real `runtime/runs/<run-id>.json` artifact from `runtime_spine`, the writer reconstructs dispatcher-visible `reason_code`, target identity, and contract fields from the workspace's existing `runtime/compare/<run-id>.json` and `delivery/alerts/<run-id>.json` artifacts before it writes the dispatcher-shaped alert record.
+
+## Dispatcher E2E bundle artifact
+
+Use the dispatcher bundle builder when you want one auditable artifact that groups the suppressed legacy control and the positive-control delivered fixture under the same shared bundle id:
+
+```bash
+./.venv/bin/python lobster-intel/scripts/build_dispatcher_e2e_bundle.py \
+  --workspace . \
+  --thesis-id gooaye \
+  --bundle-id bundle-20260421-01 \
+  --run-id legacy-20260421T000000Z \
+  --run-id positive-20260421T000500Z
+```
+
+Behavior:
+- reads machine-readable dispatcher payloads from `lobster-intel/data/delivery/<thesis-id>/alerts/<run-id>.json`
+- if those alert artifacts came straight from `runtime_spine`, it also reconstructs the missing contract fields from `runtime/runs`, `runtime/compare`, and `delivery/receipts`, then stamps the shared `--bundle-id` onto the synthesized contract view
+- if those alert artifacts already came from `write_dispatcher_artifact.py` but still lack `alert_disposition.e2e_run_id`, it stamps the operator-provided `--bundle-id` onto the dispatcher payload before verifying the shared bundle contract
+- fails closed if the payload set does not reconstruct one valid suppressed + would-send contract bundle
+- writes one auditable bundle artifact to `lobster-intel/data/delivery/<thesis-id>/bundles/<bundle-id>.json`
+- requires the reconstructed shared `e2e_run_id` to exactly match `--bundle-id`
+
+## One-shot dispatcher acceptance path
+
+When the operator already knows which suppressed runtime run and which positive-control runtime run should compose the acceptance bundle, use the wrapper CLI below to execute the entire dispatcher path in one command:
+
+```bash
+./.venv/bin/python lobster-intel/scripts/run_dispatcher_acceptance.py \
+  --workspace . \
+  --thesis-id gooaye \
+  --bundle-id bundle-20260421-operator \
+  --suppressed-run-id legacy-20260421T000000Z \
+  --positive-run-id positive-20260421T000500Z \
+  --sink openclaw_heartbeat \
+  --delivery-status delivered \
+  --proof-boundary openclaw_heartbeat \
+  --proof-id heartbeat:positive-20260421T000500Z
+```
+
+Behavior:
+- reads `runtime/runs/<suppressed-run-id>.json` and `runtime/runs/<positive-run-id>.json`
+- writes the suppressed dispatcher alert artifact without requiring receipt flags
+- writes the positive-control dispatcher alert plus receipt artifact using the provided delivery proof
+- builds one fail-closed dispatcher E2E bundle under the shared `--bundle-id`
+- prints one machine-readable JSON summary covering the suppressed artifact write, positive artifact write, and final bundle path
 
 ## Recommended pipeline
 

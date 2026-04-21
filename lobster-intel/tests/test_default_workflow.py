@@ -87,3 +87,4 @@ def test_default_workflow_runs_thesis_runtime_spine(tmp_path: Path):
     assert payload["input_contract"]["thesis_pack_resolution"]["mode"] == "discovered"
     assert Path(payload["artifact_paths"]["runtime_latest"]).exists()
     assert Path(payload["artifact_paths"]["delivery_receipt"]).exists()
+    assert Path(payload["artifact_paths"]["latest_digest"]).exists()

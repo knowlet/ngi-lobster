@@ -46,6 +46,7 @@ def _artifact_paths(workspace_dir: str | Path, thesis_id: str) -> dict[str, Path
         "compiled": root / "compiled" / thesis_id / "linked-content",
         "runtime": runtime,
         "runtime_runs": runtime / "runs",
+        "source_runtime_runs": root / "runtime" / thesis_id / "runs",
     }
 
 
@@ -74,6 +75,10 @@ def load_runtime_payload(
     return json.loads(payload_path.read_text(encoding="utf-8"))
 
 
+def _load_json(path: Path) -> dict[str, Any]:
+    return json.loads(path.read_text(encoding="utf-8"))
+
+
 def _extract_title(html: str) -> str | None:
     match = re.search(r"<title[^>]*>(.*?)</title>", html, re.IGNORECASE | re.DOTALL)
     if not match:
@@ -99,7 +104,6 @@ def extract_linked_content(url: str) -> dict[str, Any]:
             raise ValueError(f"Response exceeds max size of {_MAX_RESPONSE_BYTES} bytes")
         content_type = response.headers.get_content_type()
     raw = raw_bytes.decode("utf-8", errors="replace")
-
     is_html = "html" in content_type.lower() or "<html" in raw.lower()
     text_content = _plain_text(raw) if is_html else raw.strip()
     return {
@@ -290,4 +294,59 @@ def process_linked_content_queue(
         "evidence_paths": evidence_paths,
         "compiled_paths": compiled_paths,
         "receipt_path": receipt_path,
+    }
+
+
+def backfill_linked_content_runs(
+    *,
+    workspace_dir: str | Path,
+    thesis_id: str,
+    extractor: Callable[[str], dict[str, Any]],
+    now_utc: str | None = None,
+) -> dict[str, Any]:
+    paths = _ensure_dirs(workspace_dir, thesis_id)
+    runtime_runs_dir = paths["source_runtime_runs"]
+    processed_runs: list[dict[str, Any]] = []
+    skipped_runs: list[dict[str, str]] = []
+
+    if not runtime_runs_dir.exists():
+        return {
+            "status": "ok",
+            "processed_count": 0,
+            "skipped_existing_count": 0,
+            "skipped_no_items_count": 0,
+            "processed_runs": [],
+            "skipped_runs": [],
+        }
+
+    for runtime_path in sorted(runtime_runs_dir.glob("*.json")):
+        runtime_payload = _load_json(runtime_path)
+        source_run_id = str(runtime_payload.get("run_id") or runtime_path.stem)
+        receipt_name = f"{_safe_name(source_run_id, fallback='linked-content')}.json"
+        receipt_path = paths["runtime_runs"] / receipt_name
+        queue = list(runtime_payload.get("linked_content_queue") or [])
+
+        if receipt_path.exists():
+            skipped_runs.append({"run_id": source_run_id, "reason": "existing_receipt"})
+            continue
+        if not queue:
+            skipped_runs.append({"run_id": source_run_id, "reason": "no_items"})
+            continue
+
+        result = process_linked_content_queue(
+            workspace_dir=workspace_dir,
+            thesis_id=thesis_id,
+            runtime_payload=runtime_payload,
+            extractor=extractor,
+            now_utc=now_utc,
+        )
+        processed_runs.append({"run_id": source_run_id, **result})
+
+    return {
+        "status": "ok",
+        "processed_count": len(processed_runs),
+        "skipped_existing_count": sum(1 for item in skipped_runs if item["reason"] == "existing_receipt"),
+        "skipped_no_items_count": sum(1 for item in skipped_runs if item["reason"] == "no_items"),
+        "processed_runs": processed_runs,
+        "skipped_runs": skipped_runs,
     }

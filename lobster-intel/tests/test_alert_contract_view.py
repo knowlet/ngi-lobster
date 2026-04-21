@@ -13,6 +13,7 @@ def test_alert_contract_view_accepts_suppressed_fixture_with_shared_bundle_field
             "should_send": False,
             "decision": "suppressed",
             "reason_code": "legacy_target_mismatch",
+            "target_contract_match": False,
             "runtime_target_id": "1517836",
             "alert_target_id": "legacy-430",
             "contract_version": "v1",
@@ -23,6 +24,7 @@ def test_alert_contract_view_accepts_suppressed_fixture_with_shared_bundle_field
     result = build_alert_contract_view(payload)
 
     assert result["status"] == "ok"
+    assert result["view"]["target_contract_match"] is False
     assert result["view"]["runtime_target_id"] == "1517836"
     assert result["view"]["alert_target_id"] == "legacy-430"
     assert result["view"]["e2e_run_id"] == "e2e-20260417-01"
@@ -146,6 +148,7 @@ def test_alert_contract_view_accepts_positive_control_with_delivery_proof():
             "should_send": True,
             "decision": "would_send",
             "reason_code": "active_target_contract_ok",
+            "target_contract_match": True,
             "runtime_target_id": "1517836",
             "alert_target_id": "1517836",
             "contract_version": "v1",
@@ -160,7 +163,39 @@ def test_alert_contract_view_accepts_positive_control_with_delivery_proof():
     result = build_alert_contract_view(payload)
 
     assert result["status"] == "ok"
+    assert result["view"]["target_contract_match"] is True
     assert result["view"]["delivery_proof"]["sink_message_id"] == "msg-123"
+    assert result["view"]["delivery_proof"]["proof_id"] == "msg-123"
+
+
+def test_alert_contract_view_preserves_explicit_delivery_proof_id():
+    payload = {
+        "market_target": {
+            "market_id": "1517836",
+            "market_name": "Trump announces end of military operations against Iran by June 30th",
+        },
+        "target_detail": {"market_yes_probability": 0.42},
+        "first_principles_probability": 0.61,
+        "alert_disposition": {
+            "should_send": True,
+            "decision": "would_send",
+            "reason_code": "active_target_contract_ok",
+            "runtime_target_id": "1517836",
+            "alert_target_id": "1517836",
+            "contract_version": "v1",
+            "e2e_run_id": "e2e-20260417-01",
+            "delivery_proof": {
+                "boundary": "dispatcher_sink",
+                "proof_id": "proof-123",
+                "sink_message_id": "msg-123",
+            },
+        },
+    }
+
+    result = build_alert_contract_view(payload)
+
+    assert result["status"] == "ok"
+    assert result["view"]["delivery_proof"]["proof_id"] == "proof-123"
 
 
 def test_e2e_contract_bundle_view_requires_shared_run_record_for_both_controls():
@@ -257,52 +292,3 @@ def test_e2e_contract_bundle_view_accepts_complete_shared_bundle():
         "suppressed",
         "would_send",
     ]
-
-
-def test_alert_contract_view_requires_p_ai_for_compare_contract():
-    payload = {
-        "market_target": {
-            "market_id": "1517836",
-            "market_name": "Trump announces end of military operations against Iran by June 30th",
-        },
-        "target_detail": {"market_yes_probability": 0.42},
-        "alert_disposition": {
-            "should_send": False,
-            "decision": "suppressed",
-            "reason_code": "legacy_target_mismatch",
-            "runtime_target_id": "1517836",
-            "alert_target_id": "legacy-430",
-            "contract_version": "v1",
-            "e2e_run_id": "e2e-20260421-01",
-        },
-    }
-
-    result = build_alert_contract_view(payload)
-
-    assert result["status"] == "contract_incomplete"
-    assert "p_ai" in result["missing_fields"]
-
-
-
-def test_alert_contract_view_requires_market_probability_for_compare_contract():
-    payload = {
-        "market_target": {
-            "market_id": "1517836",
-            "market_name": "Trump announces end of military operations against Iran by June 30th",
-        },
-        "first_principles_probability": 0.61,
-        "alert_disposition": {
-            "should_send": False,
-            "decision": "suppressed",
-            "reason_code": "legacy_target_mismatch",
-            "runtime_target_id": "1517836",
-            "alert_target_id": "legacy-430",
-            "contract_version": "v1",
-            "e2e_run_id": "e2e-20260421-01",
-        },
-    }
-
-    result = build_alert_contract_view(payload)
-
-    assert result["status"] == "contract_incomplete"
-    assert "market_yes_probability" in result["missing_fields"]

@@ -8,7 +8,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 PACKAGES = ROOT / "packages"
-for rel in ["lobster-core", "lobster-delivery", "lobster-plugins", "lobster-runtime", "lobster-ingest"]:
+for rel in ["lobster-core", "lobster-plugins", "lobster-runtime", "lobster-ingest"]:
     sys.path.insert(0, str(PACKAGES / rel))
 
 from lobster_runtime import SourceFusionArtifacts, build_source_fusion_result, load_source_fusion_artifacts

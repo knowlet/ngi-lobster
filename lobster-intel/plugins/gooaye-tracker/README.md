@@ -7,7 +7,7 @@ Track public Telegram channel updates from `@Gooaye` and emit structured artifac
 ## Planned outputs
 
 - raw evidence record for each detected post
-- OCR text when media contains readable text
+- downstream OCR / image-understanding artifacts when media contains readable text
 - compiled short summary for human review
 - delivery notification when new posts appear
 
@@ -25,6 +25,7 @@ Track public Telegram channel updates from `@Gooaye` and emit structured artifac
   - `link_extraction_status: pending`
 - runtime state also exposes `image_analysis_queue` so cron / delivery layers can explicitly finish OCR or image understanding before final human alerting
 - runtime state also exposes `linked_content_queue` so transcript / article extraction can happen downstream without hiding this gap
+- `lobster-intel/scripts/process_visual_evidence_queue.py` consumes `image_analysis_queue` and writes auditable evidence, compiled markdown, and runtime receipt artifacts under `lobster-intel/data/`
 - `lobster-intel/scripts/process_linked_content_queue.py` consumes that queue and writes auditable evidence, compiled markdown, and runtime receipt artifacts under `lobster-intel/data/`
 
 ## Notes

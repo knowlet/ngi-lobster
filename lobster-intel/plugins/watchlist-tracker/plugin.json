@@ -7,13 +7,6 @@
     "ingest": "plugin.py:ingest"
   },
   "capabilities": [],
-  "tracker": {
-    "source_family": "watchlist_feed",
-    "default_source_type": "watchlist_signal",
-    "replayable": true,
-    "state_mode": "cursor_json",
-    "follow_up_queues": []
-  },
   "required_env": ["WATCHLIST_FEEDS_JSON"],
   "recommended_schedule": "every 10m",
   "produces": [

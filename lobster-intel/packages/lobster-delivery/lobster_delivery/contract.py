@@ -7,13 +7,12 @@ REQUIRED_BASE_FIELDS = (
     "should_send",
     "decision",
     "reason_code",
+    "target_contract_match",
     "runtime_target_id",
     "runtime_target_name",
     "alert_target_id",
     "contract_version",
     "e2e_run_id",
-    "p_ai",
-    "market_yes_probability",
 )
 
 E2E_RUN_ID_ALIASES = (
@@ -27,23 +26,10 @@ REQUIRED_BUNDLE_DECISIONS = (
 )
 
 DELIVERY_PROOF_ID_FIELDS = (
+    "proof_id",
     "sink_message_id",
     "delivery_event_id",
     "external_receipt_id",
-)
-
-REQUIRED_COMPARE_FIELDS = (
-    "runtime_target_id",
-    "runtime_target_name",
-    "market_question",
-    "probability_mode",
-    "p_ai",
-    "market_implied_probability",
-    "divergence_pp",
-    "runtime_timestamp_utc",
-    "logistics",
-    "energy",
-    "key_statement",
 )
 
 
@@ -76,23 +62,27 @@ def _validate_delivery_proof(delivery_proof: Any) -> list[str]:
     return missing_fields
 
 
-def _coerce_probability(value: Any) -> float | None:
-    if _missing(value):
+def _normalize_delivery_proof(delivery_proof: Any) -> Any:
+    if not isinstance(delivery_proof, dict):
+        return delivery_proof
+
+    normalized = dict(delivery_proof)
+    proof_id = _first_present(normalized, *DELIVERY_PROOF_ID_FIELDS)
+    if not _missing(proof_id):
+        normalized["proof_id"] = proof_id
+    return normalized
+
+
+def _resolve_target_contract_match(alert_disposition: dict[str, Any], view: dict[str, Any]) -> Any:
+    explicit_value = alert_disposition.get("target_contract_match")
+    if not _missing(explicit_value):
+        return explicit_value
+
+    runtime_target_id = view.get("runtime_target_id")
+    alert_target_id = view.get("alert_target_id")
+    if _missing(runtime_target_id) or _missing(alert_target_id):
         return None
-    return float(value)
-
-
-def _resolve_market_implied_probability(target_detail: dict[str, Any]) -> float | None:
-    market_yes_probability = _coerce_probability(target_detail.get("market_yes_probability"))
-    if market_yes_probability is None:
-        return None
-
-    probability_mode = target_detail.get("probability_mode") or "yes_is_peace"
-    if probability_mode == "yes_is_escalation":
-        return market_yes_probability
-    if probability_mode == "yes_is_peace":
-        return 1.0 - market_yes_probability
-    raise ValueError(f"unsupported probability_mode: {probability_mode}")
+    return runtime_target_id == alert_target_id
 
 
 def build_alert_contract_view(runtime_data: dict[str, Any]) -> dict[str, Any]:
@@ -116,6 +106,7 @@ def build_alert_contract_view(runtime_data: dict[str, Any]) -> dict[str, Any]:
         "p_ai": runtime_data.get("first_principles_probability"),
         "market_yes_probability": target_detail.get("market_yes_probability"),
     }
+    view["target_contract_match"] = _resolve_target_contract_match(alert_disposition, view)
 
     missing_fields = [field for field in REQUIRED_BASE_FIELDS if _missing(view[field])]
 
@@ -130,55 +121,7 @@ def build_alert_contract_view(runtime_data: dict[str, Any]) -> dict[str, Any]:
         }
 
     if alert_disposition.get("delivery_proof") is not None:
-        view["delivery_proof"] = alert_disposition.get("delivery_proof")
-
-    return {
-        "status": "ok",
-        "view": view,
-    }
-
-
-def build_active_target_compare_view(runtime_data: dict[str, Any]) -> dict[str, Any]:
-    market_target = runtime_data.get("market_target") or {}
-    target_detail = runtime_data.get("target_detail") or {}
-    evidence_basis = ((runtime_data.get("alert_explain_contract") or {}).get("evidence_basis") or {})
-
-    try:
-        market_implied_probability = _resolve_market_implied_probability(target_detail)
-    except ValueError as exc:
-        return {
-            "status": "contract_incomplete",
-            "missing_fields": ["probability_mode"],
-            "error": str(exc),
-        }
-
-    p_ai = _coerce_probability(runtime_data.get("first_principles_probability"))
-    divergence_pp = None
-    if p_ai is not None and market_implied_probability is not None:
-        divergence_pp = round((p_ai - market_implied_probability) * 100, 2)
-
-    view = {
-        "runtime_target_id": market_target.get("market_id") or market_target.get("market_slug"),
-        "runtime_target_name": market_target.get("market_name") or market_target.get("market_question"),
-        "market_question": target_detail.get("market_question") or market_target.get("market_name"),
-        "probability_mode": target_detail.get("probability_mode") or "yes_is_peace",
-        "p_ai": p_ai,
-        "market_yes_probability": _coerce_probability(target_detail.get("market_yes_probability")),
-        "market_implied_probability": round(market_implied_probability, 6) if market_implied_probability is not None else None,
-        "divergence_pp": divergence_pp,
-        "runtime_timestamp_utc": runtime_data.get("timestamp_utc"),
-        "logistics": evidence_basis.get("logistics"),
-        "energy": evidence_basis.get("energy"),
-        "key_statement": evidence_basis.get("key_statement"),
-    }
-
-    missing_fields = [field for field in REQUIRED_COMPARE_FIELDS if _missing(view[field])]
-    if missing_fields:
-        return {
-            "status": "contract_incomplete",
-            "missing_fields": missing_fields,
-            "view": view,
-        }
+        view["delivery_proof"] = _normalize_delivery_proof(alert_disposition.get("delivery_proof"))
 
     return {
         "status": "ok",

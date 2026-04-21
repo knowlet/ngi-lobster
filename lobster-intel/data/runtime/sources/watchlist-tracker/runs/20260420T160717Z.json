@@ -1,0 +1,47 @@
+{
+  "schema_version": "v1",
+  "plugin": "watchlist-tracker",
+  "version": "0.1.0",
+  "run_id": "20260420T160717Z",
+  "ran_at_utc": "2026-04-20T16:07:17.801196+00:00",
+  "evidence": {
+    "source": "watchlist",
+    "new_count": 1,
+    "items": [
+      {
+        "source_id": "watch-test",
+        "source_type": "analyst_feed",
+        "external_id": "watch-test",
+        "title": "Watch Test",
+        "url": "https://example.com/test",
+        "collected_at_utc": "2026-04-20T16:07:17.817169+00:00",
+        "published_at_utc": "2026-04-14T09:00:00+00:00",
+        "summary": "Delta",
+        "content": "Delta",
+        "metadata": {
+          "feed_url": "file:///Users/knowlet/.openclaw/workspace/projects/ngi-lobster/tmp-test-watch-feed.xml"
+        }
+      }
+    ],
+    "cursors": {
+      "watch-test": "2026-04-14T09:00:00+00:00"
+    },
+    "cursor_state": {
+      "schema_version": "v1",
+      "updated_at_utc": "2026-04-20T16:07:17.801320+00:00",
+      "cursors": {
+        "watch-test": {
+          "source_id": "watch-test",
+          "cursor": "2026-04-14T09:00:00+00:00",
+          "updated_at_utc": "2026-04-20T16:07:17.817201+00:00",
+          "metadata": {
+            "url": "file:///Users/knowlet/.openclaw/workspace/projects/ngi-lobster/tmp-test-watch-feed.xml",
+            "source_type": "analyst_feed",
+            "since_cursor": null
+          }
+        }
+      }
+    },
+    "state_path": null
+  }
+}

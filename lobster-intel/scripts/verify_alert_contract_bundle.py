@@ -23,6 +23,11 @@ def _load_payloads(path: Path) -> list[dict]:
     if isinstance(data, list):
         return data
     if isinstance(data, dict):
+        if data.get("schema") == "lobster.delivery.dispatcher_e2e_bundle.v1":
+            fixtures = data.get("fixtures")
+            if not isinstance(fixtures, list):
+                raise ValueError(f"dispatcher bundle artifact missing fixtures list in {path}")
+            return [{"alert_disposition": fixture} for fixture in fixtures]
         return [data]
     raise ValueError(f"unsupported JSON shape in {path}")
 

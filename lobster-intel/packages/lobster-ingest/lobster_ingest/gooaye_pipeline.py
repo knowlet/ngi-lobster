@@ -177,23 +177,18 @@ def write_digest(payload: dict[str, Any], summaries: list[str], *, paths: dict[s
     run_id = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
     run_path = paths["compiled_runs"] / f"{run_id}.md"
     latest_path = paths["compiled"] / "latest_digest.md"
-    total_count = payload.get("new_count", 0)
-    shown_count = len(summaries)
     lines = [
         "# Gooaye Digest",
         "",
         f"- Run id: {run_id}",
         f"- Recorded at: {recorded_at_utc}",
         f"- Channel: {payload.get('channel', CHANNEL)}",
-        f"- New count: {total_count}",
+        f"- New count: {payload.get('new_count', 0)}",
     ]
-    section_title = "## New items"
-    if shown_count and shown_count < total_count:
-        section_title = f"## New items (showing {shown_count} of {total_count})"
     if summaries:
-        lines += ["", section_title, ""] + [f"- {summary}" for summary in summaries]
+        lines += ["", "## New items", ""] + [f"- {summary}" for summary in summaries]
     else:
-        lines += ["", section_title, "", "- No new items"]
+        lines += ["", "## New items", "", "- No new items"]
     content = "\n".join(lines) + "\n"
     run_path.write_text(content)
     shutil.copyfile(run_path, latest_path)
@@ -264,13 +259,13 @@ def process_gooaye_payload(payload: dict[str, Any], ctx=None) -> dict[str, Any]:
     runtime_path.write_text(json.dumps(runtime, ensure_ascii=False, indent=2))
 
     message = "NO_REPLY"
+    delivery_path = paths["delivery"] / "latest.json"
     if payload.get("new_count", 0):
         lines = [f"Gooaye 有 {payload['new_count']} 則新貼文", ""]
         for item, summary in zip(items[:5], summaries[:5]):
             lines.append(f"• {summary}")
             lines.append(f"  {item['url']}")
         message = "\n".join(lines)
-        delivery_path = paths["delivery"] / "latest.json"
         delivery_path.write_text(
             json.dumps(
                 {
@@ -283,6 +278,8 @@ def process_gooaye_payload(payload: dict[str, Any], ctx=None) -> dict[str, Any]:
                 indent=2,
             )
         )
+    else:
+        delivery_path.unlink(missing_ok=True)
 
     return {
         "message": message,

@@ -1,6 +1,5 @@
 import json
 import subprocess
-import sys
 from pathlib import Path
 
 
@@ -8,7 +7,7 @@ def test_verify_alert_contract_bundle_cli_accepts_canonical_example_bundle():
     repo = Path(__file__).resolve().parents[2]
     result = subprocess.run(
         [
-            sys.executable,
+            str(repo / ".venv" / "bin" / "python"),
             "lobster-intel/scripts/verify_alert_contract_bundle.py",
             "lobster-intel/examples/e2e_alert_contract_bundle.json",
         ],

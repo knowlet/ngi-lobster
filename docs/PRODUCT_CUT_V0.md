@@ -1,15 +1,5 @@
 # Product Cut v0
 
-## Project goal
-
-NGI Lobster is being built as an installable OpenClaw plugin product, not just a collection of local intelligence scripts.
-
-The project goal is to make this path real:
-
-```text
-openclaw plugins install -> source ingest plugins -> runtime spine -> auditable artifacts -> downstream delivery
-```
-
 ## Product principle
 
 NGI Lobster must be:
@@ -107,3 +97,4 @@ gooaye-tracker -> evidence -> compiled markdown digest -> runtime snapshot
 ```
 
 Once this path is solid, other trackers should plug into the same artifact flow.
+

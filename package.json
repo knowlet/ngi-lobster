@@ -4,18 +4,10 @@
   "private": true,
   "description": "NGI Lobster native OpenClaw plugin wrapper",
   "type": "module",
-  "bin": {
-    "ngi-lobster-bootstrap-runtime": "./scripts/bootstrap_runtime.sh",
-    "ngi-lobster-run-installed-workflow": "./scripts/run_installed_thesis_workflow.js"
-  },
-  "scripts": {
-    "bootstrap-runtime": "./scripts/bootstrap_runtime.sh",
-    "demo-gooaye": "./scripts/demo_run_gooaye.sh",
-    "run-installed-workflow": "node ./scripts/run_installed_thesis_workflow.js"
-  },
   "openclaw": {
     "extensions": [
       "./index.js"
     ]
   }
 }
+

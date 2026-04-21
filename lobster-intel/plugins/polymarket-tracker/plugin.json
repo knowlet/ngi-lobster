@@ -7,13 +7,6 @@
     "ingest": "plugin.py:ingest"
   },
   "capabilities": [],
-  "tracker": {
-    "source_family": "prediction_market",
-    "default_source_type": "prediction_market",
-    "replayable": true,
-    "state_mode": "cursor_json",
-    "follow_up_queues": []
-  },
   "required_env": ["POLYMARKET_MARKETS_JSON"],
   "recommended_schedule": "every 5m",
   "produces": [

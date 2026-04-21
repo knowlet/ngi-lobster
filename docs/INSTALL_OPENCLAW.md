@@ -4,18 +4,6 @@ This document explains how another OpenClaw instance can install and run the cur
 
 This is **v0**. It is honest about what is productized already, and what still needs manual wiring.
 
-## Project goal
-
-The goal of this repo is not only to ship a runnable intelligence script.
-
-The goal is to productize NGI as an installable OpenClaw plugin:
-
-- install through `openclaw plugins install`
-- ingest evidence through pluginized source trackers
-- compute runtime truth through the NGI runtime spine
-- compare against the active market target on the correct semantic frame
-- keep delivery downstream of runtime truth
-
 ## What you get today
 
 If you install this repo today, you get:
@@ -30,9 +18,9 @@ If you install this repo today, you get:
 
 What you do **not** get yet:
 
+- a polished one-command installer
 - a fully packaged OpenClaw plugin registry entry
-- stable OCR backfill
-- stable rich linked-content transcript/article extraction beyond the current replayable queue worker
+- stable linked-content transcript/article extraction
 - final cron templates for every workflow
 
 ## 1. Clone the repo
@@ -47,24 +35,6 @@ If the repo is private, use the owner-approved account or token.
 ## 2. Python requirement
 
 - Python `>= 3.11`
-
-## 2.1 Cleaner local commands
-
-The repo now exposes cleaner package-level commands for the current install surface:
-
-```bash
-npm run bootstrap-runtime
-npm run run-installed-workflow -- --thesis-id regional-escalation
-```
-
-Both commands are now self-describing via `--help`.
-
-If you prefer executable bins after package install, these are also exposed:
-
-```bash
-ngi-lobster-bootstrap-runtime
-ngi-lobster-run-installed-workflow --thesis-id regional-escalation
-```
 
 ## 3. Recommended layout on the host
 
@@ -193,60 +163,12 @@ openclaw plugins inspect ngi-lobster
 Current v0 wrapper also exposes a minimal tool:
 
 - `ngi_lobster_demo`
-- `ngi_lobster_list_installed_theses`
 - `ngi_lobster_run_default_workflow`
-- `ngi_lobster_run_thesis_runtime`
-- `ngi_lobster_run_installed_thesis_workflow`
 
 Their jobs are:
 
 - `ngi_lobster_demo`: smoke-test the local runtime path
-- `ngi_lobster_list_installed_theses`: list bundled thesis ids, titles, summaries, and registry paths, or inspect one thesis in detail with `thesisId`
-- `ngi_lobster_run_default_workflow`: run the default installed workflow and write artifacts/digest
-- `ngi_lobster_run_thesis_runtime`: run the thesis runtime spine against installed source artifacts or explicit overrides
-- `ngi_lobster_run_installed_thesis_workflow`: run the bundled or explicit source-pack trackers first, then invoke the thesis runtime spine against the freshly written source artifacts and bundled or explicit thesis defaults
-
-Bundled thesis defaults are resolved from:
-
-- `lobster-intel/examples/thesis-profiles/<thesis-id>.json`
-- `lobster-intel/examples/target-registries/<thesis-id>.json`
-- `lobster-intel/examples/thesis-packs/<thesis-id>.json` when the Python thesis runtime is invoked directly
-
-That means the installed workflow can carry a stable runtime contract for `semantic_frame`, `probability_direction`, `state`, and target registry without requiring those flags on every run.
-
-The bundled thesis profiles can now also expose operator-facing metadata such as:
-
-- `title`
-- `summary`
-- linked registry path and market list
-
-The install surface now treats those bundled thesis profiles as a contract instead of loose metadata:
-
-- `ngi_lobster_list_installed_theses` exposes `contractStatus` and `validationErrors`
-- `ngi_lobster_run_installed_thesis_workflow` fails closed if a thesis profile is missing or incomplete
-- the reference contract is documented in `docs/THESIS_PROFILES.md`
-
-That gives an installed OpenClaw a discovery surface before it commits to a thesis run.
-
-Default runtime thesis registries now live under:
-
-- `lobster-intel/data/runtime/thesis-registry/<thesis-id>.json`
-
-`ngi_lobster_run_thesis_runtime` and `run_thesis_runtime.py` discover that file automatically before falling back to a suppressed no-registry run.
-If you need a one-off override, pass `registryFilePath` or `--registry-file`; the explicit path still wins.
-
-The installed workflow now also wires default source cursor persistence automatically:
-
-- `lobster-intel/data/runtime/sources/official-statements.json`
-- `lobster-intel/data/runtime/sources/watchlist.json`
-- `lobster-intel/data/runtime/sources/polymarket.json`
-
-Repeated installed-workflow runs reuse those cursor files without extra `*_STATE_PATH` environment-variable wiring.
-
-For source-runtime operations, the Python support CLI also exposes:
-
-- `python3 lobster-intel/scripts/source_history.py replay --workspace . --plugin-id watchlist-tracker --run-id <run_id>`
-- `python3 lobster-intel/scripts/source_history.py rebuild-index --workspace . --plugin-id watchlist-tracker`
+- `ngi_lobster_run_default_workflow`: run the default installed workflow, execute the thesis runtime spine, and write runtime plus delivery artifacts
 
 ## 7.2 First batch source trackers
 
@@ -292,22 +214,52 @@ lobster-intel/data/runtime/
 lobster-intel/data/delivery/
 ```
 
-Per-plugin source runtime directories also persist under:
+Per-plugin source runs should accumulate under:
 
 ```text
-lobster-intel/data/runtime/sources/<plugin-id>/latest.json
-lobster-intel/data/runtime/sources/<plugin-id>/runs/<run_id>.json
-lobster-intel/data/runtime/sources/<plugin-id>/index.sqlite
+lobster-intel/data/runtime/sources/<plugin-id>/runs/
 ```
 
-`latest.json` and `runs/*.json` are the truth artifacts. `index.sqlite` is derived state and can be rebuilt from those files with `source_history.py rebuild-index`.
+The default installed workflow now chains source ingest into thesis runtime evaluation, so a successful run should also refresh:
 
-## 8.1 Linked-content queue follow-up
+- `lobster-intel/data/runtime/<thesis-id>/latest.json`
+- `lobster-intel/data/runtime/<thesis-id>/runs/<run-id>.json`
+- `lobster-intel/data/delivery/<thesis-id>/alerts/<run-id>.json`
+- `lobster-intel/data/delivery/<thesis-id>/receipts/<run-id>.json`
+
+You can replay a historical source run as JSON:
+
+```bash
+./.venv/bin/python lobster-intel/scripts/source_history.py replay \
+  --workspace . \
+  --plugin-id watchlist-tracker \
+  --run-id 20260420T010000Z
+```
+
+You can also rebuild a local SQLite index from those immutable run artifacts:
+
+```bash
+./.venv/bin/python lobster-intel/scripts/source_history.py rebuild-index \
+  --workspace . \
+  --plugin-id watchlist-tracker
+```
+
+For Gooaye image follow-up work, process the queued OCR / image-understanding items from the runtime artifact:
+
+```bash
+./.venv/bin/python lobster-intel/scripts/process_visual_evidence_queue.py \
+  --workspace . \
+  --thesis-id gooaye
+```
+
+This consumes `image_analysis_queue` from `lobster-intel/data/runtime/<thesis-id>/latest.json` and writes separate evidence, compiled markdown, and runtime receipt artifacts. Missing `image_url` values or OCR adapter errors are recorded in the artifact payload instead of silently mutating the source ingest record.
 
 When a runtime artifact exposes `linked_content_queue`, keep the fetch/extraction step downstream of the source plugin:
 
 ```bash
-python3 lobster-intel/scripts/process_linked_content_queue.py --workspace . --thesis-id gooaye
+./.venv/bin/python lobster-intel/scripts/process_linked_content_queue.py \
+  --workspace . \
+  --thesis-id gooaye
 ```
 
 That command reads `lobster-intel/data/runtime/<thesis-id>/latest.json` by default, processes queued linked items, and writes replayable artifacts under:
@@ -318,45 +270,44 @@ That command reads `lobster-intel/data/runtime/<thesis-id>/latest.json` by defau
 
 The runtime worker only fetches `http`/`https` targets, strips `script`/`style` noise from HTML text extraction, caps response size before decode, and can fetch queued items in parallel without changing artifact lineage.
 
-If you need to backfill a prior run instead of the latest snapshot, point the worker at an explicit runtime artifact:
+When you need to verify a real thesis delivery contract from workspace artifacts instead of example fixtures:
 
 ```bash
-python3 lobster-intel/scripts/process_linked_content_queue.py --workspace . --thesis-id gooaye --runtime-file lobster-intel/data/runtime/gooaye/runs/<run-id>.json
+./.venv/bin/python lobster-intel/scripts/verify_runtime_contract_bundle.py \
+  --workspace . \
+  --thesis-id gooaye \
+  --run-id 20260419T123000Z
 ```
 
-This keeps linked-content extraction downstream of runtime truth and avoids letting source plugins mutate prior artifacts in place.
+That command reads:
+- `lobster-intel/data/runtime/<thesis-id>/runs/<run-id>.json`
+- `lobster-intel/data/runtime/<thesis-id>/compare/<run-id>.json`
+- `lobster-intel/data/delivery/<thesis-id>/alerts/<run-id>.json`
+- `lobster-intel/data/delivery/<thesis-id>/receipts/<run-id>.json`
+
+and fails closed if any required contract field or receipt proof is missing.
 
 ## 9. Cron status
 
-There is now a stable installed-workflow entrypoint for outside installs:
-
-```bash
-node scripts/run_installed_thesis_workflow.js --thesis-id regional-escalation
-```
-
-That command reuses the same bundled source packs, bundled thesis defaults, source cursor paths, and thesis runtime contracts as the native OpenClaw tool surface, but it can be called directly by local cron.
-
-Example cron line:
-
-```cron
-*/15 * * * * cd /path/to/ngi-lobster && /usr/bin/env node scripts/run_installed_thesis_workflow.js --thesis-id regional-escalation >> lobster-intel/data/runtime/regional-escalation-cron.log 2>&1
-```
+There is **not yet** a final reusable cron recipe for outside installs.
 
 Current recommendation:
 
-- first run the CLI manually and inspect the JSON result plus artifact paths
-- then wire local cron or OpenClaw cron against that stable entrypoint
+- first validate `run_once`
+- then wire a local cron / OpenClaw cron after confirming paths and outputs
 - keep background output behind the delivery gate
 
 ## 10. What still needs productization
 
 Before this becomes a smooth installable plugin for everyone, these still need work:
 
-1. richer linked-content extraction beyond the current replayable queue worker
+1. linked-content extraction
 2. OCR backfill loop
 3. Firehose junk suppression / ranking
-4. additional cron recipes beyond the installed thesis workflow
-5. broader install packaging beyond the current package commands
+4. reusable cron recipes
+5. a cleaner setup command
+6. source cursor persistence wired into default runtime storage
+
 ## Bottom line
 
 Another OpenClaw can already install this repo and run the first plugin example, but Firehose still requires operator setup and the full product installer does not exist yet.

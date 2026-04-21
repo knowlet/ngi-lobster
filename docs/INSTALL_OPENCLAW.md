@@ -280,6 +280,16 @@ That command reads `lobster-intel/data/runtime/<thesis-id>/latest.json` by defau
 
 The runtime worker only fetches `http`/`https` targets, strips `script`/`style` noise from HTML text extraction, caps response size before decode, and can fetch queued items in parallel without changing artifact lineage.
 
+When you need to backfill historical linked-content extraction work instead of only the latest runtime artifact, run:
+
+```bash
+./.venv/bin/python lobster-intel/scripts/backfill_linked_content_queue.py \
+  --workspace . \
+  --thesis-id gooaye
+```
+
+That command scans `lobster-intel/data/runtime/<thesis-id>/runs/*.json`, skips runs that already have a matching linked-content receipt under `runtime/<thesis-id>/linked-content/runs/`, skips empty queues, and prints one machine-readable backlog summary.
+
 When you need to verify a real thesis delivery contract from workspace artifacts instead of example fixtures:
 
 ```bash

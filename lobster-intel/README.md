@@ -166,6 +166,16 @@ Run it with:
 
 The fetch path is intentionally constrained to `http`/`https`, caps response bodies before decode, strips `script`/`style` noise from HTML text extraction, and parallelizes queue fetches while preserving deterministic artifact writes.
 
+When operators need to backfill historical runtime runs instead of just the latest queue, use:
+
+```bash
+./.venv/bin/python lobster-intel/scripts/backfill_linked_content_queue.py \
+  --workspace . \
+  --thesis-id gooaye
+```
+
+This scans `lobster-intel/data/runtime/<thesis-id>/runs/*.json`, skips runs that already have a matching linked-content receipt under `runtime/<thesis-id>/linked-content/runs/`, skips runs whose `linked_content_queue` is empty, and prints one JSON summary for the processed backlog.
+
 ## Visual evidence queue processing
 
 Runtime payloads may also carry an `image_analysis_queue` for downstream OCR or image-understanding work. The visual-evidence processor reads the latest runtime artifact for a thesis and writes:

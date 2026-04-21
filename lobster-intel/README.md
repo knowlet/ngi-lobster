@@ -221,6 +221,25 @@ Run it with:
 This reads `lobster-intel/data/delivery/<thesis-id>/alerts/<run-id>.json`, verifies the contract bundle fail-closed, and writes one machine-readable artifact under `lobster-intel/data/delivery/<thesis-id>/bundles/`.
 When the alert artifacts came directly from `runtime_spine`, the builder also reads the matching `runtime`, `compare`, and optional `receipt` artifacts so the shared bundle can be reconstructed without hand-editing an `alert_disposition` wrapper first.
 
+## Dispatcher acceptance CLI
+
+When operators already know the suppressed legacy-control run id and the positive-control run id, one higher-level CLI can materialize both dispatcher artifacts and the shared review bundle in one step.
+
+```bash
+./.venv/bin/python lobster-intel/scripts/run_dispatcher_acceptance.py \
+  --workspace . \
+  --thesis-id gooaye \
+  --bundle-id bundle-20260421-operator \
+  --suppressed-run-id legacy-20260421T000000Z \
+  --positive-run-id positive-20260421T000500Z \
+  --sink openclaw_heartbeat \
+  --delivery-status delivered \
+  --proof-boundary openclaw_heartbeat \
+  --proof-id heartbeat:positive-20260421T000500Z
+```
+
+This reads the matching `runtime/runs/<run-id>.json` artifacts, emits the dispatcher alert/receipt records under `lobster-intel/data/delivery/<thesis-id>/`, then writes the shared bundle artifact under `bundles/` and prints one machine-readable summary for operator review.
+
 ## Source history operations
 
 Runtime source artifacts under `lobster-intel/data/runtime/sources/<plugin-id>/runs/` are now replayable and indexable.

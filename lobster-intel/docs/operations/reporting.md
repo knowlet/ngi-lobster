@@ -159,6 +159,30 @@ Behavior:
 - writes one auditable bundle artifact to `lobster-intel/data/delivery/<thesis-id>/bundles/<bundle-id>.json`
 - requires the reconstructed shared `e2e_run_id` to exactly match `--bundle-id`
 
+## One-shot dispatcher acceptance path
+
+When the operator already knows which suppressed runtime run and which positive-control runtime run should compose the acceptance bundle, use the wrapper CLI below to execute the entire dispatcher path in one command:
+
+```bash
+./.venv/bin/python lobster-intel/scripts/run_dispatcher_acceptance.py \
+  --workspace . \
+  --thesis-id gooaye \
+  --bundle-id bundle-20260421-operator \
+  --suppressed-run-id legacy-20260421T000000Z \
+  --positive-run-id positive-20260421T000500Z \
+  --sink openclaw_heartbeat \
+  --delivery-status delivered \
+  --proof-boundary openclaw_heartbeat \
+  --proof-id heartbeat:positive-20260421T000500Z
+```
+
+Behavior:
+- reads `runtime/runs/<suppressed-run-id>.json` and `runtime/runs/<positive-run-id>.json`
+- writes the suppressed dispatcher alert artifact without requiring receipt flags
+- writes the positive-control dispatcher alert plus receipt artifact using the provided delivery proof
+- builds one fail-closed dispatcher E2E bundle under the shared `--bundle-id`
+- prints one machine-readable JSON summary covering the suppressed artifact write, positive artifact write, and final bundle path
+
 ## Recommended pipeline
 
 1. gather runtime state

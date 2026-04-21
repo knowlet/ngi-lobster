@@ -194,3 +194,37 @@ def test_run_dispatcher_acceptance_cli_reuses_persisted_runtime_receipt(tmp_path
 
     assert receipt_payload["delivery_proof"]["proof_id"] == f"heartbeat:{positive_run_id}"
     assert payload["bundle"]["bundle"]["fixtures"][1]["delivery_proof"]["proof_id"] == f"heartbeat:{positive_run_id}"
+
+
+def test_run_dispatcher_acceptance_cli_rejects_mismatched_persisted_receipt(tmp_path: Path):
+    thesis_id, suppressed_run_id, positive_run_id = _install_real_runtime_spine_workspace(tmp_path)
+    script_path = ROOT / "lobster-intel" / "scripts" / "run_dispatcher_acceptance.py"
+    receipt_path = tmp_path / "lobster-intel" / "data" / "delivery" / thesis_id / "receipts" / f"{positive_run_id}.json"
+    receipt_payload = json.loads(receipt_path.read_text(encoding="utf-8"))
+    receipt_payload["run_id"] = "positive-20260421T999999Z"
+    receipt_payload["thesis_id"] = "wrong-thesis"
+    _write_json(receipt_path, receipt_payload)
+
+    completed = subprocess.run(
+        [
+            sys.executable,
+            str(script_path),
+            "--workspace",
+            str(tmp_path),
+            "--thesis-id",
+            thesis_id,
+            "--bundle-id",
+            "bundle-20260422-reject-mismatch",
+            "--suppressed-run-id",
+            suppressed_run_id,
+            "--positive-run-id",
+            positive_run_id,
+        ],
+        cwd=ROOT,
+        text=True,
+        capture_output=True,
+        check=False,
+    )
+
+    assert completed.returncode == 1
+    assert "persisted receipt metadata does not match requested positive run" in completed.stderr

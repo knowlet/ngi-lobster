@@ -328,3 +328,4 @@ Use the same CLI to rebuild a per-plugin SQLite index from the immutable run art
 ```
 
 This keeps runtime truth in JSON artifacts while giving operators a fast local query surface.
+Receipt reuse also fails closed when the persisted receipt metadata is incomplete or no longer matches the requested positive-control run. The current guard requires `thesis_id`, `run_id`, and `contract_version` before reusing the delivery proof.

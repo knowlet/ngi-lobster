@@ -198,6 +198,8 @@ Behavior:
 - writes the positive-control dispatcher alert plus receipt artifact using the provided delivery proof
 - builds one fail-closed dispatcher E2E bundle under the shared `--bundle-id`
 - prints one machine-readable JSON summary covering the suppressed artifact write, positive artifact write, and final bundle path
+- reuses the persisted positive-control receipt by default, but fails closed if `thesis_id`, `run_id`, or `contract_version` are missing or no longer match the requested run
+- writes one auditable dispatcher bundle under `lobster-intel/data/delivery/<thesis-id>/bundles/<bundle-id>.json`
 
 ## Recommended pipeline
 

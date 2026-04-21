@@ -267,3 +267,7 @@ def test_write_dispatcher_e2e_bundle_accepts_real_runtime_artifacts(tmp_path: Pa
     assert result["bundle"]["e2e_run_id"] == "bundle-20260421-bridge"
     assert result["bundle"]["fixtures"][0]["alert_target_id"] == "legacy-430"
     assert result["bundle"]["fixtures"][1]["delivery_proof"]["proof_id"] == "heartbeat:positive-20260421T000500Z"
+
+    artifact_payload = load_dispatcher_e2e_bundle(tmp_path, thesis_id, "bundle-20260421-bridge")
+    assert artifact_payload["run_ids"] == [suppressed_run_id, positive_run_id]
+    assert artifact_payload["contract_version"] == "alert-contract-v1"

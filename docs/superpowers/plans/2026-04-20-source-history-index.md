@@ -8,34 +8,16 @@
 
 **Tech Stack:** Python 3.11+, stdlib `json`/`sqlite3`/`argparse`, existing `lobster_runtime`, `unittest`
 
-**Status:** Implemented on 2026-04-20. This plan now serves as the execution record for source history replay tooling.
+**Status:** Completed in writable workspace on 2026-04-20 after focused replay/index and delivery-gate verification. Git commit/push remains blocked here because this workspace has no `.git` metadata.
 
 ---
-
-## Execution Summary
-
-This slice landed as:
-
-- `docs/superpowers/specs/2026-04-20-source-history-design.md`
-- `docs/superpowers/plans/2026-04-20-source-history-index.md`
-- `lobster-intel/tests/test_source_history.py`
-- `lobster-intel/packages/lobster-runtime/lobster_runtime/source_history.py`
-- `lobster-intel/packages/lobster-runtime/lobster_runtime/__init__.py`
-- `lobster-intel/scripts/source_history.py`
-- `lobster-intel/README.md`
-- `docs/INSTALL_OPENCLAW.md`
-
-Verified with:
-
-- `cd /Users/knowlet/ngi-lobster && .venv/bin/python -m unittest discover -s lobster-intel/tests -p 'test_source_history.py' -v`
-- `cd /Users/knowlet/ngi-lobster && .venv/bin/python -m pytest lobster-intel/tests -q`
 
 ### Task 1: Lock The Source History Contract With Tests
 
 **Files:**
 - Create: `lobster-intel/tests/test_source_history.py`
 
-- [ ] **Step 1: Write the failing replay and rebuild tests**
+- [x] **Step 1: Write the failing replay and rebuild tests**
 
 ```python
 def test_replay_source_run_returns_historical_payload(tmp_path: Path):
@@ -53,12 +35,12 @@ def test_rebuild_source_index_recreates_sqlite_rows(tmp_path: Path):
     self.assertEqual(result["item_count"], 3)
 ```
 
-- [ ] **Step 2: Run the focused test file and verify RED**
+- [x] **Step 2: Run the focused test file and verify RED**
 
-Run: `python3 -m unittest discover -s lobster-intel/tests -p 'test_source_history.py' -v`
-Expected: FAIL with missing `replay_source_run` / `rebuild_source_index` imports
+Run: `./.venv/bin/python -m pytest lobster-intel/tests/test_source_history.py -q`
+Expected: FAIL with missing `lobster_runtime.source_history`
 
-- [ ] **Step 3: Add CLI coverage in the same test file**
+- [x] **Step 3: Add CLI coverage in the same test file**
 
 ```python
 payload = json.loads(
@@ -80,11 +62,6 @@ payload = json.loads(
 self.assertEqual(payload["run_id"], run_id)
 ```
 
-- [ ] **Step 4: Run the focused test file again and verify RED**
-
-Run: `python3 -m unittest discover -s lobster-intel/tests -p 'test_source_history.py' -v`
-Expected: FAIL because the CLI script does not exist yet
-
 ### Task 2: Implement Source History Helpers And CLI
 
 **Files:**
@@ -92,7 +69,7 @@ Expected: FAIL because the CLI script does not exist yet
 - Create: `lobster-intel/scripts/source_history.py`
 - Modify: `lobster-intel/packages/lobster-runtime/lobster_runtime/__init__.py`
 
-- [ ] **Step 1: Implement artifact loading and replay helpers**
+- [x] **Step 1: Implement artifact loading and replay helpers**
 
 ```python
 def replay_source_run(workspace_dir: str | Path, plugin_id: str, run_id: str) -> dict[str, Any]:
@@ -108,7 +85,7 @@ def replay_source_run(workspace_dir: str | Path, plugin_id: str, run_id: str) ->
     }
 ```
 
-- [ ] **Step 2: Implement the SQLite rebuild path**
+- [x] **Step 2: Implement the SQLite rebuild path**
 
 ```python
 with sqlite3.connect(index_path) as conn:
@@ -120,7 +97,7 @@ with sqlite3.connect(index_path) as conn:
     )
 ```
 
-- [ ] **Step 3: Add a thin CLI with `replay` and `rebuild-index` subcommands**
+- [x] **Step 3: Add a thin CLI with `replay` and `rebuild-index` subcommands**
 
 ```python
 replay_ap = subparsers.add_parser("replay")
@@ -131,9 +108,9 @@ rebuild_ap = subparsers.add_parser("rebuild-index")
 rebuild_ap.add_argument("--plugin-id", required=True)
 ```
 
-- [ ] **Step 4: Run the focused tests and verify GREEN**
+- [x] **Step 4: Run the focused tests and verify GREEN**
 
-Run: `python3 -m unittest discover -s lobster-intel/tests -p 'test_source_history.py' -v`
+Run: `./.venv/bin/python -m pytest lobster-intel/tests/test_source_history.py -q`
 Expected: PASS
 
 ### Task 3: Update Operator Docs
@@ -142,21 +119,14 @@ Expected: PASS
 - Modify: `lobster-intel/README.md`
 - Modify: `docs/INSTALL_OPENCLAW.md`
 
-- [ ] **Step 1: Document source replay and index rebuild**
+- [x] **Step 1: Document source replay and index rebuild**
 
 ```text
-python3 lobster-intel/scripts/source_history.py replay --workspace . --plugin-id watchlist-tracker --run-id 20260415T013020Z
-python3 lobster-intel/scripts/source_history.py rebuild-index --workspace . --plugin-id watchlist-tracker
+./.venv/bin/python lobster-intel/scripts/source_history.py replay --workspace . --plugin-id watchlist-tracker --run-id 20260415T013020Z
+./.venv/bin/python lobster-intel/scripts/source_history.py rebuild-index --workspace . --plugin-id watchlist-tracker
 ```
 
-- [ ] **Step 2: Run the focused tests after doc-touching code stays green**
+- [x] **Step 2: Run the focused tests after doc-touching code stays green**
 
-Run: `python3 -m unittest discover -s lobster-intel/tests -p 'test_source_history.py' -v`
+Run: `./.venv/bin/python -m pytest lobster-intel/tests/test_source_history.py -q`
 Expected: PASS
-
-- [ ] **Step 3: Commit**
-
-```bash
-git add docs/superpowers/specs/2026-04-20-source-history-design.md docs/superpowers/plans/2026-04-20-source-history-index.md lobster-intel/tests/test_source_history.py lobster-intel/packages/lobster-runtime/lobster_runtime/source_history.py lobster-intel/packages/lobster-runtime/lobster_runtime/__init__.py lobster-intel/scripts/source_history.py lobster-intel/README.md docs/INSTALL_OPENCLAW.md
-git commit -m "feat: add source history replay tooling"
-```

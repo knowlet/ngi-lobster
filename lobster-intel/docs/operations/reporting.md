@@ -194,12 +194,11 @@ When the operator already knows which suppressed runtime run and which positive-
 
 Behavior:
 - reads `runtime/runs/<suppressed-run-id>.json` and `runtime/runs/<positive-run-id>.json`
-- writes the suppressed dispatcher alert artifact without requiring receipt flags
-- writes the positive-control dispatcher alert plus receipt artifact using the provided delivery proof
-- builds one fail-closed dispatcher E2E bundle under the shared `--bundle-id`
-- prints one machine-readable JSON summary covering the suppressed artifact write, positive artifact write, and final bundle path
+- preflights the shared dispatcher bundle contract before rewriting any workspace artifacts
+- writes the suppressed dispatcher alert plus the positive-control dispatcher alert/receipt artifacts only after the preflight passes
 - reuses the persisted positive-control receipt by default, but fails closed if `thesis_id`, `run_id`, or `contract_version` are missing or no longer match the requested run
 - writes one auditable dispatcher bundle under `lobster-intel/data/delivery/<thesis-id>/bundles/<bundle-id>.json`
+- prints one machine-readable JSON summary covering the suppressed artifact write, positive artifact write, and final bundle path
 
 ## Recommended pipeline
 

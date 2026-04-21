@@ -18,6 +18,7 @@ for package_dir in (
     sys.path.insert(0, str(package_dir))
 
 from lobster_delivery import write_dispatcher_artifacts, write_dispatcher_e2e_bundle
+from lobster_delivery import build_dispatcher_artifact_payloads, build_e2e_contract_bundle_view
 
 
 def _load_json(path: str | Path) -> dict:
@@ -115,6 +116,32 @@ def _with_bundle_id(runtime_payload: dict, bundle_id: str) -> dict:
     return enriched
 
 
+def _preflight_bundle_contract(
+    args: argparse.Namespace,
+    *,
+    suppressed_runtime: dict,
+    positive_runtime: dict,
+    delivery_receipt: dict | None,
+) -> None:
+    payloads = []
+    for runtime_payload, receipt in (
+        (_with_bundle_id(suppressed_runtime, args.bundle_id), None),
+        (_with_bundle_id(positive_runtime, args.bundle_id), delivery_receipt),
+    ):
+        rendered = build_dispatcher_artifact_payloads(
+            workspace_dir=args.workspace,
+            thesis_id=args.thesis_id,
+            runtime_payload=runtime_payload,
+            delivery_receipt=receipt,
+            now_utc=args.now_utc,
+        )
+        payloads.append(rendered["alert_payload"])
+
+    result = build_e2e_contract_bundle_view(payloads)
+    if result.get("status") != "ok":
+        raise ValueError(f"dispatcher bundle incomplete: {result}")
+
+
 def main(argv: list[str]) -> int:
     parser = argparse.ArgumentParser(
         description="Materialize one dispatcher acceptance bundle from a suppressed and positive runtime run."
@@ -140,6 +167,12 @@ def main(argv: list[str]) -> int:
             args,
             positive_runtime=positive_runtime,
             receipts_root=receipts_root,
+        )
+        _preflight_bundle_contract(
+            args,
+            suppressed_runtime=suppressed_runtime,
+            positive_runtime=positive_runtime,
+            delivery_receipt=delivery_receipt,
         )
 
         suppressed = write_dispatcher_artifacts(

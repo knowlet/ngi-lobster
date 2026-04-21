@@ -631,5 +631,102 @@ class DispatcherArtifactWriterTests(unittest.TestCase):
 
         self.assertEqual(exc.exception.code, 1)
         self.assertIn("persisted receipt missing required metadata: thesis_id", stderr.getvalue())
+
+    def test_run_dispatcher_acceptance_cli_fails_closed_before_writing_incomplete_bundle_artifacts(self):
+        repo = Path(__file__).resolve().parents[2]
+        script_path = repo / "lobster-intel" / "scripts" / "run_dispatcher_acceptance.py"
+        self.assertTrue(script_path.exists(), f"missing CLI script: {script_path}")
+
+        with tempfile.TemporaryDirectory() as temp_dir:
+            workspace = Path(temp_dir)
+            thesis_id, suppressed_run_id, positive_run_id = _install_real_runtime_spine_workspace(workspace)
+            suppressed_alert_path = (
+                workspace
+                / "lobster-intel"
+                / "data"
+                / "delivery"
+                / thesis_id
+                / "alerts"
+                / f"{suppressed_run_id}.json"
+            )
+            original_suppressed_alert = suppressed_alert_path.read_text(encoding="utf-8")
+            positive_runtime_path = (
+                workspace
+                / "lobster-intel"
+                / "data"
+                / "runtime"
+                / thesis_id
+                / "runs"
+                / f"{positive_run_id}.json"
+            )
+            positive_runtime = json.loads(positive_runtime_path.read_text(encoding="utf-8"))
+            positive_runtime["contract_version"] = "alert-contract-v2"
+            positive_runtime_path.write_text(json.dumps(positive_runtime, ensure_ascii=False, indent=2), encoding="utf-8")
+            positive_alert_path = (
+                workspace
+                / "lobster-intel"
+                / "data"
+                / "delivery"
+                / thesis_id
+                / "alerts"
+                / f"{positive_run_id}.json"
+            )
+            positive_alert = json.loads(positive_alert_path.read_text(encoding="utf-8"))
+            positive_alert["contract_version"] = "alert-contract-v2"
+            positive_alert_path.write_text(json.dumps(positive_alert, ensure_ascii=False, indent=2), encoding="utf-8")
+            positive_receipt_path = (
+                workspace
+                / "lobster-intel"
+                / "data"
+                / "delivery"
+                / thesis_id
+                / "receipts"
+                / f"{positive_run_id}.json"
+            )
+            positive_receipt = json.loads(positive_receipt_path.read_text(encoding="utf-8"))
+            positive_receipt["contract_version"] = "alert-contract-v2"
+            positive_receipt_path.write_text(json.dumps(positive_receipt, ensure_ascii=False, indent=2), encoding="utf-8")
+
+            stderr = io.StringIO()
+            old_argv = sys.argv
+            try:
+                sys.argv = [
+                    str(script_path),
+                    "--workspace",
+                    str(workspace),
+                    "--thesis-id",
+                    thesis_id,
+                    "--bundle-id",
+                    "bundle-20260422-incomplete-runtime-contract",
+                    "--suppressed-run-id",
+                    suppressed_run_id,
+                    "--positive-run-id",
+                    positive_run_id,
+                ]
+                with patch("sys.stderr", stderr):
+                    with self.assertRaises(SystemExit) as exc:
+                        namespace = {
+                            "__name__": "__main__",
+                            "__file__": str(script_path),
+                        }
+                        exec(script_path.read_text(encoding="utf-8"), namespace)
+            finally:
+                sys.argv = old_argv
+
+            rewritten_suppressed_alert = suppressed_alert_path.read_text(encoding="utf-8")
+            bundle_path = (
+                workspace
+                / "lobster-intel"
+                / "data"
+                / "delivery"
+                / thesis_id
+                / "bundles"
+                / "bundle-20260422-incomplete-runtime-contract.json"
+            )
+
+        self.assertEqual(exc.exception.code, 1)
+        self.assertIn("dispatcher bundle incomplete", stderr.getvalue())
+        self.assertEqual(rewritten_suppressed_alert, original_suppressed_alert)
+        self.assertFalse(bundle_path.exists())
 if __name__ == "__main__":
     unittest.main()

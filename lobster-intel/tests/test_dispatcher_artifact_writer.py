@@ -391,6 +391,8 @@ class DispatcherArtifactWriterTests(unittest.TestCase):
         self.assertEqual(bundle["status"], "ok")
         self.assertEqual(bundle["bundle"]["e2e_run_id"], "bundle-20260421-runtime-path")
         self.assertEqual(bundle["bundle"]["fixtures"][0]["reason_code"], "legacy_target_mismatch")
+        self.assertFalse(bundle["bundle"]["fixtures"][0]["target_contract_match"])
+        self.assertTrue(bundle["bundle"]["fixtures"][1]["target_contract_match"])
         self.assertEqual(
             bundle["bundle"]["fixtures"][1]["delivery_proof"]["proof_id"],
             "heartbeat:positive-20260421T000500Z",

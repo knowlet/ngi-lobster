@@ -46,16 +46,19 @@ def _project_runtime_dispatcher_payload(
     receipt_payload = _load_optional_json(delivery_root / "receipts" / f"{run_id}.json") or {}
 
     active_target = runtime_payload.get("active_target") or {}
+    runtime_target_id = compare_payload.get("runtime_target_id") or active_target.get("market_id") or active_target.get("market_slug")
+    alert_target_id = compare_payload.get("market_target_id") or compare_payload.get("runtime_target_id")
     disposition = {
         "should_send": alert_payload.get("should_send"),
         "decision": "would_send" if alert_payload.get("should_send") else "suppressed",
         "reason_code": alert_payload.get("reason_code"),
-        "runtime_target_id": compare_payload.get("runtime_target_id")
-        or active_target.get("market_id")
-        or active_target.get("market_slug"),
+        "target_contract_match": None
+        if runtime_target_id in (None, "") or alert_target_id in (None, "")
+        else runtime_target_id == alert_target_id,
+        "runtime_target_id": runtime_target_id,
         "runtime_target_name": active_target.get("market_name")
         or active_target.get("market_question"),
-        "alert_target_id": compare_payload.get("market_target_id") or compare_payload.get("runtime_target_id"),
+        "alert_target_id": alert_target_id,
         "contract_version": alert_payload.get("contract_version") or runtime_payload.get("contract_version"),
         "e2e_run_id": bundle_id,
     }

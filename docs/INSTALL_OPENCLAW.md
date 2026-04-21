@@ -322,7 +322,7 @@ When you already know the suppressed runtime run and the positive-control runtim
   --proof-id heartbeat:positive-20260421T000500Z
 ```
 
-That wrapper reads both `runtime/runs/<run-id>.json` artifacts, writes the suppressed dispatcher alert, writes the positive-control dispatcher alert plus receipt using the supplied delivery proof, then emits one shared dispatcher bundle under `lobster-intel/data/delivery/<thesis-id>/bundles/<bundle-id>.json`.
+That wrapper reads both `runtime/runs/<run-id>.json` artifacts, writes the suppressed dispatcher alert, writes the positive-control dispatcher alert plus receipt using the supplied delivery proof, records `target_contract_match` beside the dispatcher-visible target ids, then emits one shared dispatcher bundle under `lobster-intel/data/delivery/<thesis-id>/bundles/<bundle-id>.json`.
 
 To verify the persisted bundle artifact directly after that run, point the contract verifier at the generated bundle file:
 
@@ -331,7 +331,7 @@ To verify the persisted bundle artifact directly after that run, point the contr
   lobster-intel/data/delivery/gooaye/bundles/bundle-20260421-operator.json
 ```
 
-That verifier accepts either raw payload fixtures or the saved `dispatcher_e2e_bundle.v1` artifact, so operators can re-check the shared `e2e_run_id`, decisions, and delivery proof without unpacking the bundle by hand.
+That verifier accepts either raw payload fixtures or the saved `dispatcher_e2e_bundle.v1` artifact, so operators can re-check the shared `e2e_run_id`, decisions, `target_contract_match`, and delivery proof without unpacking the bundle by hand.
 
 When PO needs to confirm an already-reviewed run still points at the same active runtime target as the current contract in `latest.json`, audit that run directly:
 

@@ -73,17 +73,20 @@ def _project_runtime_disposition(
     alert_payload = _load_json(delivery_root / "alerts" / f"{run_id}.json")
     active_target = runtime_payload.get("active_target") or {}
     should_send = bool(alert_payload.get("should_send"))
+    runtime_target_id = compare_payload.get("runtime_target_id") or active_target.get("market_id") or active_target.get("market_slug")
+    alert_target_id = compare_payload.get("market_target_id") or compare_payload.get("runtime_target_id")
 
     return {
         "should_send": should_send,
         "decision": "would_send" if should_send else "suppressed",
         "reason_code": alert_payload.get("reason_code"),
-        "runtime_target_id": compare_payload.get("runtime_target_id")
-        or active_target.get("market_id")
-        or active_target.get("market_slug"),
+        "target_contract_match": None
+        if _missing(runtime_target_id) or _missing(alert_target_id)
+        else runtime_target_id == alert_target_id,
+        "runtime_target_id": runtime_target_id,
         "runtime_target_name": active_target.get("market_name")
         or active_target.get("market_question"),
-        "alert_target_id": compare_payload.get("market_target_id") or compare_payload.get("runtime_target_id"),
+        "alert_target_id": alert_target_id,
         "contract_version": alert_payload.get("contract_version") or runtime_payload.get("contract_version"),
     }
 

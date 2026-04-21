@@ -7,6 +7,7 @@ REQUIRED_BASE_FIELDS = (
     "should_send",
     "decision",
     "reason_code",
+    "target_contract_match",
     "runtime_target_id",
     "runtime_target_name",
     "alert_target_id",
@@ -72,6 +73,18 @@ def _normalize_delivery_proof(delivery_proof: Any) -> Any:
     return normalized
 
 
+def _resolve_target_contract_match(alert_disposition: dict[str, Any], view: dict[str, Any]) -> Any:
+    explicit_value = alert_disposition.get("target_contract_match")
+    if not _missing(explicit_value):
+        return explicit_value
+
+    runtime_target_id = view.get("runtime_target_id")
+    alert_target_id = view.get("alert_target_id")
+    if _missing(runtime_target_id) or _missing(alert_target_id):
+        return None
+    return runtime_target_id == alert_target_id
+
+
 def build_alert_contract_view(runtime_data: dict[str, Any]) -> dict[str, Any]:
     alert_disposition = runtime_data.get("alert_disposition") or {}
     market_target = runtime_data.get("market_target") or {}
@@ -93,6 +106,7 @@ def build_alert_contract_view(runtime_data: dict[str, Any]) -> dict[str, Any]:
         "p_ai": runtime_data.get("first_principles_probability"),
         "market_yes_probability": target_detail.get("market_yes_probability"),
     }
+    view["target_contract_match"] = _resolve_target_contract_match(alert_disposition, view)
 
     missing_fields = [field for field in REQUIRED_BASE_FIELDS if _missing(view[field])]
 

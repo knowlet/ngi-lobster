@@ -241,6 +241,7 @@ Run it with:
 
 This reads `lobster-intel/data/delivery/<thesis-id>/alerts/<run-id>.json`, verifies the contract bundle fail-closed, and writes one machine-readable artifact under `lobster-intel/data/delivery/<thesis-id>/bundles/`.
 When the alert artifacts came directly from `runtime_spine`, the builder also reads the matching `runtime`, `compare`, and optional `receipt` artifacts so the shared bundle can be reconstructed without hand-editing an `alert_disposition` wrapper first.
+Each dispatcher fixture now also carries `target_contract_match`, a boolean-equivalent match result derived from the same runtime-vs-alert target ids that drove the decision.
 
 ## Dispatcher acceptance CLI
 
@@ -255,7 +256,7 @@ When operators already know the suppressed legacy-control run id and the positiv
   --positive-run-id positive-20260421T000500Z
 ```
 
-This reads the matching `runtime/runs/<run-id>.json` artifacts, reuses the persisted `delivery/receipts/<positive-run-id>.json` proof for the positive-control path by default, emits the dispatcher alert/receipt records under `lobster-intel/data/delivery/<thesis-id>/`, stamps the same shared `e2e_run_id` onto those dispatcher artifacts, then writes the shared bundle artifact under `bundles/` and prints one machine-readable summary for operator review.
+This reads the matching `runtime/runs/<run-id>.json` artifacts, reuses the persisted `delivery/receipts/<positive-run-id>.json` proof for the positive-control path by default, emits the dispatcher alert/receipt records under `lobster-intel/data/delivery/<thesis-id>/`, stamps the same shared `e2e_run_id` onto those dispatcher artifacts, records `target_contract_match` alongside `runtime_target_id` and `alert_target_id`, then writes the shared bundle artifact under `bundles/` and prints one machine-readable summary for operator review.
 
 When operators need to override missing or corrected receipt fields, the explicit flags remain available:
 
@@ -279,7 +280,7 @@ To fail closed on the persisted acceptance artifact itself, point the verifier a
   lobster-intel/data/delivery/gooaye/bundles/bundle-20260421-operator.json
 ```
 
-The verifier now accepts either raw runtime-style payload fixtures or the persisted `lobster.delivery.dispatcher_e2e_bundle.v1` artifact and always rechecks the same shared contract fields from the bundle contents.
+The verifier now accepts either raw runtime-style payload fixtures or the persisted `lobster.delivery.dispatcher_e2e_bundle.v1` artifact and always rechecks the same shared contract fields from the bundle contents, including `target_contract_match` for each suppressed or delivered fixture.
 
 When you need to prove an audited run still uses the same active target as the current runtime contract, run:
 

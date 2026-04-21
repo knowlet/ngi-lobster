@@ -13,6 +13,7 @@ def test_alert_contract_view_accepts_suppressed_fixture_with_shared_bundle_field
             "should_send": False,
             "decision": "suppressed",
             "reason_code": "legacy_target_mismatch",
+            "target_contract_match": False,
             "runtime_target_id": "1517836",
             "alert_target_id": "legacy-430",
             "contract_version": "v1",
@@ -23,6 +24,7 @@ def test_alert_contract_view_accepts_suppressed_fixture_with_shared_bundle_field
     result = build_alert_contract_view(payload)
 
     assert result["status"] == "ok"
+    assert result["view"]["target_contract_match"] is False
     assert result["view"]["runtime_target_id"] == "1517836"
     assert result["view"]["alert_target_id"] == "legacy-430"
     assert result["view"]["e2e_run_id"] == "e2e-20260417-01"
@@ -146,6 +148,7 @@ def test_alert_contract_view_accepts_positive_control_with_delivery_proof():
             "should_send": True,
             "decision": "would_send",
             "reason_code": "active_target_contract_ok",
+            "target_contract_match": True,
             "runtime_target_id": "1517836",
             "alert_target_id": "1517836",
             "contract_version": "v1",
@@ -160,6 +163,7 @@ def test_alert_contract_view_accepts_positive_control_with_delivery_proof():
     result = build_alert_contract_view(payload)
 
     assert result["status"] == "ok"
+    assert result["view"]["target_contract_match"] is True
     assert result["view"]["delivery_proof"]["sink_message_id"] == "msg-123"
     assert result["view"]["delivery_proof"]["proof_id"] == "msg-123"
 

@@ -99,7 +99,6 @@ def extract_linked_content(url: str) -> dict[str, Any]:
             raise ValueError(f"Response exceeds max size of {_MAX_RESPONSE_BYTES} bytes")
         content_type = response.headers.get_content_type()
     raw = raw_bytes.decode("utf-8", errors="replace")
-
     is_html = "html" in content_type.lower() or "<html" in raw.lower()
     text_content = _plain_text(raw) if is_html else raw.strip()
     return {

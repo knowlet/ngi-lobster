@@ -74,7 +74,7 @@ The repo already contains:
 
 ## Current gaps
 
-- linked-content queue processing now writes replayable artifacts, but richer transcript/article extraction is still incomplete
+- linked-content queue processing now writes replayable artifacts and tags article vs video transcript intent, but richer transcript/article extraction is still incomplete
 - OCR backfill is still incomplete
 - Firehose signal filtering still needs work
 - live NGI cron still needs to be rebuilt as a product-grade path

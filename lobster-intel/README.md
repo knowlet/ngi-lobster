@@ -249,6 +249,8 @@ That worker writes:
 
 The fetch path is intentionally constrained to `http`/`https`, caps response bodies before decode, strips `script`/`style` noise from HTML text extraction, and parallelizes queue fetches while preserving deterministic artifact writes.
 
+Queue items and linked-content evidence now also preserve `content_kind`, so runtime truth can distinguish generic article follow-up from video-transcript follow-up before any richer extractor path lands.
+
 This keeps the tracker ingest-only while making linked-content follow-up replayable and auditable from runtime truth.
 
 ## Dispatcher acceptance bundle

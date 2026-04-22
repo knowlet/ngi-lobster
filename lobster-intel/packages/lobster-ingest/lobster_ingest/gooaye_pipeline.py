@@ -4,6 +4,7 @@ import json
 import shutil
 import subprocess
 import sys
+import urllib.parse
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
@@ -115,6 +116,18 @@ def needs_link_extraction(item: dict[str, Any]) -> bool:
     return bool(((item.get("preview") or {}).get("url") or "").strip())
 
 
+def linked_content_kind(item: dict[str, Any]) -> str | None:
+    linked_url = ((item.get("preview") or {}).get("url") or "").strip()
+    if not linked_url:
+        return None
+
+    hostname = urllib.parse.urlparse(linked_url).hostname or ""
+    hostname = hostname.lower()
+    if hostname in {"youtube.com", "www.youtube.com", "m.youtube.com", "youtu.be", "vimeo.com", "www.vimeo.com"}:
+        return "video_transcript"
+    return "article"
+
+
 def build_evidence_record(item: dict[str, Any], *, recorded_at_utc: str) -> dict[str, Any]:
     image_needed = needs_image_analysis(item)
     link_needed = needs_link_extraction(item)
@@ -142,6 +155,7 @@ def build_compiled_markdown(item: dict[str, Any]) -> str:
     preview = item.get("preview") or {}
     image_needed = needs_image_analysis(item)
     link_needed = needs_link_extraction(item)
+    content_kind = linked_content_kind(item)
     lines = [
         f"# Gooaye #{item['post_id']}",
         "",
@@ -169,7 +183,10 @@ def build_compiled_markdown(item: dict[str, Any]) -> str:
     if image_needed:
         lines += ["", "## Follow-up", "", "- Needs OCR / image understanding pipeline"]
     if link_needed:
-        lines += ["", "## Link Follow-up", "", "- Needs linked content extraction / transcript or正文抓取"]
+        lines += ["", "## Link Follow-up", ""]
+        if content_kind:
+            lines.append(f"- Queue kind: {content_kind}")
+        lines.append("- Needs linked content extraction / transcript or正文抓取")
     return "\n".join(lines) + "\n"
 
 
@@ -227,6 +244,7 @@ def build_runtime_payload(payload: dict[str, Any], *, summaries: list[str], dige
                 "linked_url": ((item.get("preview") or {}).get("url")),
                 "site_name": ((item.get("preview") or {}).get("site_name")),
                 "title": ((item.get("preview") or {}).get("title")),
+                "content_kind": linked_content_kind(item),
             }
             for item in items
             if needs_link_extraction(item)

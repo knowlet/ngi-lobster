@@ -321,6 +321,8 @@ That command reads `lobster-intel/data/runtime/<thesis-id>/latest.json` by defau
 
 The runtime worker only fetches `http`/`https` targets, strips `script`/`style` noise from HTML text extraction, caps response size before decode, and can fetch queued items in parallel without changing artifact lineage.
 
+Queue entries now keep a runtime-owned `content_kind` such as `article` or `video_transcript`, and the linked-content evidence/markdown artifacts preserve that same intent for auditability.
+
 If you need to backfill a prior run instead of the latest snapshot, point the worker at an explicit runtime artifact:
 
 ```bash

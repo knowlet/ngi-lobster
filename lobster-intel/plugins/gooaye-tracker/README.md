@@ -25,6 +25,7 @@ Track public Telegram channel updates from `@Gooaye` and emit structured artifac
   - `link_extraction_status: pending`
 - runtime state also exposes `image_analysis_queue` so cron / delivery layers can explicitly finish OCR or image understanding before final human alerting
 - runtime state also exposes `linked_content_queue` so transcript / article extraction can happen downstream without hiding this gap
+- linked-content queue entries now tag `content_kind` so downstream workers can distinguish `article` vs `video_transcript` intent without moving that decision into delivery code
 - `lobster-intel/scripts/process_linked_content_queue.py` consumes that queue and writes auditable evidence, compiled markdown, and runtime receipt artifacts under `lobster-intel/data/`
 
 ## Notes

@@ -87,6 +87,19 @@ def _plain_text(value: str) -> str:
     return _SPACE.sub(" ", without_tags).strip()
 
 
+def _infer_content_kind(item: dict[str, Any]) -> str:
+    declared_kind = str(item.get("content_kind") or "").strip()
+    if declared_kind:
+        return declared_kind
+
+    linked_url = str(item.get("linked_url") or item.get("url") or "").strip()
+    hostname = urllib.parse.urlparse(linked_url).hostname or ""
+    hostname = hostname.lower()
+    if hostname in {"youtube.com", "www.youtube.com", "m.youtube.com", "youtu.be", "vimeo.com", "www.vimeo.com"}:
+        return "video_transcript"
+    return "article"
+
+
 def extract_linked_content(url: str) -> dict[str, Any]:
     parsed = urllib.parse.urlparse(url)
     if parsed.scheme not in _SUPPORTED_URL_SCHEMES:
@@ -121,6 +134,7 @@ def _compiled_markdown(
     thesis_id: str,
     source_run_id: str,
     linked_item: dict[str, Any],
+    content_kind: str,
     extracted: dict[str, Any],
     recorded_at_utc: str,
 ) -> str:
@@ -132,6 +146,7 @@ def _compiled_markdown(
         f"- Recorded at: {recorded_at_utc}",
         f"- Queue URL: {linked_item.get('url')}",
         f"- Linked URL: {linked_item.get('linked_url')}",
+        f"- Content kind: {content_kind}",
         f"- Site: {linked_item.get('site_name')}",
         f"- Queue title: {linked_item.get('title')}",
         f"- Extracted title: {extracted.get('title')}",
@@ -252,11 +267,13 @@ def process_linked_content_queue(
         stem = _item_stem(source_run_id, item, index)
         evidence_path = paths["evidence"] / f"{stem}.json"
         compiled_path = paths["compiled"] / f"{stem}.md"
+        content_kind = _infer_content_kind(item)
         evidence_payload = {
             "schema": "lobster.evidence.linked_content.v1",
             "recorded_at_utc": recorded_at_utc,
             "thesis_id": thesis_id,
             "source_run_id": source_run_id,
+            "content_kind": content_kind,
             "linked_item": item,
             "extracted": extracted,
         }
@@ -266,6 +283,7 @@ def process_linked_content_queue(
                 thesis_id=thesis_id,
                 source_run_id=source_run_id,
                 linked_item=item,
+                content_kind=content_kind,
                 extracted=extracted,
                 recorded_at_utc=recorded_at_utc,
             ),

@@ -13,6 +13,7 @@ from .fusion import FusionComputationInput, FusionComputationResult, build_fusio
 class SourceFusionInput:
     official_statements: dict[str, Any] | None
     watchlist: dict[str, Any] | None
+    firehose: dict[str, Any] | None
     polymarket: dict[str, Any] | None
     dq_status: str = "pass"
     freshness_status: str = "fresh"
@@ -25,6 +26,7 @@ class SourceFusionInput:
 class SourceFusionArtifacts:
     official_statements_path: Path
     watchlist_path: Path
+    firehose_path: Path
     polymarket_path: Path
 
 
@@ -75,6 +77,7 @@ def _market_escalation_probability(item: dict[str, Any] | None) -> float | None:
 def build_source_fusion_result(inp: SourceFusionInput) -> FusionComputationResult:
     official_items = _items(inp.official_statements)
     watchlist_items = _items(inp.watchlist)
+    firehose_items = _items(inp.firehose)
     polymarket_items = _items(inp.polymarket)
     market_item = polymarket_items[0] if polymarket_items else None
 
@@ -86,7 +89,16 @@ def build_source_fusion_result(inp: SourceFusionInput) -> FusionComputationResul
     metadata = (market_item or {}).get("metadata") or {}
     source_config = metadata.get("source_config") or {}
     timestamp_utc = max(
-        [ts for ts in [_latest_ts(inp.official_statements), _latest_ts(inp.watchlist), _latest_ts(inp.polymarket)] if ts],
+        [
+            ts
+            for ts in [
+                _latest_ts(inp.official_statements),
+                _latest_ts(inp.watchlist),
+                _latest_ts(inp.firehose),
+                _latest_ts(inp.polymarket),
+            ]
+            if ts
+        ],
         default=_utcnow(),
     )
 
@@ -118,7 +130,7 @@ def build_source_fusion_result(inp: SourceFusionInput) -> FusionComputationResul
             adsb_count=len(watchlist_items),
             adsb_peace_score=None,
             adsb_used=False,
-            firehose_events_analyzed=len(official_items),
+            firehose_events_analyzed=len(firehose_items),
             firehose_peace_score=0.0,
             adsb_weight=0.5,
             firehose_weight=0.5,
@@ -135,5 +147,6 @@ def load_source_fusion_artifacts(paths: SourceFusionArtifacts) -> SourceFusionIn
     return SourceFusionInput(
         official_statements=json.loads(paths.official_statements_path.read_text(encoding="utf-8")),
         watchlist=json.loads(paths.watchlist_path.read_text(encoding="utf-8")),
+        firehose=json.loads(paths.firehose_path.read_text(encoding="utf-8")),
         polymarket=json.loads(paths.polymarket_path.read_text(encoding="utf-8")),
     )

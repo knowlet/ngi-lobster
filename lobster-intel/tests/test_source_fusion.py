@@ -22,6 +22,15 @@ class SourceFusionTest(unittest.TestCase):
                     "ran_at_utc": "2026-04-15T01:00:00+00:00",
                     "evidence": {"items": [{"title": "Watchlist Signal"}]},
                 },
+                firehose={
+                    "ran_at_utc": "2026-04-15T03:00:00+00:00",
+                    "evidence": {
+                        "items": [
+                            {"title": "Firehose Event 1"},
+                            {"title": "Firehose Event 2"},
+                        ]
+                    },
+                },
                 polymarket={
                     "ran_at_utc": "2026-04-15T02:00:00+00:00",
                     "evidence": {
@@ -46,6 +55,7 @@ class SourceFusionTest(unittest.TestCase):
         )
 
         self.assertEqual(result.data["market_target"]["market_id"], "1517836")
+        self.assertEqual(result.data["firehose"]["events_analyzed"], 2)
         self.assertAlmostEqual(result.data["market_escalation_probability"], 0.3)
         self.assertAlmostEqual(result.data["first_principles_escalation_probability"], 0.7)
         self.assertTrue(result.data["gap_triggered"])

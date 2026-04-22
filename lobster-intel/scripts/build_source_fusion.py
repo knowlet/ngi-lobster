@@ -18,6 +18,7 @@ def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("--official", default="lobster-intel/data/runtime/sources/official-statements-tracker/latest.json")
     ap.add_argument("--watchlist", default="lobster-intel/data/runtime/sources/watchlist-tracker/latest.json")
+    ap.add_argument("--firehose", default="lobster-intel/data/runtime/sources/firehose-tracker/latest.json")
     ap.add_argument("--polymarket", default="lobster-intel/data/runtime/sources/polymarket-tracker/latest.json")
     ap.add_argument("--output", default="lobster-intel/data/runtime/fusion/latest.json")
     args = ap.parse_args()
@@ -25,6 +26,7 @@ def main() -> None:
     artifacts = SourceFusionArtifacts(
         official_statements_path=Path(args.official),
         watchlist_path=Path(args.watchlist),
+        firehose_path=Path(args.firehose),
         polymarket_path=Path(args.polymarket),
     )
     inp = load_source_fusion_artifacts(artifacts)

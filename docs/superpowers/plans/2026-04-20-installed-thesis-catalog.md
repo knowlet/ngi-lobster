@@ -35,7 +35,7 @@ Verified with:
 - Modify: `tests/thesis-workflow-tool.test.js`
 - Test: `tests/thesis-workflow-tool.test.js`
 
-- [ ] **Step 1: Add failing tests for bundled thesis discovery and description**
+- [x] **Step 1: Add failing tests for bundled thesis discovery and description**
 
 ```js
 test("listBundledThesisProfiles returns bundled thesis metadata sorted by thesis id", () => {
@@ -77,7 +77,7 @@ test("listBundledThesisProfiles returns bundled thesis metadata sorted by thesis
 });
 ```
 
-- [ ] **Step 2: Run the focused JS test file and verify RED**
+- [x] **Step 2: Run the focused JS test file and verify RED**
 
 Run: `cd /Users/knowlet/ngi-lobster && node --test tests/thesis-workflow-tool.test.js`
 Expected: FAIL because the catalog helpers do not exist yet
@@ -90,7 +90,7 @@ Expected: FAIL because the catalog helpers do not exist yet
 - Modify: `lobster-intel/examples/thesis-profiles/regional-escalation.json`
 - Test: `tests/thesis-workflow-tool.test.js`
 
-- [ ] **Step 1: Add metadata-aware thesis catalog helpers**
+- [x] **Step 1: Add metadata-aware thesis catalog helpers**
 
 ```js
 export function listBundledThesisProfiles(rootDir, io = {}) {
@@ -102,7 +102,7 @@ export function listBundledThesisProfiles(rootDir, io = {}) {
 }
 ```
 
-- [ ] **Step 2: Add a detailed describe helper that summarizes linked registry entries**
+- [x] **Step 2: Add a detailed describe helper that summarizes linked registry entries**
 
 ```js
 export function describeBundledThesisProfile(rootDir, thesisId, io = {}) {
@@ -120,7 +120,7 @@ export function describeBundledThesisProfile(rootDir, thesisId, io = {}) {
 }
 ```
 
-- [ ] **Step 3: Register `ngi_lobster_list_installed_theses` in `index.js`**
+- [x] **Step 3: Register `ngi_lobster_list_installed_theses` in `index.js`**
 
 ```js
 api.registerTool(
@@ -141,7 +141,7 @@ api.registerTool(
 );
 ```
 
-- [ ] **Step 4: Add human-readable metadata to the bundled regional escalation profile**
+- [x] **Step 4: Add human-readable metadata to the bundled regional escalation profile**
 
 ```json
 {
@@ -150,7 +150,7 @@ api.registerTool(
 }
 ```
 
-- [ ] **Step 5: Run the focused JS tests and syntax checks**
+- [x] **Step 5: Run the focused JS tests and syntax checks**
 
 Run: `cd /Users/knowlet/ngi-lobster && node --test tests/thesis-workflow-tool.test.js && node --check thesis-workflow-tool.js && node --check index.js`
 Expected: PASS
@@ -162,7 +162,7 @@ Expected: PASS
 - Modify: `docs/INSTALL_OPENCLAW.md`
 - Modify: `lobster-intel/README.md`
 
-- [ ] **Step 1: Document the catalog tool and bundled thesis metadata surface**
+- [x] **Step 1: Document the catalog tool and bundled thesis metadata surface**
 
 ```md
 - `ngi_lobster_list_installed_theses`
@@ -170,12 +170,12 @@ Expected: PASS
   - accepts an optional `thesisId` for a detailed single-thesis view
 ```
 
-- [ ] **Step 2: Run the focused JS suite and syntax checks**
+- [x] **Step 2: Run the focused JS suite and syntax checks**
 
 Run: `cd /Users/knowlet/ngi-lobster && node --test tests/workflow-default-tool.test.js tests/thesis-workflow-tool.test.js && node --check thesis-workflow-tool.js && node --check index.js`
 Expected: PASS
 
-- [ ] **Step 3: Commit**
+- [x] **Step 3: Commit**
 
 ```bash
 git add docs/superpowers/plans/2026-04-20-installed-thesis-catalog.md tests/thesis-workflow-tool.test.js thesis-workflow-tool.js index.js lobster-intel/examples/thesis-profiles/regional-escalation.json README.md docs/INSTALL_OPENCLAW.md lobster-intel/README.md

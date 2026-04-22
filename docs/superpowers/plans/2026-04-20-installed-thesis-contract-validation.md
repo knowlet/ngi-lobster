@@ -38,7 +38,7 @@ Verified with:
 - Modify: `tests/thesis-workflow-tool.test.js`
 - Test: `tests/thesis-workflow-tool.test.js`
 
-- [ ] **Step 1: Add tests for bundled thesis discovery and validation**
+- [x] **Step 1: Add tests for bundled thesis discovery and validation**
 
 ```js
 test("describeBundledThesisProfile flags incomplete runtime contracts", () => {
@@ -72,7 +72,7 @@ test("runInstalledThesisWorkflow stops when thesis profile defaults are unavaila
 });
 ```
 
-- [ ] **Step 2: Run the focused JS suite and verify RED**
+- [x] **Step 2: Run the focused JS suite and verify RED**
 
 Run: `cd /Users/knowlet/ngi-lobster && node --test tests/thesis-workflow-tool.test.js`
 Expected: FAIL because the helper does not expose validation state yet
@@ -85,7 +85,7 @@ Expected: FAIL because the helper does not expose validation state yet
 - Modify: `lobster-intel/examples/thesis-profiles/regional-escalation.json`
 - Test: `tests/thesis-workflow-tool.test.js`
 
-- [ ] **Step 1: Add contract validation to the workflow helper**
+- [x] **Step 1: Add contract validation to the workflow helper**
 
 ```js
 function validateInstalledWorkflowContract(request, thesisProfile, workflow) {
@@ -104,7 +104,7 @@ function validateInstalledWorkflowContract(request, thesisProfile, workflow) {
 }
 ```
 
-- [ ] **Step 2: Expose validation state in list/describe helpers**
+- [x] **Step 2: Expose validation state in list/describe helpers**
 
 ```js
 return profileSummary(rootDir, thesisProfile, {
@@ -113,7 +113,7 @@ return profileSummary(rootDir, thesisProfile, {
 });
 ```
 
-- [ ] **Step 3: Stop the installed workflow before execution when the contract is incomplete**
+- [x] **Step 3: Stop the installed workflow before execution when the contract is incomplete**
 
 ```js
 if (validationErrors.length > 0) {
@@ -126,7 +126,7 @@ if (validationErrors.length > 0) {
 }
 ```
 
-- [ ] **Step 4: Make the bundled profile self-describing**
+- [x] **Step 4: Make the bundled profile self-describing**
 
 ```json
 "source_config_paths": {
@@ -136,7 +136,7 @@ if (validationErrors.length > 0) {
 }
 ```
 
-- [ ] **Step 5: Run the focused suite and verify GREEN**
+- [x] **Step 5: Run the focused suite and verify GREEN**
 
 Run: `cd /Users/knowlet/ngi-lobster && node --test tests/thesis-workflow-tool.test.js`
 Expected: PASS
@@ -149,7 +149,7 @@ Expected: PASS
 - Create: `docs/THESIS_PROFILES.md`
 - Modify: `lobster-intel/README.md`
 
-- [ ] **Step 1: Document the new validation behavior and profile contract**
+- [x] **Step 1: Document the new validation behavior and profile contract**
 
 ```md
 - `ngi_lobster_list_installed_theses`
@@ -158,12 +158,12 @@ Expected: PASS
   - fails closed when thesis defaults are missing or incomplete
 ```
 
-- [ ] **Step 2: Run final verification**
+- [x] **Step 2: Run final verification**
 
 Run: `cd /Users/knowlet/ngi-lobster && node --test tests/workflow-default-tool.test.js tests/thesis-workflow-tool.test.js && node --check index.js && node --check thesis-workflow-tool.js`
 Expected: PASS
 
-- [ ] **Step 3: Commit**
+- [x] **Step 3: Commit**
 
 ```bash
 git add docs/superpowers/plans/2026-04-20-installed-thesis-contract-validation.md tests/thesis-workflow-tool.test.js thesis-workflow-tool.js index.js lobster-intel/examples/thesis-profiles/regional-escalation.json README.md docs/INSTALL_OPENCLAW.md docs/THESIS_PROFILES.md lobster-intel/README.md

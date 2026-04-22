@@ -9,6 +9,7 @@ import urllib.request
 from pathlib import Path
 from unittest.mock import MagicMock, patch
 
+from lobster_ingest.gooaye_pipeline import build_runtime_payload
 from lobster_ingest.linked_content import extract_linked_content, process_linked_content_queue
 
 
@@ -41,6 +42,44 @@ def _mock_urlopen_response(body: bytes, *, content_type: str = "text/html; chars
 
 
 class LinkedContentPlatformTests(unittest.TestCase):
+    def test_build_runtime_payload_marks_article_and_video_queue_kinds(self):
+        payload = {
+            "channel": "@Gooaye",
+            "new_count": 2,
+            "items": [
+                {
+                    "post_id": "101",
+                    "url": "https://t.me/gooaye/101",
+                    "preview": {
+                        "url": "https://example.com/story",
+                        "site_name": "Example News",
+                        "title": "Example Story",
+                    },
+                },
+                {
+                    "post_id": "102",
+                    "url": "https://t.me/gooaye/102",
+                    "preview": {
+                        "url": "https://www.youtube.com/watch?v=demo",
+                        "site_name": "YouTube",
+                        "title": "Demo Video",
+                    },
+                },
+            ],
+        }
+
+        runtime_payload = build_runtime_payload(
+            payload,
+            summaries=[],
+            digest_run_path=Path("/tmp/gooaye-run.md"),
+            digest_latest_path=Path("/tmp/gooaye-latest.md"),
+            run_id="gooaye-20260422T120000Z",
+            recorded_at_utc="2026-04-22T12:00:00+00:00",
+        )
+
+        self.assertEqual(runtime_payload["linked_content_queue"][0]["content_kind"], "article")
+        self.assertEqual(runtime_payload["linked_content_queue"][1]["content_kind"], "video_transcript")
+
     def test_extract_linked_content_rejects_file_urls(self):
         with tempfile.TemporaryDirectory() as temp_dir:
             article_path = Path(temp_dir) / "article.html"
@@ -94,10 +133,12 @@ class LinkedContentPlatformTests(unittest.TestCase):
     def test_process_linked_content_queue_writes_artifacts(self):
         with tempfile.TemporaryDirectory() as temp_dir:
             workspace = Path(temp_dir)
+            runtime_payload = _runtime_payload()
+            runtime_payload["linked_content_queue"][0]["content_kind"] = "article"
             result = process_linked_content_queue(
                 workspace_dir=workspace,
                 thesis_id="gooaye",
-                runtime_payload=_runtime_payload(),
+                runtime_payload=runtime_payload,
                 extractor=lambda url: {
                     "url": url,
                     "title": "Example Story",
@@ -111,6 +152,7 @@ class LinkedContentPlatformTests(unittest.TestCase):
             receipt_path = workspace / result["receipt_path"]
             receipt = json.loads(receipt_path.read_text(encoding="utf-8"))
             evidence = json.loads(evidence_path.read_text(encoding="utf-8"))
+            compiled_markdown = compiled_path.read_text(encoding="utf-8")
             evidence_exists = evidence_path.exists()
             compiled_exists = compiled_path.exists()
             receipt_exists = receipt_path.exists()
@@ -121,9 +163,11 @@ class LinkedContentPlatformTests(unittest.TestCase):
         self.assertTrue(compiled_exists)
         self.assertTrue(receipt_exists)
         self.assertEqual(evidence["linked_item"]["post_id"], "101")
+        self.assertEqual(evidence["content_kind"], "article")
         self.assertEqual(evidence["extracted"]["content"], "Full article body")
         self.assertEqual(receipt["processed_count"], 1)
         self.assertEqual(receipt["source_run_id"], "gooaye-20260420T000000Z")
+        self.assertIn("- Content kind: article", compiled_markdown)
 
     def test_process_linked_content_queue_records_empty_receipt(self):
         with tempfile.TemporaryDirectory() as temp_dir:

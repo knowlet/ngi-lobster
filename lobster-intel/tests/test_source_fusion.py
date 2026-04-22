@@ -193,6 +193,105 @@ class SourceFusionTest(unittest.TestCase):
         self.assertIsNone(payload["firehose"]["latest_event_at_utc"])
         self.assertIsNone(payload["firehose"]["latest_collected_at_utc"])
 
+    def test_build_source_fusion_cli_can_replay_historical_firehose_run(self):
+        script_path = ROOT / "scripts" / "build_source_fusion.py"
+
+        with TemporaryDirectory() as tmpdir:
+            workspace = Path(tmpdir)
+            official_path = workspace / "official.json"
+            watchlist_path = workspace / "watchlist.json"
+            polymarket_path = workspace / "polymarket.json"
+            output_path = workspace / "fusion.json"
+            firehose_runs_dir = workspace / "lobster-intel" / "data" / "runtime" / "sources" / "firehose-tracker" / "runs"
+            firehose_runs_dir.mkdir(parents=True, exist_ok=True)
+            firehose_run_id = "20260423T030500Z"
+            firehose_run_path = firehose_runs_dir / f"{firehose_run_id}.json"
+
+            official_path.write_text(
+                json.dumps({"ran_at_utc": "2026-04-15T00:00:00+00:00", "evidence": {"items": [{"title": "Official"}]}}),
+                encoding="utf-8",
+            )
+            watchlist_path.write_text(
+                json.dumps({"ran_at_utc": "2026-04-15T01:00:00+00:00", "evidence": {"items": [{"title": "Watchlist"}]}}),
+                encoding="utf-8",
+            )
+            polymarket_path.write_text(
+                json.dumps(
+                    {
+                        "ran_at_utc": "2026-04-15T02:00:00+00:00",
+                        "evidence": {
+                            "items": [
+                                {
+                                    "external_id": "1517836",
+                                    "title": "Market",
+                                    "url": "market-slug",
+                                    "metadata": {"market_id": "1517836", "slug": "market-slug", "yes_probability": 0.7},
+                                }
+                            ]
+                        },
+                    }
+                ),
+                encoding="utf-8",
+            )
+            firehose_run_path.write_text(
+                json.dumps(
+                    {
+                        "plugin": "firehose-tracker",
+                        "run_id": firehose_run_id,
+                        "ran_at_utc": "2026-04-15T03:05:00+00:00",
+                        "evidence": {
+                            "items": [
+                                {
+                                    "source_id": "firehose",
+                                    "source_type": "firehose_event",
+                                    "external_id": "fh-1",
+                                    "title": "Historical Firehose Event",
+                                    "url": "https://example.test/firehose/1",
+                                    "published_at_utc": "2026-04-15T02:55:00+00:00",
+                                    "collected_at_utc": "2026-04-15T03:04:00+00:00",
+                                }
+                            ]
+                        },
+                    }
+                ),
+                encoding="utf-8",
+            )
+
+            completed = subprocess.run(
+                [
+                    sys.executable,
+                    str(script_path),
+                    "--workspace",
+                    str(workspace),
+                    "--official",
+                    str(official_path),
+                    "--watchlist",
+                    str(watchlist_path),
+                    "--firehose-run-id",
+                    firehose_run_id,
+                    "--polymarket",
+                    str(polymarket_path),
+                    "--output",
+                    str(output_path),
+                ],
+                capture_output=True,
+                text=True,
+                check=False,
+            )
+
+            self.assertEqual(completed.returncode, 0, msg=completed.stderr)
+            summary = json.loads(completed.stdout)
+            payload = json.loads(output_path.read_text(encoding="utf-8"))
+
+        self.assertEqual(summary["firehose_events_analyzed"], 1)
+        self.assertEqual(summary["firehose_source_run_id"], firehose_run_id)
+        self.assertEqual(summary["firehose_latest_event_at_utc"], "2026-04-15T02:55:00+00:00")
+        self.assertEqual(summary["firehose_latest_collected_at_utc"], "2026-04-15T03:04:00+00:00")
+        self.assertEqual(payload["firehose"]["events_analyzed"], 1)
+        self.assertEqual(payload["firehose"]["source_run_id"], firehose_run_id)
+        self.assertEqual(payload["firehose"]["latest_event_at_utc"], "2026-04-15T02:55:00+00:00")
+        self.assertEqual(payload["firehose"]["latest_collected_at_utc"], "2026-04-15T03:04:00+00:00")
+
 
 if __name__ == "__main__":
     unittest.main()

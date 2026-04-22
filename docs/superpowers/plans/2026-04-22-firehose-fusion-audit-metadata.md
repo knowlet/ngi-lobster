@@ -8,6 +8,8 @@
 
 **Tech Stack:** Python 3.11+, stdlib `json`/`pathlib`, unittest, Markdown docs
 
+**Status:** Implemented in the writable workspace on 2026-04-22.
+
 ---
 
 ### Task 1: Lock The Firehose Audit Metadata Gap
@@ -15,8 +17,8 @@
 **Files:**
 - Modify: `lobster-intel/tests/test_source_fusion.py`
 
-- [ ] Add a focused test that passes Firehose items with distinct `published_at_utc` and `collected_at_utc` values into source fusion.
-- [ ] Require the fusion result to persist `firehose.latest_event_at_utc` and `firehose.latest_collected_at_utc`.
+- [x] Add a focused test that passes Firehose items with distinct `published_at_utc` and `collected_at_utc` values into source fusion.
+- [x] Require the fusion result to persist `firehose.latest_event_at_utc` and `firehose.latest_collected_at_utc`.
 
 ### Task 2: Project Firehose Audit Metadata Into Fusion Results
 
@@ -25,9 +27,9 @@
 - Modify: `lobster-intel/packages/lobster-runtime/lobster_runtime/fusion.py`
 - Modify: `lobster-intel/scripts/build_source_fusion.py`
 
-- [ ] Derive the latest Firehose event timestamp from normalized evidence items and the latest collection timestamp from the source-run payload.
-- [ ] Persist those fields under the existing `firehose` summary object in the fusion artifact and CLI output path.
-- [ ] Keep all ranking, gap, and delivery inputs unchanged.
+- [x] Derive the latest Firehose event timestamp from normalized evidence items and the latest collection timestamp from the source-run payload.
+- [x] Persist those fields under the existing `firehose` summary object in the fusion artifact and CLI output path.
+- [x] Keep all ranking, gap, and delivery inputs unchanged.
 
 ### Task 3: Keep Operator Docs Honest
 
@@ -35,5 +37,5 @@
 - Modify: `lobster-intel/README.md`
 - Modify: `docs/INSTALL_OPENCLAW.md`
 
-- [ ] Document that source fusion now reports Firehose event freshness metadata in addition to the analyzed count.
-- [ ] Keep the docs explicit that Firehose ranking/filtering remains a separate unfinished slice.
+- [x] Document that source fusion now reports Firehose event freshness metadata in addition to the analyzed count.
+- [x] Keep the docs explicit that Firehose ranking/filtering remains a separate unfinished slice.

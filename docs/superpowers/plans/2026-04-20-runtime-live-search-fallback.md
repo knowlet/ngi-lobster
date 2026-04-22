@@ -8,6 +8,24 @@
 
 **Tech Stack:** Python 3.11, stdlib `json`/`pathlib`, existing `lobster_runtime`, pytest
 
+**Status:** Implemented in the writable workspace on 2026-04-22. Runtime now resolves conservative live-search fallbacks from aligned discovered market candidates, emits `degraded_compare` for that path, and documents the safety boundary in the install/runtime docs.
+
+---
+
+## Execution Summary
+
+This slice landed as:
+
+- `lobster-intel/packages/lobster-runtime/lobster_runtime/runtime_spine.py`
+- `lobster-intel/tests/test_runtime_spine.py`
+- `README.md`
+- `docs/INSTALL_OPENCLAW.md`
+- `lobster-intel/README.md`
+
+Verified with:
+
+- `cd /Users/knowlet/.openclaw/workspace/projects/ngi-lobster && .venv/bin/python -m pytest lobster-intel/tests/test_runtime_spine.py -q`
+
 ---
 
 ### Task 1: Lock The Fallback Contract With Tests

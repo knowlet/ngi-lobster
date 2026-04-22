@@ -566,12 +566,63 @@ def _enrich_market_candidate_from_registry(
     return enriched
 
 
+def _candidate_matches_runtime_contract(inp: ThesisRuntimeInput, candidate: dict[str, Any]) -> bool:
+    candidate_frame = candidate.get("semantic_frame")
+    if candidate_frame and candidate_frame != inp.semantic_frame:
+        return False
+
+    candidate_direction = candidate.get("probability_direction") or inp.probability_direction
+    if candidate_direction == inp.probability_direction:
+        return True
+
+    return (inp.probability_direction, candidate_direction) in SUPPORTED_DIRECTION_NORMALIZATIONS
+
+
+def _select_live_search_fallback(
+    inp: ThesisRuntimeInput,
+    market_candidates: list[dict[str, Any]],
+) -> dict[str, Any] | None:
+    aligned_candidates = [
+        candidate
+        for candidate in market_candidates
+        if candidate.get("market_id")
+        and not candidate.get("closed")
+        and _candidate_matches_runtime_contract(inp, candidate)
+    ]
+    if not aligned_candidates:
+        return None
+
+    active_candidates = [candidate for candidate in aligned_candidates if candidate.get("active") is not False]
+    ranked_candidates = active_candidates or aligned_candidates
+    return max(
+        ranked_candidates,
+        key=lambda candidate: (
+            candidate.get("active") is not False,
+            candidate.get("market_yes_probability") is not None,
+            float(candidate.get("market_yes_probability") or 0.0),
+        ),
+    )
+
+
 def resolve_active_target(inp: ThesisRuntimeInput, observations: list[dict[str, Any]]) -> tuple[dict[str, Any] | None, dict[str, Any] | None]:
     market_candidates = _market_candidates(observations)
     if not market_candidates:
         return None, None
     if not inp.target_registry:
-        return None, market_candidates[0]
+        fallback_candidate = _select_live_search_fallback(inp, market_candidates)
+        if fallback_candidate is None:
+            return None, market_candidates[0]
+        resolved = {
+            "market_id": fallback_candidate.get("market_id"),
+            "market_slug": fallback_candidate.get("market_slug"),
+            "market_question": fallback_candidate.get("market_question"),
+            "semantic_frame": fallback_candidate.get("semantic_frame") or inp.semantic_frame,
+            "probability_direction": fallback_candidate.get("probability_direction") or inp.probability_direction,
+            "resolution_mode": "live_search_fallback",
+            "resolver_confidence": 0.75,
+            "fallback_used": True,
+        }
+        return resolved, fallback_candidate
 
     for entry in inp.target_registry:
         for candidate in market_candidates:

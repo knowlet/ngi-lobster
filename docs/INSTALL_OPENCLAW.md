@@ -214,6 +214,9 @@ Bundled thesis defaults are resolved from:
 
 That means the installed workflow can carry a stable runtime contract for `semantic_frame`, `probability_direction`, `state`, and target registry without requiring those flags on every run.
 
+If no shipped or explicit registry entry matches but the discovered market candidate already aligns with the requested `semantic_frame` and `probability_direction`, the runtime can still resolve that candidate as `live_search_fallback`.
+That decision is recorded by the runtime artifact chain itself, and compare remains `degraded_compare` until operators curate a registry entry.
+
 The bundled thesis profiles can now also expose operator-facing metadata such as:
 
 - `title`

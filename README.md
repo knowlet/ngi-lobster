@@ -93,6 +93,9 @@ When you run `lobster-intel/scripts/run_thesis_runtime.py` with only `--workspac
 - runtime state
 - curated target registry entries
 
+If no explicit or bundled registry entry matches, runtime may still promote a discovered market candidate as `live_search_fallback` when that candidate already matches the requested semantic frame and probability direction.
+That fallback remains runtime-owned truth recorded in artifacts, and compare stays `degraded_compare` until a curated registry entry exists.
+
 Operational details live in `docs/THESIS_PACKS.md`.
 
 ## Verification paths

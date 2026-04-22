@@ -202,6 +202,9 @@ The product intent is:
 
 When the Python runtime is invoked directly with only `--workspace` and `--thesis-id`, it can also discover install-ready thesis packs from `lobster-intel/examples/thesis-packs/` and use them to recover runtime defaults plus bundled registry entries.
 
+If no curated registry entry matches but a discovered market candidate already satisfies the requested semantic frame and probability direction, the runtime can promote that candidate as `live_search_fallback`.
+That fallback is still runtime-owned target truth, not delivery inference, and compare remains `degraded_compare` until a curated registry target exists.
+
 ## Source replay and index rebuild
 
 Per-plugin runtime artifacts under `lobster-intel/data/runtime/sources/<plugin-id>/` are now intended to be auditable runtime truth, not disposable cache.

@@ -61,6 +61,6 @@ The repo already contains:
 
 ## Current gaps
 
-- Firehose local `events.jsonl` normalization now writes replayable source-run artifacts, but signal filtering still needs work
+- Firehose local `events.jsonl` normalization now writes replayable source-run artifacts with operator-side tag/priority filtering, but runtime signal ranking still needs work
 - live NGI cron still needs to be rebuilt as a product-grade path
 - tracked git history, remote sync, and PR flow are still split from this writable workspace

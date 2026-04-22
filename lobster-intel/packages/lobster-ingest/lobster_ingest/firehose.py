@@ -9,6 +9,16 @@ from typing import Any
 
 
 _SAFE_PATH_COMPONENT = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._-]*$")
+_PRIORITY_ORDER = {
+    "low": 0,
+    "medium": 1,
+    "med": 1,
+    "normal": 1,
+    "high": 2,
+    "urgent": 3,
+    "critical": 3,
+    "sev1": 3,
+}
 
 
 def _validated_path_component(value: str, *, label: str) -> str:
@@ -52,6 +62,21 @@ def _normalize_tags(raw_event: dict[str, Any]) -> list[str]:
     if tag in (None, ""):
         return []
     return [str(tag).strip()]
+
+
+def _normalized_tag_set(values: list[str] | None) -> set[str]:
+    if not values:
+        return set()
+    return {str(value).strip().lower() for value in values if str(value).strip()}
+
+
+def _normalized_priority_value(value: Any) -> int | None:
+    if value in (None, ""):
+        return None
+    text = str(value).strip().lower()
+    if not text:
+        return None
+    return _PRIORITY_ORDER.get(text)
 
 
 def _stable_external_id(raw_event: dict[str, Any]) -> str:
@@ -99,6 +124,8 @@ def normalize_firehose_events(
     run_id: str,
     now_utc: str | None = None,
     plugin_id: str = "firehose-tracker",
+    include_tags: list[str] | None = None,
+    min_priority: str | None = None,
 ) -> dict[str, Any]:
     recorded_at_utc = _now_utc(now_utc)
     input_path = Path(input_file)
@@ -110,6 +137,12 @@ def normalize_firehose_events(
 
     items: list[dict[str, Any]] = []
     line_count = 0
+    filtered_by_tag = 0
+    filtered_by_priority = 0
+    include_tag_set = _normalized_tag_set(include_tags)
+    min_priority_rank = _normalized_priority_value(min_priority)
+    if min_priority and min_priority_rank is None:
+        raise ValueError(f"unsupported min_priority: {min_priority!r}")
     for index, raw_line in enumerate(input_path.read_text(encoding="utf-8").splitlines(), start=1):
         if not raw_line.strip():
             continue
@@ -120,7 +153,15 @@ def normalize_firehose_events(
             raise ValueError(f"invalid Firehose JSON on line {index}: {exc.msg}") from exc
         if not isinstance(raw_event, dict):
             raise ValueError(f"invalid Firehose JSON on line {index}: expected object")
-        items.append(_normalize_event(raw_event, collected_at_utc=recorded_at_utc))
+        item = _normalize_event(raw_event, collected_at_utc=recorded_at_utc)
+        if include_tag_set and not (_normalized_tag_set(item.get("tags")) & include_tag_set):
+            filtered_by_tag += 1
+            continue
+        item_priority_rank = _normalized_priority_value(item.get("priority"))
+        if min_priority_rank is not None and (item_priority_rank is None or item_priority_rank < min_priority_rank):
+            filtered_by_priority += 1
+            continue
+        items.append(item)
 
     artifact_relpath = Path("lobster-intel") / "data" / "runtime" / "sources" / safe_plugin_id / "runs" / f"{safe_run_id}.json"
     state_relpath = Path("lobster-intel") / "data" / "runtime" / "sources" / safe_plugin_id / "state.json"
@@ -142,6 +183,12 @@ def normalize_firehose_events(
         "normalization": {
             "source_file": str(input_path),
             "line_count": line_count,
+            "kept_count": len(items),
+            "filtered_count": filtered_by_tag + filtered_by_priority,
+            "filtered_by_tag_count": filtered_by_tag,
+            "filtered_by_priority_count": filtered_by_priority,
+            "include_tags": sorted(include_tag_set),
+            "min_priority": str(min_priority).strip().lower() if min_priority_rank is not None else None,
         },
     }
     state_payload = {
@@ -153,6 +200,7 @@ def normalize_firehose_events(
         "latest_artifact_path": artifact_relpath.as_posix(),
         "line_count": line_count,
         "item_count": len(items),
+        "filtered_count": filtered_by_tag + filtered_by_priority,
     }
 
     encoded = json.dumps(payload, ensure_ascii=False, indent=2) + "\n"
@@ -168,4 +216,6 @@ def normalize_firehose_events(
         "artifact_path": _relative_path(artifact_path, workspace_dir),
         "state_path": _relative_path(state_path, workspace_dir),
         "line_count": line_count,
+        "kept_count": len(items),
+        "filtered_count": filtered_by_tag + filtered_by_priority,
     }

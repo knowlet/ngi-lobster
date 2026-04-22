@@ -21,6 +21,8 @@ def main() -> None:
     ap.add_argument("--input-file", required=True)
     ap.add_argument("--run-id", required=True)
     ap.add_argument("--now-utc")
+    ap.add_argument("--include-tag", action="append", dest="include_tags", default=None)
+    ap.add_argument("--min-priority")
     args = ap.parse_args()
 
     payload = normalize_firehose_events(
@@ -28,6 +30,8 @@ def main() -> None:
         input_file=args.input_file,
         run_id=args.run_id,
         now_utc=args.now_utc,
+        include_tags=args.include_tags,
+        min_priority=args.min_priority,
     )
     print(json.dumps(payload, ensure_ascii=False))
 

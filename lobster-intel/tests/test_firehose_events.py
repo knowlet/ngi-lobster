@@ -149,6 +149,139 @@ class FirehoseEventNormalizationTests(unittest.TestCase):
         self.assertEqual(summary["new_count"], 1)
         self.assertTrue(summary["artifact_path"].endswith("20260422T000000Z.json"))
 
+    def test_normalize_firehose_events_filters_by_tag_and_priority(self):
+        from lobster_ingest import normalize_firehose_events
+
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            workspace = Path(tmp_dir)
+            events_path = workspace / "events.jsonl"
+            events_path.write_text(
+                "\n".join(
+                    [
+                        json.dumps(
+                            {
+                                "id": "fh-1",
+                                "received_at_utc": "2026-04-22T00:00:00+00:00",
+                                "title": "Keep this event",
+                                "tags": ["ceasefire", "diplomacy"],
+                                "priority": "high",
+                            },
+                            ensure_ascii=False,
+                        ),
+                        json.dumps(
+                            {
+                                "id": "fh-2",
+                                "received_at_utc": "2026-04-22T00:01:00+00:00",
+                                "title": "Filtered by priority",
+                                "tags": ["ceasefire"],
+                                "priority": "low",
+                            },
+                            ensure_ascii=False,
+                        ),
+                        json.dumps(
+                            {
+                                "id": "fh-3",
+                                "received_at_utc": "2026-04-22T00:02:00+00:00",
+                                "title": "Filtered by tag",
+                                "tags": ["weather"],
+                                "priority": "critical",
+                            },
+                            ensure_ascii=False,
+                        ),
+                    ]
+                )
+                + "\n",
+                encoding="utf-8",
+            )
+
+            result = normalize_firehose_events(
+                workspace_dir=workspace,
+                input_file=events_path,
+                run_id="20260422T000500Z",
+                now_utc="2026-04-22T00:05:00+00:00",
+                include_tags=["ceasefire"],
+                min_priority="high",
+            )
+
+            artifact_path = workspace / result["artifact_path"]
+            payload = json.loads(artifact_path.read_text(encoding="utf-8"))
+
+        self.assertEqual(result["new_count"], 1)
+        self.assertEqual(result["kept_count"], 1)
+        self.assertEqual(result["filtered_count"], 2)
+        self.assertEqual(payload["normalization"]["kept_count"], 1)
+        self.assertEqual(payload["normalization"]["filtered_by_tag_count"], 1)
+        self.assertEqual(payload["normalization"]["filtered_by_priority_count"], 1)
+        self.assertEqual(payload["normalization"]["include_tags"], ["ceasefire"])
+        self.assertEqual(payload["normalization"]["min_priority"], "high")
+        self.assertEqual([item["external_id"] for item in payload["evidence"]["items"]], ["fh-1"])
+
+    def test_normalize_firehose_events_cli_supports_filter_flags(self):
+        script_path = ROOT / "scripts" / "normalize_firehose_events.py"
+
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            workspace = Path(tmp_dir)
+            events_path = workspace / "events.jsonl"
+            events_path.write_text(
+                "\n".join(
+                    [
+                        json.dumps(
+                            {
+                                "id": "fh-1",
+                                "received_at_utc": "2026-04-22T00:00:00+00:00",
+                                "title": "Keep",
+                                "tags": ["ceasefire"],
+                                "priority": "critical",
+                            },
+                            ensure_ascii=False,
+                        ),
+                        json.dumps(
+                            {
+                                "id": "fh-2",
+                                "received_at_utc": "2026-04-22T00:01:00+00:00",
+                                "title": "Drop",
+                                "tags": ["airspace"],
+                                "priority": "medium",
+                            },
+                            ensure_ascii=False,
+                        ),
+                    ]
+                )
+                + "\n",
+                encoding="utf-8",
+            )
+
+            completed = subprocess.run(
+                [
+                    sys.executable,
+                    str(script_path),
+                    "--workspace",
+                    str(workspace),
+                    "--input-file",
+                    str(events_path),
+                    "--run-id",
+                    "20260422T000000Z",
+                    "--include-tag",
+                    "ceasefire",
+                    "--include-tag",
+                    "diplomacy",
+                    "--min-priority",
+                    "high",
+                ],
+                check=True,
+                capture_output=True,
+                text=True,
+            )
+            summary = json.loads(completed.stdout)
+            payload = json.loads((workspace / summary["artifact_path"]).read_text(encoding="utf-8"))
+
+        self.assertEqual(summary["new_count"], 1)
+        self.assertEqual(summary["filtered_count"], 1)
+        self.assertEqual(payload["normalization"]["include_tags"], ["ceasefire", "diplomacy"])
+        self.assertEqual(payload["normalization"]["min_priority"], "high")
+        self.assertEqual(payload["evidence"]["new_count"], 1)
+        self.assertEqual(len(payload["evidence"]["items"]), 1)
+
     def test_normalize_firehose_events_rejects_unsafe_plugin_id(self):
         from lobster_ingest import normalize_firehose_events
 

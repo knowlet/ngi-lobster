@@ -26,12 +26,14 @@ Firehose local event files can now be normalized into replayable Lobster source 
 python3 lobster-intel/scripts/normalize_firehose_events.py \
   --workspace . \
   --input-file /path/to/events.jsonl \
-  --run-id 20260422T000000Z
+  --run-id 20260422T000000Z \
+  --include-tag ceasefire \
+  --min-priority high
 ```
 
-This writes audited source-run artifacts under `lobster-intel/data/runtime/sources/firehose-tracker/` so existing replay/index tooling can inspect them, while keeping ranking and filtering decisions out of delivery code.
+This writes audited source-run artifacts under `lobster-intel/data/runtime/sources/firehose-tracker/` so existing replay/index tooling can inspect them. Operators can now pre-filter low-signal Firehose rows by repeated tag filters and a minimum priority threshold during normalization, while keeping runtime ranking and filtering decisions out of delivery code.
 
-The source-fusion CLI now also reads `lobster-intel/data/runtime/sources/firehose-tracker/latest.json` by default, so fusion artifacts report how many Firehose events were analyzed, which normalized Firehose `run_id` supplied that summary, and the latest event and collection timestamps. If that Firehose artifact does not exist yet, source fusion now keeps running and emits zero-count Firehose audit metadata instead of failing the whole CLI. Firehose ranking/filtering still remains a separate unfinished slice.
+The source-fusion CLI now also reads `lobster-intel/data/runtime/sources/firehose-tracker/latest.json` by default, so fusion artifacts report how many normalized Firehose events were analyzed, which normalized Firehose `run_id` supplied that summary, and the latest event and collection timestamps. If that Firehose artifact does not exist yet, source fusion now keeps running and emits zero-count Firehose audit metadata instead of failing the whole CLI. Runtime ranking/filtering logic still remains a separate unfinished slice.
 
 ## Product goal
 

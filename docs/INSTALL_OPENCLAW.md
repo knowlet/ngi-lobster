@@ -113,7 +113,9 @@ You can now normalize one local Firehose snapshot into the same `lobster-intel/d
 python3 lobster-intel/scripts/normalize_firehose_events.py \
   --workspace . \
   --input-file ~/.openclaw/workspace/shared-projects/firehose-daemon/events.jsonl \
-  --run-id 20260422T000000Z
+  --run-id 20260422T000000Z \
+  --include-tag ceasefire \
+  --min-priority high
 ```
 
 Use a simple slash-free `run_id` such as `20260422T000000Z`; path separators and traversal fragments are rejected before artifacts are written.
@@ -124,7 +126,9 @@ That command writes:
 - `lobster-intel/data/runtime/sources/firehose-tracker/latest.json`
 - `lobster-intel/data/runtime/sources/firehose-tracker/state.json`
 
-This is a normalization + replay bridge only. It does not yet replace Firehose ranking, filtering, or direct runtime ingestion.
+Repeat `--include-tag` to keep only matching normalized tags, and use `--min-priority` to reject lower-severity rows before they are written into Lobster source artifacts. The resulting payload records `include_tags`, `min_priority`, and kept/filtered counts under `normalization`.
+
+This is still a normalization + replay bridge only. It does not yet replace runtime Firehose ranking, fusion weighting, or direct runtime ingestion.
 
 When you build source-fusion artifacts, `lobster-intel/scripts/build_source_fusion.py` now reads `lobster-intel/data/runtime/sources/firehose-tracker/latest.json` by default so the saved fusion summary includes the analyzed Firehose event count, the normalized `firehose.source_run_id`, plus `firehose.latest_event_at_utc` and `firehose.latest_collected_at_utc` for auditability. It still does not promote Firehose into the ranking/filtering decision path by itself.
 

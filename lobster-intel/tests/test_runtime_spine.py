@@ -321,6 +321,41 @@ def test_resolve_active_target_avoids_alias_substring_false_positive():
     assert _market_candidate["market_id"] == "software-1"
 
 
+def test_resolve_active_target_uses_live_search_fallback_when_registry_missing():
+    inp = ThesisRuntimeInput(
+        thesis_id="gooaye",
+        workspace_dir=".",
+        target_registry=[],
+        semantic_frame="military_operations_end_by_deadline",
+        probability_direction="yes_is_peace",
+    )
+    observations = [
+        {
+            "artifact_id": "observation:market:1517836",
+            "event_type": "market_candidate",
+            "extractive_rationale": "Military operations end by June 30?",
+            "metadata": {
+                "market_id": "1517836",
+                "market_slug": "military-operations-end-by-june-30",
+                "market_question": "Military operations end by June 30?",
+                "semantic_frame": "military_operations_end_by_deadline",
+                "probability_direction": "yes_is_peace",
+                "yes_probability": 0.72,
+                "active": True,
+                "closed": False,
+            },
+        }
+    ]
+
+    active_target, market_candidate = runtime_spine.resolve_active_target(inp, observations)
+
+    assert active_target is not None
+    assert market_candidate is not None
+    assert active_target["resolution_mode"] == "live_search_fallback"
+    assert active_target["fallback_used"] is True
+    assert active_target["market_id"] == market_candidate["market_id"] == "1517836"
+
+
 def test_runtime_index_can_be_rebuilt_from_artifacts(tmp_path: Path):
     official, watchlist, polymarket = _source_payloads()
     result = run_thesis_runtime(
@@ -395,6 +430,44 @@ def test_load_thesis_runtime_inputs_skips_malformed_thesis_pack_and_uses_next_ca
     assert payload["thesis_pack_resolution"]["path"].endswith("lobster-intel/examples/thesis-packs/gooaye.json")
     assert payload["registry_resolution"]["mode"] == "thesis_pack_discovered"
     assert payload["thesis_settings"]["semantic_frame"] == "military_operations_end_by_deadline"
+
+
+def test_run_thesis_runtime_cli_uses_live_search_fallback_without_registry(tmp_path: Path):
+    official, watchlist, polymarket = _source_payloads()
+    _install_runtime_source_artifacts(tmp_path, official, watchlist, polymarket)
+    thesis_pack_path = tmp_path / "lobster-intel" / "examples" / "thesis-packs" / "gooaye.json"
+    thesis_pack_path.parent.mkdir(parents=True, exist_ok=True)
+    thesis_pack = _thesis_pack()
+    thesis_pack["target_registry"] = []
+    thesis_pack_path.write_text(json.dumps(thesis_pack), encoding="utf-8")
+
+    result = subprocess.run(
+        [
+            sys.executable,
+            "lobster-intel/scripts/run_thesis_runtime.py",
+            "--workspace",
+            str(tmp_path),
+            "--thesis-id",
+            "gooaye",
+            "--semantic-frame",
+            "military_operations_end_by_deadline",
+            "--probability-direction",
+            "yes_is_peace",
+            "--now-utc",
+            "2026-04-19T12:30:00+00:00",
+        ],
+        cwd=ROOT.parent,
+        text=True,
+        capture_output=True,
+        check=False,
+    )
+
+    assert result.returncode == 0, result.stderr
+    payload = json.loads(result.stdout)
+    assert payload["compare_mode"] == "degraded_compare"
+    runtime_snapshot = json.loads(Path(payload["artifact_paths"]["runtime_latest"]).read_text(encoding="utf-8"))
+    assert runtime_snapshot["active_target"]["resolution_mode"] == "live_search_fallback"
+    assert runtime_snapshot["active_target"]["fallback_used"] is True
 
 
 def test_resolve_active_target_prefers_registry_probability_direction_over_candidate_default():

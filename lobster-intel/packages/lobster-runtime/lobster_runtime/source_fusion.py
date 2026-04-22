@@ -30,6 +30,12 @@ class SourceFusionArtifacts:
     polymarket_path: Path
 
 
+def _load_artifact(path: Path, *, optional: bool = False) -> dict[str, Any] | None:
+    if optional and not path.exists():
+        return None
+    return json.loads(path.read_text(encoding="utf-8"))
+
+
 def _utcnow() -> str:
     return datetime.now(timezone.utc).isoformat()
 
@@ -175,8 +181,8 @@ def build_source_fusion_result(inp: SourceFusionInput) -> FusionComputationResul
 
 def load_source_fusion_artifacts(paths: SourceFusionArtifacts) -> SourceFusionInput:
     return SourceFusionInput(
-        official_statements=json.loads(paths.official_statements_path.read_text(encoding="utf-8")),
-        watchlist=json.loads(paths.watchlist_path.read_text(encoding="utf-8")),
-        firehose=json.loads(paths.firehose_path.read_text(encoding="utf-8")),
-        polymarket=json.loads(paths.polymarket_path.read_text(encoding="utf-8")),
+        official_statements=_load_artifact(paths.official_statements_path),
+        watchlist=_load_artifact(paths.watchlist_path),
+        firehose=_load_artifact(paths.firehose_path, optional=True),
+        polymarket=_load_artifact(paths.polymarket_path),
     )

@@ -104,7 +104,25 @@ FIREHOSE_MANAGEMENT_KEY=fhm_xxx
 So the real requirement today is:
 
 1. get Firehose data streaming into `events.jsonl`
-2. let NGI read that file
+2. normalize that file into replayable source artifacts when you want Lobster-owned audit trails
+3. let NGI read that file
+
+You can now normalize one local Firehose snapshot into the same `lobster-intel/data/runtime/sources/` artifact shape used by source replay tooling:
+
+```bash
+python3 lobster-intel/scripts/normalize_firehose_events.py \
+  --workspace . \
+  --input-file ~/.openclaw/workspace/shared-projects/firehose-daemon/events.jsonl \
+  --run-id 20260422T000000Z
+```
+
+That command writes:
+
+- `lobster-intel/data/runtime/sources/firehose-tracker/runs/<run_id>.json`
+- `lobster-intel/data/runtime/sources/firehose-tracker/latest.json`
+- `lobster-intel/data/runtime/sources/firehose-tracker/state.json`
+
+This is a normalization + replay bridge only. It does not yet replace Firehose ranking, filtering, or direct runtime ingestion.
 
 ## 5. Python path for local package imports
 

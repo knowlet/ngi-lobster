@@ -461,6 +461,5 @@ class DispatcherArtifactWriterTests(unittest.TestCase):
             "bundle-20260421-runtime-path",
         )
 
-
 if __name__ == "__main__":
     unittest.main()

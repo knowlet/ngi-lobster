@@ -39,7 +39,6 @@ REQUIRED_TARGET_AUDIT_FIELDS = (
     "alert.reason_code",
 )
 
-
 def _missing(value: Any) -> bool:
     return value is None or value == ""
 
@@ -91,8 +90,6 @@ def _target_identity(target: dict[str, Any]) -> Any:
         target.get("market_slug"),
         target.get("market_question"),
     )
-
-
 def build_runtime_contract_view(
     *,
     runtime_snapshot: dict[str, Any],

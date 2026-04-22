@@ -3,6 +3,7 @@ from .gooaye_pipeline import (
     fetch_gooaye_payload,
     process_gooaye_payload,
 )
+from .firehose import normalize_firehose_events
 from .linked_content import (
     backfill_linked_content_runs,
     extract_linked_content,
@@ -22,6 +23,7 @@ __all__ = [
     "extract_linked_content",
     "fetch_gooaye_payload",
     "load_runtime_payload",
+    "normalize_firehose_events",
     "ocr_image",
     "process_linked_content_queue",
     "process_visual_evidence_queue",

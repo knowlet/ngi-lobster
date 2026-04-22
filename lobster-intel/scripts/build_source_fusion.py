@@ -35,7 +35,19 @@ def main() -> None:
     out_path = Path(args.output)
     out_path.parent.mkdir(parents=True, exist_ok=True)
     out_path.write_text(json.dumps(result.data, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
-    print(json.dumps({"output": str(out_path), "gap_value": result.gap_value, "decision": result.data.get("decision")}, ensure_ascii=False))
+    print(
+        json.dumps(
+            {
+                "output": str(out_path),
+                "gap_value": result.gap_value,
+                "decision": result.data.get("decision"),
+                "firehose_events_analyzed": (result.data.get("firehose") or {}).get("events_analyzed"),
+                "firehose_latest_event_at_utc": (result.data.get("firehose") or {}).get("latest_event_at_utc"),
+                "firehose_latest_collected_at_utc": (result.data.get("firehose") or {}).get("latest_collected_at_utc"),
+            },
+            ensure_ascii=False,
+        )
+    )
 
 
 if __name__ == "__main__":

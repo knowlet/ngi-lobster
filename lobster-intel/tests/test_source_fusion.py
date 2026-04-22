@@ -4,7 +4,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 PACKAGES = ROOT / "packages"
-for rel in ["lobster-core", "lobster-plugins", "lobster-runtime", "lobster-ingest"]:
+for rel in ["lobster-core", "lobster-delivery", "lobster-ingest", "lobster-plugins", "lobster-runtime"]:
     sys.path.insert(0, str(PACKAGES / rel))
 
 from lobster_runtime import SourceFusionInput, build_source_fusion_result
@@ -26,8 +26,16 @@ class SourceFusionTest(unittest.TestCase):
                     "ran_at_utc": "2026-04-15T03:00:00+00:00",
                     "evidence": {
                         "items": [
-                            {"title": "Firehose Event 1"},
-                            {"title": "Firehose Event 2"},
+                            {
+                                "title": "Firehose Event 1",
+                                "published_at_utc": "2026-04-15T02:15:00+00:00",
+                                "collected_at_utc": "2026-04-15T03:00:00+00:00",
+                            },
+                            {
+                                "title": "Firehose Event 2",
+                                "published_at_utc": "2026-04-15T02:45:00+00:00",
+                                "collected_at_utc": "2026-04-15T03:05:00+00:00",
+                            },
                         ]
                     },
                 },
@@ -56,6 +64,8 @@ class SourceFusionTest(unittest.TestCase):
 
         self.assertEqual(result.data["market_target"]["market_id"], "1517836")
         self.assertEqual(result.data["firehose"]["events_analyzed"], 2)
+        self.assertEqual(result.data["firehose"]["latest_event_at_utc"], "2026-04-15T02:45:00+00:00")
+        self.assertEqual(result.data["firehose"]["latest_collected_at_utc"], "2026-04-15T03:05:00+00:00")
         self.assertAlmostEqual(result.data["market_escalation_probability"], 0.3)
         self.assertAlmostEqual(result.data["first_principles_escalation_probability"], 0.7)
         self.assertTrue(result.data["gap_triggered"])

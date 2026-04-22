@@ -48,6 +48,32 @@ def _latest_ts(payload: dict[str, Any] | None) -> str | None:
     return payload.get("ran_at_utc") or ((payload.get("evidence") or {}).get("cursor"))
 
 
+def _parse_ts(value: Any) -> datetime | None:
+    if not value:
+        return None
+    text = str(value)
+    if text.endswith("Z"):
+        text = text[:-1] + "+00:00"
+    try:
+        return datetime.fromisoformat(text)
+    except ValueError:
+        return None
+
+
+def _latest_item_ts(items: list[dict[str, Any]], field: str) -> str | None:
+    latest_value: str | None = None
+    latest_dt: datetime | None = None
+    for item in items:
+        raw_value = item.get(field)
+        parsed = _parse_ts(raw_value)
+        if parsed is None:
+            continue
+        if latest_dt is None or parsed > latest_dt:
+            latest_dt = parsed
+            latest_value = str(raw_value)
+    return latest_value
+
+
 def _official_signal_strength(items: list[dict[str, Any]]) -> float:
     if not items:
         return 0.0
@@ -85,6 +111,8 @@ def build_source_fusion_result(inp: SourceFusionInput) -> FusionComputationResul
     watchlist_strength = _watchlist_signal_strength(watchlist_items)
     first_principles_escalation_probability = min(1.0, official_strength + watchlist_strength)
     market_escalation_probability = _market_escalation_probability(market_item)
+    firehose_latest_event_at_utc = _latest_item_ts(firehose_items, "published_at_utc")
+    firehose_latest_collected_at_utc = _latest_item_ts(firehose_items, "collected_at_utc")
 
     metadata = (market_item or {}).get("metadata") or {}
     source_config = metadata.get("source_config") or {}
@@ -132,6 +160,8 @@ def build_source_fusion_result(inp: SourceFusionInput) -> FusionComputationResul
             adsb_used=False,
             firehose_events_analyzed=len(firehose_items),
             firehose_peace_score=0.0,
+            firehose_latest_event_at_utc=firehose_latest_event_at_utc,
+            firehose_latest_collected_at_utc=firehose_latest_collected_at_utc,
             adsb_weight=0.5,
             firehose_weight=0.5,
             first_principles_probability=max(0.0, min(1.0, 1.0 - first_principles_escalation_probability)),

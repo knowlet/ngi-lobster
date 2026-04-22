@@ -30,13 +30,18 @@ Verified with:
 - `cd /Users/knowlet/ngi-lobster && node --check installed-workflow-cli.js && node --check scripts/run_installed_thesis_workflow.js`
 - `cd /Users/knowlet/ngi-lobster && node scripts/run_installed_thesis_workflow.js` (expected exit `2` with `ERROR: --thesis-id is required`)
 
+Re-verified in the active workspace on 2026-04-22 with:
+
+- `cd /Users/knowlet/.openclaw/workspace/projects/ngi-lobster && node --test tests/*.test.js`
+- `cd /Users/knowlet/.openclaw/workspace/projects/ngi-lobster && .venv/bin/python -m pytest lobster-intel/tests/test_dispatcher_artifact_writer.py lobster-intel/tests/test_dispatcher_e2e_bundle.py lobster-intel/tests/test_runtime_contract_bundle.py -q`
+
 ### Task 1: Lock The CLI Contract With Tests
 
 **Files:**
 - Create: `tests/installed-workflow-cli.test.js`
 - Test: `tests/installed-workflow-cli.test.js`
 
-- [ ] **Step 1: Write a failing test for CLI argument parsing**
+- [x] **Step 1: Write a failing test for CLI argument parsing**
 
 ```js
 test("parseInstalledWorkflowCliArgs maps CLI flags into workflow request fields", () => {
@@ -63,7 +68,7 @@ test("parseInstalledWorkflowCliArgs maps CLI flags into workflow request fields"
 });
 ```
 
-- [ ] **Step 2: Write a failing test for structured success payload**
+- [x] **Step 2: Write a failing test for structured success payload**
 
 ```js
 test("runInstalledWorkflowCli returns a structured success payload", async () => {
@@ -86,7 +91,7 @@ test("runInstalledWorkflowCli returns a structured success payload", async () =>
 });
 ```
 
-- [ ] **Step 3: Write a failing test for missing-path failures**
+- [x] **Step 3: Write a failing test for missing-path failures**
 
 ```js
 test("runInstalledWorkflowCli returns exit code 2 when required files are missing", async () => {
@@ -108,7 +113,7 @@ test("runInstalledWorkflowCli returns exit code 2 when required files are missin
 });
 ```
 
-- [ ] **Step 4: Run the new JS test file and verify RED**
+- [x] **Step 4: Run the new JS test file and verify RED**
 
 Run: `cd /Users/knowlet/ngi-lobster && node --test tests/installed-workflow-cli.test.js`
 Expected: FAIL because the CLI module does not exist yet
@@ -120,7 +125,7 @@ Expected: FAIL because the CLI module does not exist yet
 - Create: `scripts/run_installed_thesis_workflow.js`
 - Test: `tests/installed-workflow-cli.test.js`
 
-- [ ] **Step 1: Add CLI parsing for thesis, source-pack, state, and runtime override flags**
+- [x] **Step 1: Add CLI parsing for thesis, source-pack, state, and runtime override flags**
 
 ```js
 export function parseInstalledWorkflowCliArgs(argv = []) {
@@ -137,7 +142,7 @@ export function parseInstalledWorkflowCliArgs(argv = []) {
 }
 ```
 
-- [ ] **Step 2: Wrap `runInstalledThesisWorkflow` into a CLI-friendly result**
+- [x] **Step 2: Wrap `runInstalledThesisWorkflow` into a CLI-friendly result**
 
 ```js
 export async function runInstalledWorkflowCli(deps) {
@@ -168,7 +173,7 @@ export async function runInstalledWorkflowCli(deps) {
 }
 ```
 
-- [ ] **Step 3: Add the executable script entrypoint**
+- [x] **Step 3: Add the executable script entrypoint**
 
 ```js
 const result = await runInstalledWorkflowCli({
@@ -181,7 +186,7 @@ const result = await runInstalledWorkflowCli({
 });
 ```
 
-- [ ] **Step 4: Run the focused JS test file and syntax checks**
+- [x] **Step 4: Run the focused JS test file and syntax checks**
 
 Run: `cd /Users/knowlet/ngi-lobster && node --test tests/installed-workflow-cli.test.js && node --check installed-workflow-cli.js && node --check scripts/run_installed_thesis_workflow.js`
 Expected: PASS
@@ -193,7 +198,7 @@ Expected: PASS
 - Modify: `docs/INSTALL_OPENCLAW.md`
 - Modify: `lobster-intel/docs/operations/cron.md`
 
-- [ ] **Step 1: Document the stable installed-workflow cron entrypoint**
+- [x] **Step 1: Document the stable installed-workflow cron entrypoint**
 
 ```md
 For outside installs and cron jobs, use:
@@ -203,18 +208,18 @@ node scripts/run_installed_thesis_workflow.js --thesis-id regional-escalation
 ```
 ```
 
-- [ ] **Step 2: Add a concrete cron example using the new CLI**
+- [x] **Step 2: Add a concrete cron example using the new CLI**
 
 ```md
 */15 * * * * cd /path/to/ngi-lobster && /usr/bin/env node scripts/run_installed_thesis_workflow.js --thesis-id regional-escalation >> lobster-intel/data/runtime/cron/regional-escalation.log 2>&1
 ```
 
-- [ ] **Step 3: Run the full verification set**
+- [x] **Step 3: Run the full verification set**
 
 Run: `cd /Users/knowlet/ngi-lobster && node --test tests/*.test.js && .venv/bin/python -m pytest lobster-intel/tests -q`
 Expected: PASS
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
 
 ```bash
 git add docs/superpowers/plans/2026-04-20-installed-workflow-cron-entrypoint.md installed-workflow-cli.js scripts/run_installed_thesis_workflow.js tests/installed-workflow-cli.test.js README.md docs/INSTALL_OPENCLAW.md lobster-intel/docs/operations/cron.md

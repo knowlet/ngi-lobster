@@ -25,6 +25,7 @@ This slice landed as:
 Verified with:
 
 - `cd /Users/knowlet/.openclaw/workspace/projects/ngi-lobster && .venv/bin/python -m pytest lobster-intel/tests/test_runtime_spine.py -q`
+- `cd /Users/knowlet/.openclaw/workspace/projects/ngi-lobster && .venv/bin/python -m pytest lobster-intel/tests -q`
 
 ---
 
@@ -34,7 +35,7 @@ Verified with:
 - Modify: `lobster-intel/tests/test_runtime_spine.py`
 - Test: `lobster-intel/tests/test_runtime_spine.py`
 
-- [ ] **Step 1: Add a failing resolver test for a semantically aligned fallback candidate**
+- [x] **Step 1: Add a failing resolver test for a semantically aligned fallback candidate**
 
 ```python
 def test_resolve_active_target_uses_live_search_fallback_when_registry_missing():
@@ -70,7 +71,7 @@ def test_resolve_active_target_uses_live_search_fallback_when_registry_missing()
     assert active_target["market_id"] == market_candidate["market_id"] == "1517836"
 ```
 
-- [ ] **Step 2: Add a failing CLI integration test for discovered artifacts without a registry**
+- [x] **Step 2: Add a failing CLI integration test for discovered artifacts without a registry**
 
 ```python
 def test_run_thesis_runtime_cli_uses_live_search_fallback_without_registry(tmp_path: Path):
@@ -102,9 +103,9 @@ def test_run_thesis_runtime_cli_uses_live_search_fallback_without_registry(tmp_p
     assert payload["compare_mode"] == "degraded_compare"
 ```
 
-- [ ] **Step 3: Run focused tests and verify RED**
+- [x] **Step 3: Run focused tests and verify RED**
 
-Run: `cd /Users/knowlet/ngi-lobster && .venv/bin/python -m pytest lobster-intel/tests/test_runtime_spine.py -q`
+Run: `cd /Users/knowlet/.openclaw/workspace/projects/ngi-lobster && .venv/bin/python -m pytest lobster-intel/tests/test_runtime_spine.py -q`
 Expected: FAIL because `resolve_active_target()` still returns `None` when registry resolution is unavailable
 
 ### Task 2: Implement Conservative Fallback Resolution
@@ -113,7 +114,7 @@ Expected: FAIL because `resolve_active_target()` still returns `None` when regis
 - Modify: `lobster-intel/packages/lobster-runtime/lobster_runtime/runtime_spine.py`
 - Test: `lobster-intel/tests/test_runtime_spine.py`
 
-- [ ] **Step 1: Add candidate ranking helpers**
+- [x] **Step 1: Add candidate ranking helpers**
 
 ```python
 def _candidate_matches_runtime_contract(inp: ThesisRuntimeInput, candidate: dict[str, Any]) -> bool:
@@ -126,7 +127,7 @@ def _candidate_matches_runtime_contract(inp: ThesisRuntimeInput, candidate: dict
     return (inp.probability_direction, candidate_direction) in SUPPORTED_DIRECTION_NORMALIZATIONS
 ```
 
-- [ ] **Step 2: Emit an explicit fallback target when contract alignment is good enough**
+- [x] **Step 2: Emit an explicit fallback target when contract alignment is good enough**
 
 ```python
 if not inp.target_registry:
@@ -144,7 +145,7 @@ if not inp.target_registry:
         }, fallback_candidate
 ```
 
-- [ ] **Step 3: Preserve safety when candidates do not align**
+- [x] **Step 3: Preserve safety when candidates do not align**
 
 ```python
 fallback_candidate = _select_live_search_fallback(inp, market_candidates)
@@ -152,9 +153,9 @@ if fallback_candidate is None:
     return None, market_candidates[0]
 ```
 
-- [ ] **Step 4: Run focused tests and verify GREEN**
+- [x] **Step 4: Run focused tests and verify GREEN**
 
-Run: `cd /Users/knowlet/ngi-lobster && .venv/bin/python -m pytest lobster-intel/tests/test_runtime_spine.py -q`
+Run: `cd /Users/knowlet/.openclaw/workspace/projects/ngi-lobster && .venv/bin/python -m pytest lobster-intel/tests/test_runtime_spine.py -q`
 Expected: PASS
 
 ### Task 3: Document The New Compare Path
@@ -164,24 +165,24 @@ Expected: PASS
 - Modify: `docs/INSTALL_OPENCLAW.md`
 - Modify: `lobster-intel/README.md`
 
-- [ ] **Step 1: Document when degraded fallback is expected**
+- [x] **Step 1: Document when degraded fallback is expected**
 
 ```text
 If a thesis run has no shipped or explicit registry match, but the discovered market candidate already matches the requested semantic frame and probability direction, the runtime may promote that candidate as `live_search_fallback`.
 ```
 
-- [ ] **Step 2: State the safety boundary**
+- [x] **Step 2: State the safety boundary**
 
 ```text
 This fallback is still runtime-owned truth, not delivery inference. The runtime snapshot records `target_resolution_mode=live_search_fallback`, and compare remains `degraded_compare` until a curated registry entry exists.
 ```
 
-- [ ] **Step 3: Run full verification**
+- [x] **Step 3: Run full verification**
 
-Run: `cd /Users/knowlet/ngi-lobster && .venv/bin/python -m pytest lobster-intel/tests -q`
+Run: `cd /Users/knowlet/.openclaw/workspace/projects/ngi-lobster && .venv/bin/python -m pytest lobster-intel/tests -q`
 Expected: PASS
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
 
 ```bash
 git add docs/superpowers/plans/2026-04-20-runtime-live-search-fallback.md lobster-intel/tests/test_runtime_spine.py lobster-intel/packages/lobster-runtime/lobster_runtime/runtime_spine.py README.md docs/INSTALL_OPENCLAW.md lobster-intel/README.md

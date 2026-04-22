@@ -42,6 +42,8 @@ def _validate_persisted_receipt(
     persisted_run_id = str(receipt.get("run_id") or "").strip()
     persisted_thesis_id = str(receipt.get("thesis_id") or "").strip()
     persisted_contract_version = str(receipt.get("contract_version") or "").strip()
+    persisted_alert_artifact_id = str(receipt.get("alert_artifact_id") or "").strip()
+    expected_alert_artifact_id = f"alert:{thesis_id}:{run_id}"
 
     required_missing: list[str] = []
     if not persisted_run_id:
@@ -50,6 +52,8 @@ def _validate_persisted_receipt(
         required_missing.append("thesis_id")
     if contract_version and not persisted_contract_version:
         required_missing.append("contract_version")
+    if not persisted_alert_artifact_id:
+        required_missing.append("alert_artifact_id")
     if required_missing:
         raise ValueError(
             "persisted receipt missing required metadata: "
@@ -65,6 +69,11 @@ def _validate_persisted_receipt(
         raise ValueError(
             "persisted receipt contract_version does not match requested positive run: "
             f"expected {contract_version!r}, got {persisted_contract_version!r}"
+        )
+    if persisted_alert_artifact_id != expected_alert_artifact_id:
+        raise ValueError(
+            "persisted receipt alert_artifact_id does not match requested positive run: "
+            f"expected {expected_alert_artifact_id!r}, got {persisted_alert_artifact_id!r}"
         )
     if mismatches:
         mismatch_summary = ", ".join(mismatches)

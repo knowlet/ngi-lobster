@@ -8,7 +8,31 @@
 
 **Tech Stack:** Python 3.11, stdlib `json`/`pathlib`, existing Gooaye ingest pipeline, pytest, CLI script under `lobster-intel/scripts/`
 
-**Status:** Implemented on 2026-04-20. Post-review hardening on 2026-04-20 tightened extraction to `http`/`https`, capped response size before decode, removed `script`/`style` noise from HTML text output, and parallelized queue fetches while preserving artifact write order.
+**Status:** Implemented on 2026-04-20. Post-review hardening on 2026-04-20 tightened extraction to `http`/`https`, capped response size before decode, removed `script`/`style` noise from HTML text output, and parallelized queue fetches while preserving artifact write order. Re-verified in the active workspace on 2026-04-22, including sandbox-safe test fixtures that no longer require binding a local TCP port.
+
+---
+
+## Execution Summary
+
+This slice landed as:
+
+- `lobster-intel/packages/lobster-ingest/lobster_ingest/linked_content.py`
+- `lobster-intel/packages/lobster-ingest/lobster_ingest/__init__.py`
+- `lobster-intel/scripts/process_linked_content_queue.py`
+- `lobster-intel/tests/test_linked_content_platform.py`
+- `lobster-intel/plugins/gooaye-tracker/README.md`
+- `lobster-intel/README.md`
+- `docs/INSTALL_OPENCLAW.md`
+
+Verified with:
+
+- `cd /Users/knowlet/ngi-lobster && .venv/bin/python -m pytest lobster-intel/tests/test_linked_content_platform.py -q`
+- `cd /Users/knowlet/ngi-lobster && .venv/bin/python -m pytest lobster-intel/tests/test_process_gooaye_channel_digest.py lobster-intel/tests/test_source_runner_e2e.py -q`
+
+Re-verified in the active workspace on 2026-04-22 with:
+
+- `cd /Users/knowlet/.openclaw/workspace/projects/ngi-lobster && .venv/bin/python -m pytest lobster-intel/tests/test_linked_content_platform.py -q`
+- `cd /Users/knowlet/.openclaw/workspace/projects/ngi-lobster && .venv/bin/python -m pytest lobster-intel/tests/test_process_gooaye_channel_digest.py lobster-intel/tests/test_source_runner_e2e.py -q`
 
 ---
 
@@ -18,7 +42,7 @@
 - Create: `lobster-intel/tests/test_linked_content_platform.py`
 - Test: `lobster-intel/tests/test_linked_content_platform.py`
 
-- [ ] **Step 1: Add a failing unit test for processing one queued linked item**
+- [x] **Step 1: Add a failing unit test for processing one queued linked item**
 
 ```python
 def test_process_linked_content_queue_writes_artifacts(tmp_path: Path):
@@ -48,7 +72,7 @@ def test_process_linked_content_queue_writes_artifacts(tmp_path: Path):
     assert (tmp_path / result["receipt_path"]).exists()
 ```
 
-- [ ] **Step 2: Add a failing test that empty queues remain explicit**
+- [x] **Step 2: Add a failing test that empty queues remain explicit**
 
 ```python
 def test_process_linked_content_queue_records_empty_receipt(tmp_path: Path):
@@ -64,7 +88,7 @@ def test_process_linked_content_queue_records_empty_receipt(tmp_path: Path):
     assert result["status"] == "no_items"
 ```
 
-- [ ] **Step 3: Run focused linked-content tests and verify RED**
+- [x] **Step 3: Run focused linked-content tests and verify RED**
 
 Run: `cd /Users/knowlet/ngi-lobster && .venv/bin/python -m pytest lobster-intel/tests/test_linked_content_platform.py -q`
 Expected: FAIL because no linked-content processing module exists yet
@@ -77,7 +101,7 @@ Expected: FAIL because no linked-content processing module exists yet
 - Create: `lobster-intel/scripts/process_linked_content_queue.py`
 - Test: `lobster-intel/tests/test_linked_content_platform.py`
 
-- [ ] **Step 1: Implement the queue processor with injectable extraction**
+- [x] **Step 1: Implement the queue processor with injectable extraction**
 
 ```python
 def process_linked_content_queue(
@@ -93,7 +117,7 @@ def process_linked_content_queue(
         return _write_empty_receipt(workspace_dir, thesis_id, runtime_payload, now_utc=now_utc)
 ```
 
-- [ ] **Step 2: Write evidence, compiled, and receipt artifacts instead of mutating source runtime**
+- [x] **Step 2: Write evidence, compiled, and receipt artifacts instead of mutating source runtime**
 
 ```python
 evidence_payload = {
@@ -115,7 +139,7 @@ receipt_payload = {
 }
 ```
 
-- [ ] **Step 3: Add a CLI entrypoint that processes `latest.json` or an explicit runtime artifact**
+- [x] **Step 3: Add a CLI entrypoint that processes `latest.json` or an explicit runtime artifact**
 
 ```python
 parser.add_argument("--workspace", default=".")
@@ -124,7 +148,7 @@ parser.add_argument("--runtime-file")
 parser.add_argument("--linked-url")
 ```
 
-- [ ] **Step 4: Run focused linked-content tests and verify GREEN**
+- [x] **Step 4: Run focused linked-content tests and verify GREEN**
 
 Run: `cd /Users/knowlet/ngi-lobster && .venv/bin/python -m pytest lobster-intel/tests/test_linked_content_platform.py -q`
 Expected: PASS
@@ -136,26 +160,26 @@ Expected: PASS
 - Modify: `lobster-intel/README.md`
 - Modify: `docs/INSTALL_OPENCLAW.md`
 
-- [ ] **Step 1: Document that linked-content extraction is downstream but artifact-backed**
+- [x] **Step 1: Document that linked-content extraction is downstream but artifact-backed**
 
 ```md
 `linked_content_queue` is now consumed by a dedicated worker that writes evidence and receipt artifacts.
 The originating tracker still only declares the queue; it does not fetch or summarize linked content inline.
 ```
 
-- [ ] **Step 2: Document the replay path**
+- [x] **Step 2: Document the replay path**
 
 ```md
 Operators can rerun `lobster-intel/scripts/process_linked_content_queue.py --workspace . --thesis-id gooaye`
 against the current queue artifact or point it at a prior runtime JSON for backfill.
 ```
 
-- [ ] **Step 3: Run final verification**
+- [x] **Step 3: Run final verification**
 
 Run: `cd /Users/knowlet/ngi-lobster && .venv/bin/python -m pytest lobster-intel/tests/test_linked_content_platform.py lobster-intel/tests/test_process_gooaye_channel_digest.py lobster-intel/tests/test_source_runner_e2e.py -q`
 Expected: PASS
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
 
 ```bash
 git add docs/superpowers/plans/2026-04-20-linked-content-extraction-platform.md lobster-intel/tests/test_linked_content_platform.py lobster-intel/packages/lobster-ingest/lobster_ingest/linked_content.py lobster-intel/packages/lobster-ingest/lobster_ingest/__init__.py lobster-intel/scripts/process_linked_content_queue.py lobster-intel/plugins/gooaye-tracker/README.md lobster-intel/README.md docs/INSTALL_OPENCLAW.md

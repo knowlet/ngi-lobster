@@ -19,6 +19,9 @@ class FusionComputationInput:
     adsb_used: bool
     firehose_events_analyzed: int
     firehose_peace_score: float
+    firehose_source_run_id: str | None
+    firehose_latest_event_at_utc: str | None
+    firehose_latest_collected_at_utc: str | None
     adsb_weight: float
     firehose_weight: float
     first_principles_probability: float
@@ -69,6 +72,9 @@ def build_fusion_result(inp: FusionComputationInput) -> FusionComputationResult:
         "firehose": {
             "events_analyzed": inp.firehose_events_analyzed,
             "peace_score": inp.firehose_peace_score,
+            "source_run_id": inp.firehose_source_run_id,
+            "latest_event_at_utc": inp.firehose_latest_event_at_utc,
+            "latest_collected_at_utc": inp.firehose_latest_collected_at_utc,
         },
         "weights": {
             "adsb": inp.adsb_weight,

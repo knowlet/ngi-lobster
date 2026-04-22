@@ -142,6 +142,18 @@ Each ingest manifest now separates:
 
 That keeps plugin onboarding and follow-up processing machine-readable without moving decision logic into delivery code.
 
+## Analyzer contract
+
+The runtime spine now uses an analyzer registry to turn evidence artifacts into normalized observation drafts before fusion and compare.
+
+- analyzers shape observations and metadata
+- analyzers do not select active targets
+- analyzers do not compute compare mode
+- analyzers do not send delivery output
+
+If no source-specific analyzer exists, runtime falls back to a generic analyzer that preserves `event_type=source_type` and `stance=escalatory_signal`.
+The current built-in specialized analyzer is `prediction_market`, which emits `market_candidate` drafts while leaving target ownership inside the runtime spine.
+
 ## Install-ready source pack examples
 
 Example source pack configs now live under:

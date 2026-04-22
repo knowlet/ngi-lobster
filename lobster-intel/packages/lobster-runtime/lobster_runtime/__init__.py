@@ -2,6 +2,7 @@ from .fusion import FusionComputationInput, FusionComputationResult, build_fusio
 from .monitor import AlertDecision, build_explanation, build_signature, should_send_alert, validate_alert_target_contract
 from .service import RuntimeEvaluationInput, RuntimeEvaluationResult, evaluate_runtime
 from .run_once import run_plugin_once, run_plugin_once_with_config
+from .analyzers import ObservationDraft, analyze_evidence_artifact
 from .runtime_spine import (
     ThesisRuntimeInput,
     ThesisRuntimeResult,
@@ -19,8 +20,10 @@ from .state_machine import InvalidTransitionError, StateMachine
 
 __all__ = [
     "AlertDecision",
+    "analyze_evidence_artifact",
     "FusionComputationInput",
     "FusionComputationResult",
+    "ObservationDraft",
     "RuntimeEvaluationInput",
     "RuntimeEvaluationResult",
     "ThesisRuntimeInput",

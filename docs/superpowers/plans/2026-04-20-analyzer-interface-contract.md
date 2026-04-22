@@ -8,6 +8,8 @@
 
 **Tech Stack:** Python 3.11, dataclasses or protocols, existing `lobster_runtime` package, pytest
 
+**Status:** Implemented in the writable workspace on 2026-04-22. Analyzer-driven observation shaping now lives in `lobster_runtime.analyzers`, runtime preserves the generic fallback for unknown source types, and the protocol is documented for future source families.
+
 ---
 
 ### Task 1: Lock The Analyzer Boundary In Tests

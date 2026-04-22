@@ -437,6 +437,48 @@ def test_resolve_active_target_prefers_registry_probability_direction_over_candi
     assert market_candidate["probability_direction"] == "yes_is_escalation"
 
 
+def test_build_observations_preserves_generic_fallback_for_unknown_source_types(tmp_path: Path):
+    evidence_artifacts = [
+        {
+            "schema_version": "v1",
+            "artifact_id": "evidence:gooaye:custom-source:item-1",
+            "run_id": "20260420T000000Z",
+            "thesis_id": "gooaye",
+            "created_at_utc": "2026-04-20T00:00:00+00:00",
+            "provenance": {
+                "source_ids": ["custom-source"],
+                "source_paths": [],
+                "source_urls": [],
+                "parent_record_id": None,
+                "run_id": "20260420T000000Z",
+                "checksum": "abc123",
+            },
+            "external_id": "item-1",
+            "source_type": "custom_source",
+            "collected_at_utc": "2026-04-20T00:00:00+00:00",
+            "published_at_utc": None,
+            "content_refs": [{"kind": "title", "value": "Custom item"}],
+            "checksum": "abc123",
+            "cursor_lineage": None,
+            "raw_pointer": "custom-source",
+            "metadata": {},
+            "contract_version": "ngi_runtime_spine.v1",
+        }
+    ]
+
+    observations = runtime_spine._build_observations(
+        ThesisRuntimeInput(thesis_id="gooaye", workspace_dir=tmp_path),
+        "20260420T000000Z",
+        "2026-04-20T00:00:00+00:00",
+        evidence_artifacts,
+    )
+
+    assert observations[0]["event_type"] == "custom_source"
+    assert observations[0]["stance"] == "escalatory_signal"
+    assert observations[0]["entity_refs"] == ["item-1"]
+    assert observations[0]["extractive_rationale"] == "Custom item"
+
+
 def test_rebuild_runtime_index_preserves_runtime_runs_indexes(tmp_path: Path):
     official, watchlist, polymarket = _source_payloads()
     run_thesis_runtime(

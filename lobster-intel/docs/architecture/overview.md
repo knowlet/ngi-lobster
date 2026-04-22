@@ -84,6 +84,8 @@ Wiki generation, schema generation, summaries, drift against evidence.
 
 ### `lobster-runtime`
 State machine, monitor logic, NGI, DQ, freshness, alert decision engine.
+Runtime also owns the analyzer registry that turns evidence artifacts into observation drafts before compare logic runs.
+Analyzers may shape observations, but target selection, compare mode, and delivery eligibility remain runtime-owned decisions.
 
 ### `lobster-delivery`
 Heartbeat rendering, chat formatting, reports, notification adapters.

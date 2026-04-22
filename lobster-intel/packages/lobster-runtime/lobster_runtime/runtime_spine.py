@@ -10,6 +10,7 @@ from pathlib import Path
 from typing import Any, cast
 
 from lobster_delivery import deliver_heartbeat_payload
+from .analyzers import analyze_evidence_artifact
 
 
 SUPPORTED_DIRECTION_NORMALIZATIONS = {
@@ -352,23 +353,6 @@ def _signal_strength(source_type: str) -> float:
     return 0.0
 
 
-def _observation_metadata(evidence_artifact: dict[str, Any]) -> dict[str, Any]:
-    metadata = dict(evidence_artifact.get("metadata") or {})
-    content_refs = evidence_artifact.get("content_refs") or []
-    if evidence_artifact.get("source_type") == "prediction_market":
-        metadata.setdefault("market_id", evidence_artifact.get("external_id"))
-        metadata.setdefault("market_slug", _content_ref_value(content_refs, "url"))
-        metadata.setdefault("market_question", _content_ref_value(content_refs, "title"))
-    return metadata
-
-
-def _content_ref_value(content_refs: list[dict[str, Any]], kind: str) -> str | None:
-    for ref in content_refs:
-        if ref.get("kind") == kind:
-            return ref.get("value")
-    return None
-
-
 def _observation_from_evidence(
     evidence_artifact: dict[str, Any],
     *,
@@ -380,13 +364,9 @@ def _observation_from_evidence(
 ) -> dict[str, Any]:
     source_type = evidence_artifact["source_type"]
     observation_id = evidence_artifact["artifact_id"].replace("evidence:", "observation:")
-    metadata = _observation_metadata(evidence_artifact)
-    is_market = source_type == "prediction_market"
-    event_type = "market_candidate" if is_market else source_type
-    stance = "market_snapshot" if is_market else "escalatory_signal"
-    tags = list(metadata.get("semantic_tags") or [])
-    if is_market:
-        tags.extend(["market_candidate", metadata.get("semantic_frame") or "unknown_semantic_frame"])
+    draft = analyze_evidence_artifact(evidence_artifact)
+    metadata = draft.metadata
+    is_market = draft.event_type == "market_candidate"
     observation = _base_artifact(
         observation_id,
         run_id,
@@ -406,18 +386,17 @@ def _observation_from_evidence(
     observation.update(
         {
             "evidence_refs": [evidence_artifact["artifact_id"]],
-            "entity_refs": [metadata.get("market_id")] if metadata.get("market_id") else [evidence_artifact["external_id"]],
-            "event_type": event_type,
-            "stance": stance,
+            "entity_refs": draft.entity_refs or [evidence_artifact["external_id"]],
+            "event_type": draft.event_type,
+            "stance": draft.stance,
             "time_window": {
                 "start_at_utc": evidence_artifact.get("published_at_utc") or evidence_artifact.get("collected_at_utc"),
                 "end_at_utc": evidence_artifact.get("collected_at_utc"),
             },
             "location": metadata.get("location"),
-            "semantic_tags": tags,
+            "semantic_tags": draft.semantic_tags,
             "source_confidence": 0.95 if is_market else _signal_strength(source_type) + 0.25,
-            "extractive_rationale": _content_ref_value(evidence_artifact.get("content_refs") or [], "title")
-            or _content_ref_value(evidence_artifact.get("content_refs") or [], "summary"),
+            "extractive_rationale": draft.extractive_rationale,
             "metadata": metadata,
         }
     )

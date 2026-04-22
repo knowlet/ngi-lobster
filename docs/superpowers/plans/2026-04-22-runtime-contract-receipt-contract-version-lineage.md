@@ -8,6 +8,8 @@
 
 **Tech Stack:** Python 3.11+, stdlib JSON/pathlib, pytest, Markdown docs
 
+**Status:** Implemented in the writable workspace on 2026-04-22.
+
 ---
 
 ### Task 1: Prove Contract-Version Lineage Fails Closed
@@ -15,16 +17,16 @@
 **Files:**
 - Modify: `lobster-intel/tests/test_runtime_contract_bundle.py`
 
-- [ ] Add a focused test for missing `receipt.contract_version`.
-- [ ] Add a focused test for mismatched `receipt.contract_version`.
+- [x] Add a focused test for missing `receipt.contract_version`.
+- [x] Add a focused test for mismatched `receipt.contract_version`.
 
 ### Task 2: Tighten Runtime Contract Verification
 
 **Files:**
 - Modify: `lobster-intel/packages/lobster-delivery/lobster_delivery/runtime_contract.py`
 
-- [ ] Require `receipt.contract_version` in runtime contract verification.
-- [ ] Reject delivery receipts whose `contract_version` no longer matches `alert.contract_version`.
+- [x] Require `receipt.contract_version` in runtime contract verification.
+- [x] Reject delivery receipts whose `contract_version` no longer matches `alert.contract_version`.
 
 ### Task 3: Keep Operator Docs Honest
 
@@ -33,4 +35,4 @@
 - Modify: `docs/INSTALL_OPENCLAW.md`
 - Modify: `lobster-intel/docs/operations/reporting.md`
 
-- [ ] Document that runtime contract verification now checks receipt-to-alert `contract_version` lineage too.
+- [x] Document that runtime contract verification now checks receipt-to-alert `contract_version` lineage too.

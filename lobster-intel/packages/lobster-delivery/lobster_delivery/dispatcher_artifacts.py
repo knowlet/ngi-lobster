@@ -164,6 +164,7 @@ def build_dispatcher_artifact_payloads(
         "recorded_at_utc": recorded_at_utc,
         "thesis_id": thesis_id,
         "run_id": run_id,
+        "contract_version": disposition.get("contract_version") or normalized_runtime_payload.get("contract_version"),
         "should_send": disposition.get("should_send"),
         "decision": decision,
         "reason_code": disposition.get("reason_code"),

@@ -54,6 +54,16 @@ def _latest_ts(payload: dict[str, Any] | None) -> str | None:
     return payload.get("ran_at_utc") or ((payload.get("evidence") or {}).get("cursor"))
 
 
+def _source_run_id(payload: dict[str, Any] | None) -> str | None:
+    if not payload:
+        return None
+    run_id = payload.get("run_id")
+    if run_id is None:
+        return None
+    text = str(run_id).strip()
+    return text or None
+
+
 def _parse_ts(value: Any) -> datetime | None:
     if not value:
         return None
@@ -117,6 +127,7 @@ def build_source_fusion_result(inp: SourceFusionInput) -> FusionComputationResul
     watchlist_strength = _watchlist_signal_strength(watchlist_items)
     first_principles_escalation_probability = min(1.0, official_strength + watchlist_strength)
     market_escalation_probability = _market_escalation_probability(market_item)
+    firehose_source_run_id = _source_run_id(inp.firehose)
     firehose_latest_event_at_utc = _latest_item_ts(firehose_items, "published_at_utc")
     firehose_latest_collected_at_utc = _latest_item_ts(firehose_items, "collected_at_utc")
 
@@ -166,6 +177,7 @@ def build_source_fusion_result(inp: SourceFusionInput) -> FusionComputationResul
             adsb_used=False,
             firehose_events_analyzed=len(firehose_items),
             firehose_peace_score=0.0,
+            firehose_source_run_id=firehose_source_run_id,
             firehose_latest_event_at_utc=firehose_latest_event_at_utc,
             firehose_latest_collected_at_utc=firehose_latest_collected_at_utc,
             adsb_weight=0.5,

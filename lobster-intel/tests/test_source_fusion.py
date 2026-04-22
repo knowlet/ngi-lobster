@@ -26,6 +26,7 @@ class SourceFusionTest(unittest.TestCase):
                     "evidence": {"items": [{"title": "Watchlist Signal"}]},
                 },
                 firehose={
+                    "run_id": "20260415T030500Z",
                     "ran_at_utc": "2026-04-15T03:00:00+00:00",
                     "evidence": {
                         "items": [
@@ -67,6 +68,7 @@ class SourceFusionTest(unittest.TestCase):
 
         self.assertEqual(result.data["market_target"]["market_id"], "1517836")
         self.assertEqual(result.data["firehose"]["events_analyzed"], 2)
+        self.assertEqual(result.data["firehose"]["source_run_id"], "20260415T030500Z")
         self.assertEqual(result.data["firehose"]["latest_event_at_utc"], "2026-04-15T02:45:00+00:00")
         self.assertEqual(result.data["firehose"]["latest_collected_at_utc"], "2026-04-15T03:05:00+00:00")
         self.assertAlmostEqual(result.data["market_escalation_probability"], 0.3)
@@ -183,9 +185,11 @@ class SourceFusionTest(unittest.TestCase):
             payload = json.loads(output_path.read_text(encoding="utf-8"))
 
         self.assertEqual(summary["firehose_events_analyzed"], 0)
+        self.assertIsNone(summary["firehose_source_run_id"])
         self.assertIsNone(summary["firehose_latest_event_at_utc"])
         self.assertIsNone(summary["firehose_latest_collected_at_utc"])
         self.assertEqual(payload["firehose"]["events_analyzed"], 0)
+        self.assertIsNone(payload["firehose"]["source_run_id"])
         self.assertIsNone(payload["firehose"]["latest_event_at_utc"])
         self.assertIsNone(payload["firehose"]["latest_collected_at_utc"])
 

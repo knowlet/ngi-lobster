@@ -25,6 +25,7 @@ REQUIRED_RUNTIME_FIELDS = (
     "alert.should_send",
     "alert.reason_code",
     "receipt.artifact_id",
+    "receipt.alert_artifact_id",
     "receipt.sink",
     "receipt.delivery_status",
     "receipt.delivery_proof",
@@ -111,6 +112,12 @@ def build_runtime_contract_view(
         missing_fields.append("receipt.delivery_proof.boundary")
     if not _missing(proof) and _missing((proof or {}).get("proof_id")):
         missing_fields.append("receipt.delivery_proof.proof_id")
+    if (
+        not _missing(view["receipt"]["alert_artifact_id"])
+        and not _missing(view["alert"]["artifact_id"])
+        and view["receipt"]["alert_artifact_id"] != view["alert"]["artifact_id"]
+    ):
+        missing_fields.append("receipt.alert_artifact_id_mismatch")
 
     if missing_fields:
         return {

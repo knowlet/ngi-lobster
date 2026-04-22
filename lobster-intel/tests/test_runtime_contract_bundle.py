@@ -147,6 +147,77 @@ def test_build_runtime_contract_view_fails_closed_without_delivery_proof():
     assert "receipt.delivery_proof" in result["missing_fields"]
 
 
+def test_build_runtime_contract_view_fails_closed_without_receipt_alert_artifact_id():
+    result = build_runtime_contract_view(
+        runtime_snapshot={
+            "artifact_id": "runtime:1",
+            "compare_mode": "full_compare",
+            "active_target": {"market_id": "1517836"},
+            "P_AI": 0.25,
+            "market_implied_probability": 0.72,
+            "ngi_gap": -0.47,
+        },
+        compare_artifact={
+            "artifact_id": "compare:1",
+            "compare_mode": "full_compare",
+            "fallback_reason_codes": [],
+        },
+        alert_artifact={
+            "artifact_id": "alert:1",
+            "should_send": True,
+            "reason_code": "active_target_contract_ok",
+        },
+        delivery_receipt={
+            "artifact_id": "receipt:1",
+            "sink": "openclaw_heartbeat",
+            "delivery_status": "delivered",
+            "delivery_proof": {
+                "boundary": "openclaw_heartbeat",
+                "proof_id": "heartbeat:1",
+            },
+        },
+    )
+
+    assert result["status"] == "contract_incomplete"
+    assert "receipt.alert_artifact_id" in result["missing_fields"]
+
+
+def test_build_runtime_contract_view_fails_closed_on_mismatched_receipt_alert_artifact_id():
+    result = build_runtime_contract_view(
+        runtime_snapshot={
+            "artifact_id": "runtime:1",
+            "compare_mode": "full_compare",
+            "active_target": {"market_id": "1517836"},
+            "P_AI": 0.25,
+            "market_implied_probability": 0.72,
+            "ngi_gap": -0.47,
+        },
+        compare_artifact={
+            "artifact_id": "compare:1",
+            "compare_mode": "full_compare",
+            "fallback_reason_codes": [],
+        },
+        alert_artifact={
+            "artifact_id": "alert:1",
+            "should_send": True,
+            "reason_code": "active_target_contract_ok",
+        },
+        delivery_receipt={
+            "artifact_id": "receipt:1",
+            "sink": "openclaw_heartbeat",
+            "delivery_status": "delivered",
+            "alert_artifact_id": "alert:other",
+            "delivery_proof": {
+                "boundary": "openclaw_heartbeat",
+                "proof_id": "heartbeat:1",
+            },
+        },
+    )
+
+    assert result["status"] == "contract_incomplete"
+    assert "receipt.alert_artifact_id_mismatch" in result["missing_fields"]
+
+
 def test_load_runtime_contract_bundle_reads_workspace_artifacts(tmp_path: Path):
     run_id = _install_runtime_contract_fixture(tmp_path)
 

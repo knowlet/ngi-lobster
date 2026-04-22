@@ -120,6 +120,7 @@ Behavior:
 - preflights the shared dispatcher bundle contract before rewriting any workspace artifacts
 - writes the suppressed dispatcher alert plus the positive-control dispatcher alert/receipt artifacts only after the preflight passes
 - reuses the persisted positive-control receipt by default, but fails closed if `thesis_id`, `run_id`, `contract_version`, or `alert_artifact_id` are missing or no longer match the requested run
+- rejects runtime contract verification when a delivery receipt omits `alert_artifact_id` or points at a different alert artifact than the run being audited
 - writes one auditable dispatcher bundle under `lobster-intel/data/delivery/<thesis-id>/bundles/<bundle-id>.json`
 
 ## Recommended pipeline

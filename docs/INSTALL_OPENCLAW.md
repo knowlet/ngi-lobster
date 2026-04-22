@@ -116,6 +116,8 @@ python3 lobster-intel/scripts/normalize_firehose_events.py \
   --run-id 20260422T000000Z
 ```
 
+Use a simple slash-free `run_id` such as `20260422T000000Z`; path separators and traversal fragments are rejected before artifacts are written.
+
 That command writes:
 
 - `lobster-intel/data/runtime/sources/firehose-tracker/runs/<run_id>.json`

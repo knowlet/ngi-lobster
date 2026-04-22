@@ -2,9 +2,20 @@ from __future__ import annotations
 
 import hashlib
 import json
+import re
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
+
+
+_SAFE_PATH_COMPONENT = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._-]*$")
+
+
+def _validated_path_component(value: str, *, label: str) -> str:
+    value = str(value or "")
+    if not _SAFE_PATH_COMPONENT.fullmatch(value):
+        raise ValueError(f"{label} must be a simple relative path component: {value!r}")
+    return value
 
 
 def _now_utc(value: str | None = None) -> str:
@@ -14,7 +25,8 @@ def _now_utc(value: str | None = None) -> str:
 
 
 def _workspace_source_root(workspace_dir: str | Path, plugin_id: str) -> Path:
-    return Path(workspace_dir) / "lobster-intel" / "data" / "runtime" / "sources" / plugin_id
+    safe_plugin_id = _validated_path_component(plugin_id, label="plugin_id")
+    return Path(workspace_dir) / "lobster-intel" / "data" / "runtime" / "sources" / safe_plugin_id
 
 
 def _relative_path(path: Path, workspace_dir: str | Path) -> str:
@@ -90,7 +102,9 @@ def normalize_firehose_events(
 ) -> dict[str, Any]:
     recorded_at_utc = _now_utc(now_utc)
     input_path = Path(input_file)
-    source_root = _workspace_source_root(workspace_dir, plugin_id)
+    safe_plugin_id = _validated_path_component(plugin_id, label="plugin_id")
+    safe_run_id = _validated_path_component(run_id, label="run_id")
+    source_root = _workspace_source_root(workspace_dir, safe_plugin_id)
     runs_root = source_root / "runs"
     runs_root.mkdir(parents=True, exist_ok=True)
 
@@ -108,17 +122,17 @@ def normalize_firehose_events(
             raise ValueError(f"invalid Firehose JSON on line {index}: expected object")
         items.append(_normalize_event(raw_event, collected_at_utc=recorded_at_utc))
 
-    artifact_relpath = Path("lobster-intel") / "data" / "runtime" / "sources" / plugin_id / "runs" / f"{run_id}.json"
-    state_relpath = Path("lobster-intel") / "data" / "runtime" / "sources" / plugin_id / "state.json"
+    artifact_relpath = Path("lobster-intel") / "data" / "runtime" / "sources" / safe_plugin_id / "runs" / f"{safe_run_id}.json"
+    state_relpath = Path("lobster-intel") / "data" / "runtime" / "sources" / safe_plugin_id / "state.json"
     artifact_path = Path(workspace_dir) / artifact_relpath
     latest_path = source_root / "latest.json"
     state_path = Path(workspace_dir) / state_relpath
 
     payload = {
         "schema_version": "v1",
-        "plugin": plugin_id,
+        "plugin": safe_plugin_id,
         "version": "0.1.0",
-        "run_id": run_id,
+        "run_id": safe_run_id,
         "ran_at_utc": recorded_at_utc,
         "evidence": {
             "new_count": len(items),
@@ -132,9 +146,9 @@ def normalize_firehose_events(
     }
     state_payload = {
         "schema": "lobster.source.firehose_state.v1",
-        "plugin": plugin_id,
+        "plugin": safe_plugin_id,
         "input_file": str(input_path),
-        "last_run_id": run_id,
+        "last_run_id": safe_run_id,
         "last_ran_at_utc": recorded_at_utc,
         "latest_artifact_path": artifact_relpath.as_posix(),
         "line_count": line_count,
@@ -148,8 +162,8 @@ def normalize_firehose_events(
 
     return {
         "status": "ok",
-        "plugin": plugin_id,
-        "run_id": run_id,
+        "plugin": safe_plugin_id,
+        "run_id": safe_run_id,
         "new_count": len(items),
         "artifact_path": _relative_path(artifact_path, workspace_dir),
         "state_path": _relative_path(state_path, workspace_dir),

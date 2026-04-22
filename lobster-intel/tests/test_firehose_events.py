@@ -149,6 +149,37 @@ class FirehoseEventNormalizationTests(unittest.TestCase):
         self.assertEqual(summary["new_count"], 1)
         self.assertTrue(summary["artifact_path"].endswith("20260422T000000Z.json"))
 
+    def test_normalize_firehose_events_rejects_unsafe_plugin_id(self):
+        from lobster_ingest import normalize_firehose_events
+
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            workspace = Path(tmp_dir)
+            events_path = workspace / "events.jsonl"
+            events_path.write_text("{}\n", encoding="utf-8")
+
+            with self.assertRaises(ValueError):
+                normalize_firehose_events(
+                    workspace_dir=workspace,
+                    input_file=events_path,
+                    run_id="20260422T000000Z",
+                    plugin_id="../firehose-tracker",
+                )
+
+    def test_normalize_firehose_events_rejects_unsafe_run_id(self):
+        from lobster_ingest import normalize_firehose_events
+
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            workspace = Path(tmp_dir)
+            events_path = workspace / "events.jsonl"
+            events_path.write_text("{}\n", encoding="utf-8")
+
+            with self.assertRaises(ValueError):
+                normalize_firehose_events(
+                    workspace_dir=workspace,
+                    input_file=events_path,
+                    run_id="../20260422T000000Z",
+                )
+
 
 if __name__ == "__main__":
     unittest.main()

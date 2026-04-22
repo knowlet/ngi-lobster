@@ -62,6 +62,7 @@ def _install_runtime_contract_fixture(tmp_path: Path) -> str:
         {
             "artifact_id": f"alert:{thesis_id}:{run_id}",
             "run_id": run_id,
+            "contract_version": "alert-contract-v1",
             "should_send": True,
             "reason_code": "active_target_contract_ok",
             "compare_artifact_id": f"compare:{thesis_id}:{run_id}",
@@ -72,6 +73,7 @@ def _install_runtime_contract_fixture(tmp_path: Path) -> str:
         {
             "artifact_id": f"receipt:{thesis_id}:{run_id}",
             "run_id": run_id,
+            "contract_version": "alert-contract-v1",
             "sink": "openclaw_heartbeat",
             "delivery_status": "delivered",
             "alert_artifact_id": f"alert:{thesis_id}:{run_id}",
@@ -218,6 +220,81 @@ def test_build_runtime_contract_view_fails_closed_on_mismatched_receipt_alert_ar
     assert "receipt.alert_artifact_id_mismatch" in result["missing_fields"]
 
 
+def test_build_runtime_contract_view_fails_closed_without_receipt_contract_version():
+    result = build_runtime_contract_view(
+        runtime_snapshot={
+            "artifact_id": "runtime:1",
+            "compare_mode": "full_compare",
+            "active_target": {"market_id": "1517836"},
+            "P_AI": 0.25,
+            "market_implied_probability": 0.72,
+            "ngi_gap": -0.47,
+        },
+        compare_artifact={
+            "artifact_id": "compare:1",
+            "compare_mode": "full_compare",
+            "fallback_reason_codes": [],
+        },
+        alert_artifact={
+            "artifact_id": "alert:1",
+            "contract_version": "alert-contract-v1",
+            "should_send": True,
+            "reason_code": "active_target_contract_ok",
+        },
+        delivery_receipt={
+            "artifact_id": "receipt:1",
+            "sink": "openclaw_heartbeat",
+            "delivery_status": "delivered",
+            "alert_artifact_id": "alert:1",
+            "delivery_proof": {
+                "boundary": "openclaw_heartbeat",
+                "proof_id": "heartbeat:1",
+            },
+        },
+    )
+
+    assert result["status"] == "contract_incomplete"
+    assert "receipt.contract_version" in result["missing_fields"]
+
+
+def test_build_runtime_contract_view_fails_closed_on_mismatched_receipt_contract_version():
+    result = build_runtime_contract_view(
+        runtime_snapshot={
+            "artifact_id": "runtime:1",
+            "compare_mode": "full_compare",
+            "active_target": {"market_id": "1517836"},
+            "P_AI": 0.25,
+            "market_implied_probability": 0.72,
+            "ngi_gap": -0.47,
+        },
+        compare_artifact={
+            "artifact_id": "compare:1",
+            "compare_mode": "full_compare",
+            "fallback_reason_codes": [],
+        },
+        alert_artifact={
+            "artifact_id": "alert:1",
+            "contract_version": "alert-contract-v1",
+            "should_send": True,
+            "reason_code": "active_target_contract_ok",
+        },
+        delivery_receipt={
+            "artifact_id": "receipt:1",
+            "contract_version": "alert-contract-v2",
+            "sink": "openclaw_heartbeat",
+            "delivery_status": "delivered",
+            "alert_artifact_id": "alert:1",
+            "delivery_proof": {
+                "boundary": "openclaw_heartbeat",
+                "proof_id": "heartbeat:1",
+            },
+        },
+    )
+
+    assert result["status"] == "contract_incomplete"
+    assert "receipt.contract_version_mismatch" in result["missing_fields"]
+
+
 def test_load_runtime_contract_bundle_reads_workspace_artifacts(tmp_path: Path):
     run_id = _install_runtime_contract_fixture(tmp_path)
 
@@ -225,6 +302,7 @@ def test_load_runtime_contract_bundle_reads_workspace_artifacts(tmp_path: Path):
 
     assert contract_view["status"] == "ok"
     assert contract_view["view"]["alert"]["should_send"] is True
+    assert contract_view["view"]["receipt"]["contract_version"] == "alert-contract-v1"
     assert contract_view["view"]["receipt"]["delivery_proof"]["proof_id"] == f"heartbeat:{run_id}"
 
 

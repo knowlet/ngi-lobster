@@ -341,7 +341,7 @@ python3 lobster-intel/scripts/run_dispatcher_acceptance.py \
 
 That wrapper reads both runtime artifacts, reuses the persisted positive-control receipt by default, preflights the shared contract bundle before rewriting workspace artifacts, then writes dispatcher alert/receipt artifacts and emits one shared bundle under `lobster-intel/data/delivery/<thesis-id>/bundles/`.
 
-Receipt reuse now fails closed unless the persisted receipt includes and matches the requested positive run on `thesis_id`, `run_id`, `contract_version`, and `alert_artifact_id`. Runtime contract verification now also rejects delivery receipts whose `alert_artifact_id` is missing or no longer matches the alert artifact for that run.
+Receipt reuse now fails closed unless the persisted receipt includes and matches the requested positive run on `thesis_id`, `run_id`, `contract_version`, and `alert_artifact_id`. Runtime contract verification now also rejects delivery receipts whose `alert_artifact_id` or `contract_version` is missing, or whose receipt lineage no longer matches the alert artifact for that run.
 
 ## 9. Cron status
 

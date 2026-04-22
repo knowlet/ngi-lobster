@@ -22,10 +22,12 @@ REQUIRED_RUNTIME_FIELDS = (
     "compare.artifact_id",
     "compare.compare_mode",
     "alert.artifact_id",
+    "alert.contract_version",
     "alert.should_send",
     "alert.reason_code",
     "receipt.artifact_id",
     "receipt.alert_artifact_id",
+    "receipt.contract_version",
     "receipt.sink",
     "receipt.delivery_status",
     "receipt.delivery_proof",
@@ -93,12 +95,14 @@ def build_runtime_contract_view(
         },
         "alert": {
             "artifact_id": alert_artifact.get("artifact_id"),
+            "contract_version": alert_artifact.get("contract_version"),
             "should_send": alert_artifact.get("should_send"),
             "reason_code": alert_artifact.get("reason_code"),
             "compare_artifact_id": alert_artifact.get("compare_artifact_id"),
         },
         "receipt": {
             "artifact_id": delivery_receipt.get("artifact_id"),
+            "contract_version": delivery_receipt.get("contract_version"),
             "sink": delivery_receipt.get("sink"),
             "delivery_status": delivery_receipt.get("delivery_status"),
             "alert_artifact_id": delivery_receipt.get("alert_artifact_id"),
@@ -118,6 +122,12 @@ def build_runtime_contract_view(
         and view["receipt"]["alert_artifact_id"] != view["alert"]["artifact_id"]
     ):
         missing_fields.append("receipt.alert_artifact_id_mismatch")
+    if (
+        not _missing(view["receipt"]["contract_version"])
+        and not _missing(view["alert"]["contract_version"])
+        and view["receipt"]["contract_version"] != view["alert"]["contract_version"]
+    ):
+        missing_fields.append("receipt.contract_version_mismatch")
 
     if missing_fields:
         return {

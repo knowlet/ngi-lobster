@@ -38,24 +38,26 @@ This document answers those questions.
 - installed source-pack defaults
 - replayable source run artifacts under `lobster-intel/data/runtime/sources/<plugin-id>/runs/*.json`
 - rebuildable per-plugin source indexes and CLI tooling
+- structured tracker manifest contracts for source family, replayability, state mode, and follow-up queues
 
 **Current contract boundary:**
 
 - trackers fetch, normalize, dedupe, and persist cursor lineage
 - trackers do not decide `P_AI`, `active_target`, compare legality, or delivery
 
-**Next dependency:**
+**Execution record:**
 
 - [`2026-04-20-tracker-capability-surface.md`](2026-04-20-tracker-capability-surface.md)
 
 ### Stage 2: Source-Specific Analyzer
 
-**Partial:**
+**Landed:**
 
-- runtime currently turns evidence into observations in `runtime_spine.py`
-- source-aware behavior exists, but it is hardcoded inside the runtime spine instead of a first-class analyzer seam
+- analyzer-driven observation shaping now lives in `lobster_runtime.analyzers`
+- runtime preserves a generic fallback analyzer for unknown source types
+- source-aware behavior is documented as a runtime seam instead of hardcoded policy scattered through delivery or wrappers
 
-**Next dependency:**
+**Execution record:**
 
 - [`2026-04-20-analyzer-interface-contract.md`](2026-04-20-analyzer-interface-contract.md)
 
@@ -79,13 +81,10 @@ This document answers those questions.
 - thesis-scoped target registry support
 - default registry discovery by `thesis_id`
 - runtime-owned target resolution path
-
-**Still open:**
-
 - bundled thesis-pack defaults
-- conservative live-search fallback when registry resolution is absent
+- conservative live-search fallback when registry resolution is absent but candidate metadata still aligns conservatively
 
-**Next dependencies:**
+**Execution record:**
 
 - [`2026-04-20-default-thesis-pack-discovery.md`](2026-04-20-default-thesis-pack-discovery.md)
 - [`2026-04-20-runtime-live-search-fallback.md`](2026-04-20-runtime-live-search-fallback.md)
@@ -145,42 +144,30 @@ Backed by:
 
 ### Gate 2: `runtime/<thesis_id>/latest.json` Is The Only Runtime Truth Consumed Downstream
 
-**Status:** partial
+**Status:** landed
 
-Why partial:
-
-- delivery and reporting contracts already say downstream must render runtime truth
-- but there is not yet a closeout slice that proves real downstream helpers only read thesis runtime truth and fail closed when required runtime fields are absent
-
-**Next dependency:**
+Backed by:
 
 - [`2026-04-20-runtime-spine-verification-gates.md`](2026-04-20-runtime-spine-verification-gates.md)
+- runtime-artifact contract verification in `lobster_delivery.runtime_contract`
 
 ### Gate 3: Compare Fixtures Prove All Three Compare Modes
 
-**Status:** landed for core runtime behavior, partial for fallback hardening
+**Status:** landed
 
-Why partial:
-
-- current tests already prove the three compare branches
-- the conservative `live_search_fallback` resolver still needs its own completion slice
-
-**Next dependency:**
+Backed by:
 
 - [`2026-04-20-runtime-live-search-fallback.md`](2026-04-20-runtime-live-search-fallback.md)
+- `lobster-intel/tests/test_runtime_spine.py`
 
 ### Gate 4: OpenClaw-Native Delivery Emits A Real Receipt Artifact
 
-**Status:** partial
+**Status:** landed
 
-Why partial:
-
-- receipt artifacts exist today
-- but the remaining operator proof path is still split between runtime artifacts and example contract bundles rather than one runtime-artifact-backed verifier
-
-**Next dependency:**
+Backed by:
 
 - [`2026-04-20-runtime-spine-verification-gates.md`](2026-04-20-runtime-spine-verification-gates.md)
+- `lobster-intel/scripts/verify_runtime_contract_bundle.py`
 
 ### Gate 5: Artifact Lineage Is Auditable Back To Evidence
 
@@ -213,7 +200,7 @@ All remaining implementation must preserve these design constraints:
 
 ## Recommended Execution Order
 
-When the runtime-spine design is used as the controlling contract, the next implementation order should be:
+When the runtime-spine design is used as the controlling contract, the closeout sequence that has now landed was:
 
 1. [`2026-04-20-installed-thesis-contract-validation.md`](2026-04-20-installed-thesis-contract-validation.md)
    Reason: the install surface must fail closed before more runtime defaults are added.
@@ -230,23 +217,22 @@ When the runtime-spine design is used as the controlling contract, the next impl
 7. [`2026-04-20-linked-content-extraction-platform.md`](2026-04-20-linked-content-extraction-platform.md)
    Reason: richer source breadth should consume the stable tracker/analyzer/runtime seam, not define it.
 
-Only after those seven slices are stable should multi-thesis fleet operations become the main line of work.
+Those seven slices are now represented by concrete plan records. The next main-line work should therefore move up a layer: multi-thesis fleet operations and portfolio / world-monitor consumers that stay downstream of the runtime truth boundary.
 
 ## Implementation Flow Summary
 
-The runtime-spine design is no longer a greenfield design. It is now a closeout program:
+The runtime-spine design is no longer a greenfield design. The core closeout program for MVP runtime truth is now landed:
 
 - the thesis runtime core exists
-- the next work is contract hardening and verification proof
-- source-platform extraction follows only after runtime gates close
+- contract hardening and verification proof are in place
+- source-platform seams now exist for tracker contracts and analyzers
 - fleet and portfolio work remain downstream consumers of this runtime truth
 
 That means the repo should be operated with this sequence in mind:
 
 ```text
-runtime contract hardening
--> runtime verification gates
--> source platform seams
+runtime truth maintenance
+-> source onboarding against stable seams
 -> multi-thesis fleet operations
 -> portfolio / world-monitor layer
 ```

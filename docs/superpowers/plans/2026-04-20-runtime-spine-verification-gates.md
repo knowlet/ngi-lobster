@@ -8,6 +8,8 @@
 
 **Tech Stack:** Python 3.11, pytest, runtime and delivery packages under `lobster-intel/packages/`, CLI scripts under `lobster-intel/scripts/`, JSON artifact files under `lobster-intel/data/`
 
+**Status:** Implemented in the writable workspace on 2026-04-22. Runtime-backed verifier coverage landed in code and the operator docs now distinguish curated bundle verification from real artifact-chain verification.
+
 ---
 
 ### Task 1: Freeze The Runtime Verification Contract In Tests

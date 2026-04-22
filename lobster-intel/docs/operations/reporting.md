@@ -102,6 +102,25 @@ Behavior:
 - exits `0` only when the bundle contains both `suppressed` and `would_send` fixtures with matching `contract_version` and `e2e_run_id`
 - exits non-zero when the bundle is incomplete, so CI or review scripts can fail closed
 
+## Runtime artifact verification
+
+Use the runtime-backed verifier when you need to audit one real thesis run instead of a curated fixture bundle:
+
+```bash
+python3 lobster-intel/scripts/verify_runtime_contract_bundle.py \
+  --workspace . \
+  --thesis-id gooaye \
+  --run-id <run-id>
+```
+
+Behavior:
+- reads the runtime snapshot, compare artifact, alert artifact, and delivery receipt directly from `lobster-intel/data/`
+- prints one machine-readable contract view to stdout
+- exits `0` only when the artifact chain is complete, including receipt lineage and delivery proof
+- exits non-zero when consumers would need to guess missing target identity, compare mode, `alert_artifact_id`, `contract_version`, or delivery proof
+
+This is the truth-only path for downstream reporting. Renderers and operator tooling must read runtime artifacts as-is and fail closed instead of fabricating missing explain fields in delivery-only code.
+
 ## One-shot dispatcher acceptance path
 
 When the operator already knows which suppressed runtime run and which positive-control runtime run should compose the acceptance bundle, use the wrapper CLI below to execute the dispatcher path in one command:

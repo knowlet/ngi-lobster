@@ -94,3 +94,12 @@ When you run `lobster-intel/scripts/run_thesis_runtime.py` with only `--workspac
 - curated target registry entries
 
 Operational details live in `docs/THESIS_PACKS.md`.
+
+## Verification paths
+
+The repo now exposes two fail-closed verification paths for runtime truth:
+
+- `python3 lobster-intel/scripts/verify_alert_contract_bundle.py ...` validates curated review fixtures or shared E2E bundle files
+- `python3 lobster-intel/scripts/verify_runtime_contract_bundle.py --workspace . --thesis-id <id> --run-id <run_id>` validates one real runtime run directly from `lobster-intel/data/runtime/` and `lobster-intel/data/delivery/`
+
+Downstream reports, dispatchers, and review tooling must consume those runtime artifacts as the source of truth. If target identity, compare mode, receipt lineage, or delivery proof is missing, the verifier and any consumer should fail closed instead of inventing replacement fields in delivery-only code.

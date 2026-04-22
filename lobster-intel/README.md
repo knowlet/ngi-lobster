@@ -252,3 +252,23 @@ python3 lobster-intel/scripts/run_dispatcher_acceptance.py \
 The wrapper reuses `delivery/receipts/<positive-run-id>.json` by default, preflights the shared contract bundle in memory, then writes dispatcher alert/receipt artifacts and emits one shared bundle under `lobster-intel/data/delivery/<thesis-id>/bundles/`.
 
 Receipt reuse fails closed when the persisted receipt metadata is incomplete or no longer matches the requested positive-control run. The current guard requires `thesis_id`, `run_id`, `contract_version`, and `alert_artifact_id` before reusing the delivery proof. The runtime contract loader now also fails closed if a receipt omits `alert_artifact_id`, omits `contract_version`, points at a different alert artifact, or carries a different `contract_version` than the alert artifact under review.
+
+## Verification paths
+
+Use the example-bundle verifier when you want to review curated acceptance fixtures:
+
+```bash
+python3 lobster-intel/scripts/verify_alert_contract_bundle.py \
+  lobster-intel/examples/e2e_alert_contract_bundle.json
+```
+
+Use the runtime-backed verifier when you want to audit one real thesis run from workspace artifacts:
+
+```bash
+python3 lobster-intel/scripts/verify_runtime_contract_bundle.py \
+  --workspace . \
+  --thesis-id gooaye \
+  --run-id <run-id>
+```
+
+That verifier reads `lobster-intel/data/runtime/<thesis-id>/runs/<run-id>.json`, the sibling compare artifact, and the matching delivery alert/receipt artifacts. Consumers must treat that artifact chain as runtime truth and fail closed when target identity, compare mode, receipt lineage, or delivery proof is incomplete.

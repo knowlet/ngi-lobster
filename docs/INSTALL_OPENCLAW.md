@@ -343,6 +343,26 @@ That wrapper reads both runtime artifacts, reuses the persisted positive-control
 
 Receipt reuse now fails closed unless the persisted receipt includes and matches the requested positive run on `thesis_id`, `run_id`, `contract_version`, and `alert_artifact_id`. Runtime contract verification now also rejects delivery receipts whose `alert_artifact_id` or `contract_version` is missing, or whose receipt lineage no longer matches the alert artifact for that run.
 
+## 8.3 Verification paths
+
+There are now two verification paths, and they solve different problems:
+
+- `python3 lobster-intel/scripts/verify_alert_contract_bundle.py ...`
+  verifies curated review fixtures or a shared E2E acceptance bundle file
+- `python3 lobster-intel/scripts/verify_runtime_contract_bundle.py --workspace . --thesis-id <id> --run-id <run_id>`
+  verifies one real runtime run directly from `lobster-intel/data/runtime/` plus the matching delivery artifacts
+
+Example runtime-backed audit:
+
+```bash
+python3 lobster-intel/scripts/verify_runtime_contract_bundle.py \
+  --workspace . \
+  --thesis-id gooaye \
+  --run-id 20260419T123000Z
+```
+
+The runtime-backed verifier is the contract source of truth for downstream review. If target identity, compare mode, `alert_artifact_id`, `contract_version`, or delivery proof is missing, operators and delivery consumers should fail closed instead of reconstructing those fields from prose or delivery-only state.
+
 ## 9. Cron status
 
 There is now a stable installed-workflow entrypoint for outside installs:

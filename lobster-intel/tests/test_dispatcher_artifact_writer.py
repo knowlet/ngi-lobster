@@ -616,6 +616,106 @@ class DispatcherArtifactWriterTests(unittest.TestCase):
         self.assertEqual(exc.exception.code, 1)
         self.assertIn("persisted receipt missing required metadata: thesis_id", stderr.getvalue())
 
+    def test_run_dispatcher_acceptance_cli_rejects_receipt_missing_alert_artifact_id(self):
+        repo = Path(__file__).resolve().parents[2]
+        script_path = repo / "lobster-intel" / "scripts" / "run_dispatcher_acceptance.py"
+        self.assertTrue(script_path.exists(), f"missing CLI script: {script_path}")
+
+        with tempfile.TemporaryDirectory() as temp_dir:
+            workspace = Path(temp_dir)
+            thesis_id, suppressed_run_id, positive_run_id = _install_real_runtime_spine_workspace(workspace)
+            receipt_path = (
+                workspace
+                / "lobster-intel"
+                / "data"
+                / "delivery"
+                / thesis_id
+                / "receipts"
+                / f"{positive_run_id}.json"
+            )
+            receipt_payload = json.loads(receipt_path.read_text(encoding="utf-8"))
+            receipt_payload.pop("alert_artifact_id", None)
+            receipt_path.write_text(json.dumps(receipt_payload, ensure_ascii=False, indent=2), encoding="utf-8")
+
+            stderr = io.StringIO()
+            old_argv = sys.argv
+            try:
+                sys.argv = [
+                    str(script_path),
+                    "--workspace",
+                    str(workspace),
+                    "--thesis-id",
+                    thesis_id,
+                    "--bundle-id",
+                    "bundle-20260422-missing-alert-artifact-id",
+                    "--suppressed-run-id",
+                    suppressed_run_id,
+                    "--positive-run-id",
+                    positive_run_id,
+                ]
+                with patch("sys.stderr", stderr):
+                    with self.assertRaises(SystemExit) as exc:
+                        namespace = {
+                            "__name__": "__main__",
+                            "__file__": str(script_path),
+                        }
+                        exec(script_path.read_text(encoding="utf-8"), namespace)
+            finally:
+                sys.argv = old_argv
+
+        self.assertEqual(exc.exception.code, 1)
+        self.assertIn("persisted receipt missing required metadata: alert_artifact_id", stderr.getvalue())
+
+    def test_run_dispatcher_acceptance_cli_rejects_mismatched_receipt_alert_artifact_id(self):
+        repo = Path(__file__).resolve().parents[2]
+        script_path = repo / "lobster-intel" / "scripts" / "run_dispatcher_acceptance.py"
+        self.assertTrue(script_path.exists(), f"missing CLI script: {script_path}")
+
+        with tempfile.TemporaryDirectory() as temp_dir:
+            workspace = Path(temp_dir)
+            thesis_id, suppressed_run_id, positive_run_id = _install_real_runtime_spine_workspace(workspace)
+            receipt_path = (
+                workspace
+                / "lobster-intel"
+                / "data"
+                / "delivery"
+                / thesis_id
+                / "receipts"
+                / f"{positive_run_id}.json"
+            )
+            receipt_payload = json.loads(receipt_path.read_text(encoding="utf-8"))
+            receipt_payload["alert_artifact_id"] = f"alert:{thesis_id}:{suppressed_run_id}"
+            receipt_path.write_text(json.dumps(receipt_payload, ensure_ascii=False, indent=2), encoding="utf-8")
+
+            stderr = io.StringIO()
+            old_argv = sys.argv
+            try:
+                sys.argv = [
+                    str(script_path),
+                    "--workspace",
+                    str(workspace),
+                    "--thesis-id",
+                    thesis_id,
+                    "--bundle-id",
+                    "bundle-20260422-mismatched-alert-artifact-id",
+                    "--suppressed-run-id",
+                    suppressed_run_id,
+                    "--positive-run-id",
+                    positive_run_id,
+                ]
+                with patch("sys.stderr", stderr):
+                    with self.assertRaises(SystemExit) as exc:
+                        namespace = {
+                            "__name__": "__main__",
+                            "__file__": str(script_path),
+                        }
+                        exec(script_path.read_text(encoding="utf-8"), namespace)
+            finally:
+                sys.argv = old_argv
+
+        self.assertEqual(exc.exception.code, 1)
+        self.assertIn("persisted receipt alert_artifact_id does not match requested positive run", stderr.getvalue())
+
     def test_run_dispatcher_acceptance_cli_fails_closed_before_writing_incomplete_bundle_artifacts(self):
         repo = Path(__file__).resolve().parents[2]
         script_path = repo / "lobster-intel" / "scripts" / "run_dispatcher_acceptance.py"

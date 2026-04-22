@@ -8,6 +8,42 @@ from typing import Any
 
 from .fusion import FusionComputationInput, FusionComputationResult, build_fusion_result
 
+_FIREHOSE_PRIORITY_WEIGHTS = {
+    "low": 0.25,
+    "medium": 0.5,
+    "med": 0.5,
+    "normal": 0.5,
+    "high": 0.75,
+    "urgent": 1.0,
+    "critical": 1.0,
+    "sev1": 1.0,
+}
+_FIREHOSE_PEACE_TAGS = {
+    "ceasefire",
+    "deescalation",
+    "diplomacy",
+    "humanitarian",
+    "negotiation",
+    "negotiations",
+    "talks",
+    "truce",
+    "withdrawal",
+}
+_FIREHOSE_ESCALATION_TAGS = {
+    "airstrike",
+    "airstrikes",
+    "airspace",
+    "attack",
+    "attacks",
+    "conflict",
+    "escalation",
+    "military",
+    "missile",
+    "missiles",
+    "strike",
+    "strikes",
+}
+
 
 @dataclass(slots=True)
 class SourceFusionInput:
@@ -116,6 +152,37 @@ def _market_escalation_probability(item: dict[str, Any] | None) -> float | None:
     return max(0.0, min(1.0, 1.0 - yes_probability))
 
 
+def _firehose_priority_weight(value: Any) -> float:
+    if value in (None, ""):
+        return 0.5
+    return _FIREHOSE_PRIORITY_WEIGHTS.get(str(value).strip().lower(), 0.5)
+
+
+def _firehose_tag_polarity(item: dict[str, Any]) -> int:
+    values = item.get("tags")
+    tags = values if isinstance(values, list) else []
+    normalized = {str(tag).strip().lower() for tag in tags if str(tag).strip()}
+    peace_hits = len(normalized & _FIREHOSE_PEACE_TAGS)
+    escalation_hits = len(normalized & _FIREHOSE_ESCALATION_TAGS)
+    if peace_hits > escalation_hits:
+        return 1
+    if escalation_hits > peace_hits:
+        return -1
+    return 0
+
+
+def _firehose_peace_score(items: list[dict[str, Any]]) -> float:
+    if not items:
+        return 0.0
+
+    total = 0.0
+    for item in items:
+        polarity = _firehose_tag_polarity(item)
+        priority_weight = _firehose_priority_weight(item.get("priority"))
+        total += max(0.0, min(1.0, 0.5 + 0.5 * polarity * priority_weight))
+    return total / len(items)
+
+
 def build_source_fusion_result(inp: SourceFusionInput) -> FusionComputationResult:
     official_items = _items(inp.official_statements)
     watchlist_items = _items(inp.watchlist)
@@ -130,6 +197,7 @@ def build_source_fusion_result(inp: SourceFusionInput) -> FusionComputationResul
     firehose_source_run_id = _source_run_id(inp.firehose)
     firehose_latest_event_at_utc = _latest_item_ts(firehose_items, "published_at_utc")
     firehose_latest_collected_at_utc = _latest_item_ts(firehose_items, "collected_at_utc")
+    firehose_peace_score = _firehose_peace_score(firehose_items)
 
     metadata = (market_item or {}).get("metadata") or {}
     source_config = metadata.get("source_config") or {}
@@ -176,7 +244,7 @@ def build_source_fusion_result(inp: SourceFusionInput) -> FusionComputationResul
             adsb_peace_score=None,
             adsb_used=False,
             firehose_events_analyzed=len(firehose_items),
-            firehose_peace_score=0.0,
+            firehose_peace_score=firehose_peace_score,
             firehose_source_run_id=firehose_source_run_id,
             firehose_latest_event_at_utc=firehose_latest_event_at_utc,
             firehose_latest_collected_at_utc=firehose_latest_collected_at_utc,

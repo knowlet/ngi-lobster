@@ -66,6 +66,7 @@ def main() -> None:
                 "gap_value": result.gap_value,
                 "decision": result.data.get("decision"),
                 "firehose_events_analyzed": (result.data.get("firehose") or {}).get("events_analyzed"),
+                "firehose_peace_score": (result.data.get("firehose") or {}).get("peace_score"),
                 "firehose_source_run_id": (result.data.get("firehose") or {}).get("source_run_id"),
                 "firehose_latest_event_at_utc": (result.data.get("firehose") or {}).get("latest_event_at_utc"),
                 "firehose_latest_collected_at_utc": (result.data.get("firehose") or {}).get("latest_collected_at_utc"),

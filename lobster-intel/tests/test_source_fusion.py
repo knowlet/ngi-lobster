@@ -32,11 +32,15 @@ class SourceFusionTest(unittest.TestCase):
                         "items": [
                             {
                                 "title": "Firehose Event 1",
+                                "tags": ["ceasefire"],
+                                "priority": "high",
                                 "published_at_utc": "2026-04-15T02:15:00+00:00",
                                 "collected_at_utc": "2026-04-15T03:00:00+00:00",
                             },
                             {
                                 "title": "Firehose Event 2",
+                                "tags": ["airstrike"],
+                                "priority": "critical",
                                 "published_at_utc": "2026-04-15T02:45:00+00:00",
                                 "collected_at_utc": "2026-04-15T03:05:00+00:00",
                             },
@@ -71,6 +75,7 @@ class SourceFusionTest(unittest.TestCase):
         self.assertEqual(result.data["firehose"]["source_run_id"], "20260415T030500Z")
         self.assertEqual(result.data["firehose"]["latest_event_at_utc"], "2026-04-15T02:45:00+00:00")
         self.assertEqual(result.data["firehose"]["latest_collected_at_utc"], "2026-04-15T03:05:00+00:00")
+        self.assertAlmostEqual(result.data["firehose"]["peace_score"], 0.4375)
         self.assertAlmostEqual(result.data["market_escalation_probability"], 0.3)
         self.assertAlmostEqual(result.data["first_principles_escalation_probability"], 0.7)
         self.assertTrue(result.data["gap_triggered"])
@@ -246,6 +251,8 @@ class SourceFusionTest(unittest.TestCase):
                                     "source_type": "firehose_event",
                                     "external_id": "fh-1",
                                     "title": "Historical Firehose Event",
+                                    "tags": ["ceasefire"],
+                                    "priority": "high",
                                     "url": "https://example.test/firehose/1",
                                     "published_at_utc": "2026-04-15T02:55:00+00:00",
                                     "collected_at_utc": "2026-04-15T03:04:00+00:00",
@@ -284,10 +291,12 @@ class SourceFusionTest(unittest.TestCase):
             payload = json.loads(output_path.read_text(encoding="utf-8"))
 
         self.assertEqual(summary["firehose_events_analyzed"], 1)
+        self.assertAlmostEqual(summary["firehose_peace_score"], 0.875)
         self.assertEqual(summary["firehose_source_run_id"], firehose_run_id)
         self.assertEqual(summary["firehose_latest_event_at_utc"], "2026-04-15T02:55:00+00:00")
         self.assertEqual(summary["firehose_latest_collected_at_utc"], "2026-04-15T03:04:00+00:00")
         self.assertEqual(payload["firehose"]["events_analyzed"], 1)
+        self.assertAlmostEqual(payload["firehose"]["peace_score"], 0.875)
         self.assertEqual(payload["firehose"]["source_run_id"], firehose_run_id)
         self.assertEqual(payload["firehose"]["latest_event_at_utc"], "2026-04-15T02:55:00+00:00")
         self.assertEqual(payload["firehose"]["latest_collected_at_utc"], "2026-04-15T03:04:00+00:00")

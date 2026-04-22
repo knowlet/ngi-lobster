@@ -57,6 +57,10 @@ def _item_view(item: dict[str, Any], ran_at_utc: str | None) -> dict[str, Any]:
         "url": item.get("url"),
         "published_at_utc": item.get("published_at_utc"),
         "collected_at_utc": item.get("collected_at_utc") or ran_at_utc,
+        "tag": item.get("tag"),
+        "tags": item.get("tags"),
+        "priority": item.get("priority"),
+        "summary": item.get("summary"),
     }
 
 

@@ -33,6 +33,13 @@ def _load_firehose_payload(args: argparse.Namespace) -> dict | None:
     return _firehose_replay_to_artifact(replay_source_run(args.workspace, "firehose-tracker", args.firehose_run_id))
 
 
+def _resolve_path(workspace: Path, raw_path: str) -> Path:
+    path = Path(raw_path)
+    if path.is_absolute():
+        return path
+    return workspace / path
+
+
 def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("--workspace", default=".")
@@ -43,12 +50,13 @@ def main() -> None:
     ap.add_argument("--polymarket", default="lobster-intel/data/runtime/sources/polymarket-tracker/latest.json")
     ap.add_argument("--output", default="lobster-intel/data/runtime/fusion/latest.json")
     args = ap.parse_args()
+    workspace = Path(args.workspace)
 
     artifacts = SourceFusionArtifacts(
-        official_statements_path=Path(args.official),
-        watchlist_path=Path(args.watchlist),
-        firehose_path=Path(args.firehose),
-        polymarket_path=Path(args.polymarket),
+        official_statements_path=_resolve_path(workspace, args.official),
+        watchlist_path=_resolve_path(workspace, args.watchlist),
+        firehose_path=_resolve_path(workspace, args.firehose),
+        polymarket_path=_resolve_path(workspace, args.polymarket),
     )
     inp = load_source_fusion_artifacts(artifacts)
     historical_firehose = _load_firehose_payload(args)
@@ -56,7 +64,7 @@ def main() -> None:
         inp.firehose = historical_firehose
     result = build_source_fusion_result(inp)
 
-    out_path = Path(args.output)
+    out_path = _resolve_path(workspace, args.output)
     out_path.parent.mkdir(parents=True, exist_ok=True)
     out_path.write_text(json.dumps(result.data, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     print(

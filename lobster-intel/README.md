@@ -31,7 +31,7 @@ python3 lobster-intel/scripts/normalize_firehose_events.py \
 
 This writes audited source-run artifacts under `lobster-intel/data/runtime/sources/firehose-tracker/` so existing replay/index tooling can inspect them, while keeping ranking and filtering decisions out of delivery code.
 
-The source-fusion CLI now also reads `lobster-intel/data/runtime/sources/firehose-tracker/latest.json` by default, so fusion artifacts report how many Firehose events were analyzed, which normalized Firehose `run_id` supplied that summary, and the latest event and collection timestamps. If that Firehose artifact does not exist yet, source fusion now keeps running and emits zero-count Firehose audit metadata instead of failing the whole CLI. Firehose ranking/filtering still remains a separate unfinished slice.
+The source-fusion CLI now also reads `lobster-intel/data/runtime/sources/firehose-tracker/latest.json` by default, with every non-absolute input/output path resolved from the requested `--workspace`, so fusion artifacts report how many Firehose events were analyzed, which normalized Firehose `run_id` supplied that summary, and the latest event and collection timestamps. If that Firehose artifact does not exist yet, source fusion now keeps running and emits zero-count Firehose audit metadata instead of failing the whole CLI. Firehose ranking/filtering still remains a separate unfinished slice.
 
 ## Product goal
 

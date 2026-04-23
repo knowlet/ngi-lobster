@@ -126,7 +126,7 @@ That command writes:
 
 This is a normalization + replay bridge only. It does not yet replace Firehose ranking, filtering, or direct runtime ingestion.
 
-When you build source-fusion artifacts, `lobster-intel/scripts/build_source_fusion.py` now reads `lobster-intel/data/runtime/sources/firehose-tracker/latest.json` by default so the saved fusion summary includes the analyzed Firehose event count, the normalized `firehose.source_run_id`, plus `firehose.latest_event_at_utc` and `firehose.latest_collected_at_utc` for auditability. It still does not promote Firehose into the ranking/filtering decision path by itself.
+When you build source-fusion artifacts, `lobster-intel/scripts/build_source_fusion.py` now reads `lobster-intel/data/runtime/sources/firehose-tracker/latest.json` by default, and resolves every non-absolute source-fusion path from the requested `--workspace`, so the saved fusion summary includes the analyzed Firehose event count, the normalized `firehose.source_run_id`, plus `firehose.latest_event_at_utc` and `firehose.latest_collected_at_utc` for auditability. It still does not promote Firehose into the ranking/filtering decision path by itself.
 
 If you need to rebuild fusion output against a specific historical Firehose normalization run instead of the current `latest.json`, point the CLI at the workspace root and the historical `run_id`:
 

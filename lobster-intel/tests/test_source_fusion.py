@@ -457,6 +457,87 @@ class SourceFusionTest(unittest.TestCase):
         self.assertEqual(payload["firehose"]["events_analyzed"], 1)
         self.assertEqual(payload["firehose"]["source_run_id"], "20260423T010203Z")
 
+    def test_build_source_fusion_cli_resolves_workspace_with_tilde_home(self):
+        script_path = ROOT / "scripts" / "build_source_fusion.py"
+
+        with TemporaryDirectory() as tmpdir:
+            temp_root = Path(tmpdir)
+            home = temp_root / "home"
+            workspace = home / "workspace"
+            runner_dir = temp_root / "runner"
+            official_path = workspace / "lobster-intel" / "data" / "runtime" / "sources" / "official-statements-tracker" / "latest.json"
+            watchlist_path = workspace / "lobster-intel" / "data" / "runtime" / "sources" / "watchlist-tracker" / "latest.json"
+            firehose_path = workspace / "lobster-intel" / "data" / "runtime" / "sources" / "firehose-tracker" / "latest.json"
+            polymarket_path = workspace / "lobster-intel" / "data" / "runtime" / "sources" / "polymarket-tracker" / "latest.json"
+            output_path = workspace / "lobster-intel" / "data" / "runtime" / "fusion" / "latest.json"
+
+            official_path.parent.mkdir(parents=True, exist_ok=True)
+            watchlist_path.parent.mkdir(parents=True, exist_ok=True)
+            firehose_path.parent.mkdir(parents=True, exist_ok=True)
+            polymarket_path.parent.mkdir(parents=True, exist_ok=True)
+            runner_dir.mkdir(parents=True, exist_ok=True)
+
+            official_path.write_text(
+                json.dumps({"ran_at_utc": "2026-04-15T00:00:00+00:00", "evidence": {"items": [{"title": "Official"}]}}),
+                encoding="utf-8",
+            )
+            watchlist_path.write_text(
+                json.dumps({"ran_at_utc": "2026-04-15T01:00:00+00:00", "evidence": {"items": [{"title": "Watchlist"}]}}),
+                encoding="utf-8",
+            )
+            firehose_path.write_text(
+                json.dumps(
+                    {
+                        "run_id": "20260423T010203Z",
+                        "ran_at_utc": "2026-04-15T03:00:00+00:00",
+                        "evidence": {"items": [{"title": "Firehose Event", "published_at_utc": "2026-04-15T02:45:00+00:00"}]},
+                    }
+                ),
+                encoding="utf-8",
+            )
+            polymarket_path.write_text(
+                json.dumps(
+                    {
+                        "ran_at_utc": "2026-04-15T02:00:00+00:00",
+                        "evidence": {
+                            "items": [
+                                {
+                                    "external_id": "1517836",
+                                    "title": "Market",
+                                    "url": "market-slug",
+                                    "metadata": {"market_id": "1517836", "slug": "market-slug", "yes_probability": 0.7},
+                                }
+                            ]
+                        },
+                    }
+                ),
+                encoding="utf-8",
+            )
+
+            completed = subprocess.run(
+                [
+                    sys.executable,
+                    str(script_path),
+                    "--workspace",
+                    "~/workspace",
+                ],
+                capture_output=True,
+                text=True,
+                check=False,
+                cwd=runner_dir,
+                env={**os.environ, "HOME": str(home)},
+            )
+
+            self.assertEqual(completed.returncode, 0, msg=completed.stderr)
+            summary = json.loads(completed.stdout)
+            payload = json.loads(output_path.read_text(encoding="utf-8"))
+
+        self.assertEqual(summary["output"], str(output_path))
+        self.assertEqual(summary["firehose_events_analyzed"], 1)
+        self.assertEqual(summary["firehose_source_run_id"], "20260423T010203Z")
+        self.assertEqual(payload["firehose"]["events_analyzed"], 1)
+        self.assertEqual(payload["firehose"]["source_run_id"], "20260423T010203Z")
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -102,3 +102,10 @@
 - [x] `gh pr list --state all --limit 20` and `gh issue list --state all --limit 20` retried and failed (`error connecting to api.github.com`).
 - [x] Recorded local checkpoint in this plan doc and automation memory with explicit next action (recheck network and triage before PR/push).
 - [ ] Execute `git push origin HEAD` and PR sync after connectivity returns.
+
+### Task 12: 2026-04-24 04:00+08:00 network-blocked checkpoint
+- [x] `git fetch --prune origin` retried and still blocked by DNS (`Could not resolve host: github.com`).
+- [x] `git rebase --fork-point origin/main` retried and remains up-to-date against local `origin/main`.
+- [x] `gh pr list --state all --limit 20` and `gh issue list --state all --limit 20` retried and both failed (`error connecting to api.github.com`).
+- [x] `git push origin HEAD` retried and remains blocked by DNS (`Could not resolve host: github.com`).
+- [ ] Keep these items deferred until DNS/network is restored and then continue to Task 1, 2, and 4 in sequence.

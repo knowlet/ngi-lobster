@@ -121,3 +121,11 @@
 - [x] Re-ran Task 1 and Task 2 sync/triage checks and recorded DNS/API blockers in-plan.
 - [x] Confirmed branch `codex/pr21-recut-dispatcher-receipt-guard` still clean and on top of local `origin/codex/pr21-recut-dispatcher-receipt-guard` with no new code changes.
 - [x] Recorded checkpoint outcome in this file and prepared for the next network-enabled run.
+
+### Task 15: 2026-04-24 07:00+08:00 network-blocked checkpoint
+- [x] 2026-04-24 07:02:28+08:00: `git fetch --prune origin` retried and failed with DNS (`Could not resolve host: github.com`, rc=128).
+- [x] 2026-04-24 07:02:28+08:00: `git rebase --fork-point origin/main` retried and remained up-to-date against local tracking ref (rc=0).
+- [x] 2026-04-24 07:02:28+08:00: `gh pr list --state all --limit 20` failed (`error connecting to api.github.com`).
+- [x] 2026-04-24 07:02:28+08:00: `gh issue list --state all --limit 20` failed (`error connecting to api.github.com`).
+- [x] 2026-04-24 07:02:28+08:00: `git push origin HEAD` retried and failed with DNS (`Could not resolve host: github.com`, rc=128).
+- [ ] Retry Task 1/2 actions when connectivity returns, then execute `git push` and PR sync.

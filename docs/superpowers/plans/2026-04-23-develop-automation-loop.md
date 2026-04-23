@@ -95,3 +95,10 @@
 - [x] Recorded a local checkpoint and prepared for PR sync once network restoration occurs.
 - [x] Next action prepared: retry Task 1/2 immediately when DNS is restored, then proceed with review-driven fix before further feature work.
 - [ ] Execute `git push origin HEAD` when connectivity resumes and reopen PR sync workflow for stage milestone.
+
+### Task 11: 2026-04-24 second checkpoint and memory handoff
+- [x] `git fetch --prune origin` retried and blocked by DNS (`Could not resolve host: github.com`).
+- [x] `git rebase --fork-point origin/main` retried and still up-to-date against local tracking ref.
+- [x] `gh pr list --state all --limit 20` and `gh issue list --state all --limit 20` retried and failed (`error connecting to api.github.com`).
+- [x] Recorded local checkpoint in this plan doc and automation memory with explicit next action (recheck network and triage before PR/push).
+- [ ] Execute `git push origin HEAD` and PR sync after connectivity returns.

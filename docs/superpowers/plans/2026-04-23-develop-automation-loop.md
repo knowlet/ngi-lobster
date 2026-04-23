@@ -109,3 +109,10 @@
 - [x] `gh pr list --state all --limit 20` and `gh issue list --state all --limit 20` retried and both failed (`error connecting to api.github.com`).
 - [x] `git push origin HEAD` retried and remains blocked by DNS (`Could not resolve host: github.com`).
 - [ ] Keep these items deferred until DNS/network is restored and then continue to Task 1, 2, and 4 in sequence.
+
+### Task 13: 2026-04-24 05:00+08:00 network-blocked checkpoint
+- [ ] Re-run `git fetch --prune origin` when network is available; currently blocked by DNS (`Could not resolve host: github.com`).
+- [ ] Re-run `gh pr list --state all --limit 20` and `gh issue list --state all --limit 20` after network restoration.
+- [ ] Re-run `git rebase --fork-point origin/main` after successful fetch and re-check Task 1 outcome.
+- [ ] Re-run `git push origin HEAD` only after completing Task 1/2 actions and receiving network access.
+- [x] 2026-04-24 05:02:27+08:00: logged checkpoint-only run; no code changes pending, and Task 1/2/4 remain blocked.

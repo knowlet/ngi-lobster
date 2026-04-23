@@ -17,6 +17,7 @@
 - [x] Confirm remote origin URL is configured.
 - [x] Attempt `git fetch --prune origin`.
 - [x] Record DNS failure (`Could not resolve host: github.com`).
+- [x] Retry fetch/rebase decision: `git fetch --prune origin` (blocked: DNS resolution) then `git rebase --fork-point origin/main` (reports branch up-to-date against local tracking).
 - [ ] Retry fetch when network is available and decide whether to rebase onto latest `main`.
 
 ### Task 2: Review PR / Issue / Comment queue
@@ -37,6 +38,7 @@
 
 - [x] Verify prior source-fusion workspace path hardening tests are present and complete.
 - [x] Add current automation checkpoint note: no remote review signal available; defer feature changes until connectivity returns.
+- [x] Reviewed the current develop-loop plan and branch metadata again; prepared next checkpoint plan update.
 
 ### Task 4: Commit and prepare sync point
 
@@ -44,9 +46,11 @@
 - Add: `docs/superpowers/plans/2026-04-23-develop-automation-loop.md`
 
 - [x] Record current blocker and next step for review/sync in a dedicated progress doc.
+- [x] Record a local checkpoint commit-ready note in progress doc for when network is restored.
 - [ ] Push after network restoration and open PR sync to `main` when milestone changes are present.
 
 ### Task 5: Remote sync checkpoint
 
 - [x] Re-attempted `git fetch --prune origin` on 2026-04-23 18:02:38+08:00; still blocked by DNS (`Could not resolve host: github.com`).
 - [x] Local branch remains `codex/pr21-recut-dispatcher-receipt-guard` ahead of `origin/...` by 3 commits.
+- [x] 2026-04-23 19:02:18+08:00 Re-attempted `git fetch --prune origin`; blocked by DNS (`Could not resolve host: github.com`), then `git rebase --fork-point origin/main` reports branch up-to-date on local tracking ref.

@@ -26,6 +26,7 @@
 - [ ] Check for actionable PR comments/issues and apply fixes.
 - [ ] Reconcile unresolved review findings before further feature work.
 - [ ] Mark this task complete in the next run where GitHub connectivity exists.
+- [x] Record review triage is currently blocked because GitHub DNS resolution is failing (`Could not resolve host: github.com`).
 
 ### Task 3: Continue implementation and keep documentation updated
 
@@ -35,7 +36,7 @@
 - Read: `docs/superpowers/plans/2026-04-23-source-fusion-home-path-expansion.md`
 
 - [x] Verify prior source-fusion workspace path hardening tests are present and complete.
-- [ ] Add next implementation task only when remote review or issue feedback requires it.
+- [x] Add current automation checkpoint note: no remote review signal available; defer feature changes until connectivity returns.
 
 ### Task 4: Commit and prepare sync point
 
@@ -44,3 +45,8 @@
 
 - [x] Record current blocker and next step for review/sync in a dedicated progress doc.
 - [ ] Push after network restoration and open PR sync to `main` when milestone changes are present.
+
+### Task 5: Remote sync checkpoint
+
+- [x] Re-attempted `git fetch --prune origin` on 2026-04-23 17:46:34+08:00; still blocked by DNS (`Could not resolve host: github.com`).
+- [x] Local branch remains `codex/pr21-recut-dispatcher-receipt-guard` ahead of `origin/...` by 2 commits.

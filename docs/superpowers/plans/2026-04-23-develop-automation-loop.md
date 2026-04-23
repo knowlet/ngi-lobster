@@ -63,9 +63,16 @@
 - [x] Re-attempted `git fetch --prune origin` on 2026-04-23 18:02:38+08:00; still blocked by DNS (`Could not resolve host: github.com`).
 - [x] Local branch remains `codex/pr21-recut-dispatcher-receipt-guard` ahead of `origin/...` by 3 commits.
 - [x] 2026-04-23 19:02:18+08:00 Re-attempted `git fetch --prune origin`; blocked by DNS (`Could not resolve host: github.com`), then `git rebase --fork-point origin/main` reports branch up-to-date on local tracking ref.
+- [x] 2026-04-23 22:01:30+08:00 Re-attempted `git fetch --prune origin`; still blocked by DNS (`Could not resolve host: github.com`), so rebase decision was deferred.
 
 ### Task 7: Network-blocked run checkpoint
 
 - [x] 2026-04-23 20:31:00+08:00: `git fetch --prune origin` still fails (`Could not resolve host: github.com`).
 - [x] 2026-04-23 20:31:00+08:00: `git rebase --fork-point origin/main` confirms branch up-to-date.
 - [x] 2026-04-23 20:31:00+08:00: Review/comment/issue triage remains blocked by DNS and will be retried after network recovery.
+- [x] 2026-04-23 22:01:30+08:00: `gh pr list --state all --limit 10` failed (`error connecting to api.github.com`), confirming review/comment triage still blocked by network.
+
+### Task 8: Run checkpoint and next action
+
+- [x] 2026-04-23 22:01:30+08:00: Logged both remote-sync and PR-review queue checks as network-blocked; pause further feature PR changes until connectivity returns.
+- [ ] Re-check fetch/rebase and PR/comment queues when DNS/network is restored.

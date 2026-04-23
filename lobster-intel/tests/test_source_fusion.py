@@ -1,4 +1,5 @@
 import json
+import os
 import subprocess
 import sys
 import unittest
@@ -192,6 +193,91 @@ class SourceFusionTest(unittest.TestCase):
         self.assertIsNone(payload["firehose"]["source_run_id"])
         self.assertIsNone(payload["firehose"]["latest_event_at_utc"])
         self.assertIsNone(payload["firehose"]["latest_collected_at_utc"])
+
+    def test_build_source_fusion_cli_resolves_tilde_paths_with_workspace_default(self):
+        script_path = ROOT / "scripts" / "build_source_fusion.py"
+
+        with TemporaryDirectory() as tmpdir:
+            workspace = Path(tmpdir) / "workspace"
+            runner_dir = Path(tmpdir) / "runner"
+            home = Path(tmpdir) / "home"
+            official_path = home / "official.json"
+            watchlist_path = home / "watchlist.json"
+            firehose_path = home / "firehose.json"
+            polymarket_path = home / "polymarket.json"
+            output_path = home / "fusion.json"
+
+            workspace.mkdir()
+            runner_dir.mkdir()
+            home.mkdir()
+
+            official_path.write_text(
+                json.dumps({"ran_at_utc": "2026-04-15T00:00:00+00:00", "evidence": {"items": [{"title": "Official"}]}}),
+                encoding="utf-8",
+            )
+            watchlist_path.write_text(
+                json.dumps({"ran_at_utc": "2026-04-15T01:00:00+00:00", "evidence": {"items": [{"title": "Watchlist"}]}}),
+                encoding="utf-8",
+            )
+            firehose_path.write_text(
+                json.dumps(
+                    {
+                        "run_id": "20260423T010203Z",
+                        "ran_at_utc": "2026-04-15T03:00:00+00:00",
+                        "evidence": {"items": [{"title": "Firehose Event", "published_at_utc": "2026-04-15T02:45:00+00:00"}]},
+                    }
+                ),
+                encoding="utf-8",
+            )
+            polymarket_path.write_text(
+                json.dumps(
+                    {
+                        "ran_at_utc": "2026-04-15T02:00:00+00:00",
+                        "evidence": {
+                            "items": [
+                                {
+                                    "external_id": "1517836",
+                                    "title": "Market",
+                                    "url": "market-slug",
+                                    "metadata": {"market_id": "1517836", "slug": "market-slug", "yes_probability": 0.7},
+                                }
+                            ]
+                        },
+                    }
+                ),
+                encoding="utf-8",
+            )
+
+            completed = subprocess.run(
+                [
+                    sys.executable,
+                    str(script_path),
+                    "--workspace",
+                    str(workspace),
+                    "--official",
+                    "~/official.json",
+                    "--watchlist",
+                    "~/watchlist.json",
+                    "--firehose",
+                    "~/firehose.json",
+                    "--polymarket",
+                    "~/polymarket.json",
+                    "--output",
+                    "~/fusion.json",
+                ],
+                capture_output=True,
+                text=True,
+                check=False,
+                cwd=runner_dir,
+                env={**os.environ, "HOME": str(home)},
+            )
+
+            self.assertEqual(completed.returncode, 0, msg=completed.stderr)
+            summary = json.loads(completed.stdout)
+
+        self.assertEqual(summary["output"], str(output_path))
+        self.assertEqual(summary["firehose_source_run_id"], "20260423T010203Z")
+        self.assertEqual(summary["firehose_events_analyzed"], 1)
 
     def test_build_source_fusion_cli_can_replay_historical_firehose_run(self):
         script_path = ROOT / "scripts" / "build_source_fusion.py"

@@ -34,7 +34,7 @@ def _load_firehose_payload(args: argparse.Namespace) -> dict | None:
 
 
 def _resolve_path(workspace: Path, raw_path: str) -> Path:
-    path = Path(raw_path)
+    path = Path(raw_path).expanduser()
     if path.is_absolute():
         return path
     return workspace / path
@@ -50,7 +50,7 @@ def main() -> None:
     ap.add_argument("--polymarket", default="lobster-intel/data/runtime/sources/polymarket-tracker/latest.json")
     ap.add_argument("--output", default="lobster-intel/data/runtime/fusion/latest.json")
     args = ap.parse_args()
-    workspace = Path(args.workspace)
+    workspace = Path(args.workspace).expanduser()
 
     artifacts = SourceFusionArtifacts(
         official_statements_path=_resolve_path(workspace, args.official),

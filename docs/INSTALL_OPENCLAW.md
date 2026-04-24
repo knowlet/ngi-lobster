@@ -126,7 +126,7 @@ That command writes:
 
 This is a normalization + replay bridge only. It does not yet replace Firehose ranking, filtering, or direct runtime ingestion.
 
-When you build source-fusion artifacts, `lobster-intel/scripts/build_source_fusion.py` now reads `lobster-intel/data/runtime/sources/firehose-tracker/latest.json` by default so the saved fusion summary includes the analyzed Firehose event count, the normalized `firehose.source_run_id`, plus `firehose.latest_event_at_utc` and `firehose.latest_collected_at_utc` for auditability. It still does not promote Firehose into the ranking/filtering decision path by itself.
+When you build source-fusion artifacts, `lobster-intel/scripts/build_source_fusion.py` now reads `lobster-intel/data/runtime/sources/firehose-tracker/latest.json` by default, and resolves every non-absolute source-fusion path from the requested `--workspace`, so the saved fusion summary includes the analyzed Firehose event count, the normalized `firehose.source_run_id`, plus `firehose.latest_event_at_utc` and `firehose.latest_collected_at_utc` for auditability. Absolute paths (including `~`-expanded home paths) bypass workspace anchoring. It still does not promote Firehose into the ranking/filtering decision path by itself.
 
 If you need to rebuild fusion output against a specific historical Firehose normalization run instead of the current `latest.json`, point the CLI at the workspace root and the historical `run_id`:
 
@@ -376,6 +376,23 @@ When PO needs to confirm an already-reviewed run still points at the same active
 ```
 
 That command reads `lobster-intel/data/runtime/<thesis-id>/latest.json` as the current source of truth, compares it against the audited `runtime/runs/<run-id>.json` and `runtime/compare/<run-id>.json`, and exits non-zero if `compare.runtime_target_id` no longer matches the latest active target. Suppressed legacy fixtures may still keep a divergent `market_target_id`, but the runtime-facing target id must remain aligned with the latest contract.
+
+## 8.2 Dispatcher acceptance cut
+
+When you already know the suppressed runtime run and the positive-control runtime run that should compose the current dispatcher acceptance cut, materialize the full dispatcher path in one command:
+
+```bash
+python3 lobster-intel/scripts/run_dispatcher_acceptance.py \
+  --workspace . \
+  --thesis-id gooaye \
+  --bundle-id bundle-20260422-acceptance \
+  --suppressed-run-id legacy-20260421T000000Z \
+  --positive-run-id positive-20260421T000500Z
+```
+
+That wrapper reads both runtime artifacts, reuses the persisted positive-control receipt by default, preflights the shared contract bundle before rewriting workspace artifacts, then writes dispatcher alert/receipt artifacts and emits one shared bundle under `lobster-intel/data/delivery/<thesis-id>/bundles/`.
+
+Receipt reuse now fails closed unless the persisted receipt includes and matches the requested positive run on `thesis_id`, `run_id`, and `contract_version`.
 
 ## 9. Cron status
 

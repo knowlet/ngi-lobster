@@ -31,7 +31,7 @@ python3 lobster-intel/scripts/normalize_firehose_events.py \
 
 This writes audited source-run artifacts under `lobster-intel/data/runtime/sources/firehose-tracker/` so existing replay/index tooling can inspect them, while keeping ranking and filtering decisions out of delivery code.
 
-The source-fusion CLI now also reads `lobster-intel/data/runtime/sources/firehose-tracker/latest.json` by default, so fusion artifacts report how many Firehose events were analyzed, which normalized Firehose `run_id` supplied that summary, and the latest event and collection timestamps. If that Firehose artifact does not exist yet, source fusion now keeps running and emits zero-count Firehose audit metadata instead of failing the whole CLI. Firehose ranking/filtering still remains a separate unfinished slice.
+The source-fusion CLI now also reads `lobster-intel/data/runtime/sources/firehose-tracker/latest.json` by default, with every non-absolute input/output path resolved from the requested `--workspace`, so fusion artifacts report how many Firehose events were analyzed, which normalized Firehose `run_id` supplied that summary, and the latest event and collection timestamps. `--workspace` values are expanded with `~` and then used as the base for path anchoring. Absolute paths (including `~`-expanded home paths for other args) bypass workspace anchoring. If that Firehose artifact does not exist yet, source fusion now keeps running and emits zero-count Firehose audit metadata instead of failing the whole CLI. Firehose ranking/filtering still remains a separate unfinished slice.
 
 ## Product goal
 
@@ -269,7 +269,7 @@ When operators already know the suppressed legacy-control run id and the positiv
   --positive-run-id positive-20260421T000500Z
 ```
 
-This reads the matching `runtime/runs/<run-id>.json` artifacts, reuses the persisted `delivery/receipts/<positive-run-id>.json` proof for the positive-control path by default, emits the dispatcher alert/receipt records under `lobster-intel/data/delivery/<thesis-id>/`, stamps the same shared `e2e_run_id` onto those dispatcher artifacts, records `target_contract_match` alongside `runtime_target_id` and `alert_target_id`, then writes the shared bundle artifact under `bundles/` and prints one machine-readable summary for operator review. Receipt reuse fails closed if the persisted receipt payload no longer matches the requested `thesis_id` or `positive_run_id`.
+This reads the matching `runtime/runs/<run-id>.json` artifacts, reuses the persisted `delivery/receipts/<positive-run-id>.json` proof for the positive-control path by default, preflights the shared contract bundle in memory, then emits the dispatcher alert/receipt records under `lobster-intel/data/delivery/<thesis-id>/`, stamps the same shared `e2e_run_id` onto those dispatcher artifacts, records `target_contract_match` alongside `runtime_target_id` and `alert_target_id`, writes the shared bundle artifact under `bundles/`, and prints one machine-readable summary for operator review. Receipt reuse fails closed when the persisted receipt metadata is incomplete or no longer matches the requested `thesis_id`, `run_id`, or `contract_version`.
 
 When operators need to override missing or corrected receipt fields, the explicit flags remain available:
 
@@ -328,3 +328,4 @@ Use the same CLI to rebuild a per-plugin SQLite index from the immutable run art
 ```
 
 This keeps runtime truth in JSON artifacts while giving operators a fast local query surface.
+Receipt reuse also fails closed when the persisted receipt metadata is incomplete or no longer matches the requested positive-control run. The current guard requires `thesis_id`, `run_id`, and `contract_version` before reusing the delivery proof.

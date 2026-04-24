@@ -241,6 +241,36 @@ class DispatcherArtifactWriterTests(unittest.TestCase):
         self.assertEqual(receipt_payload["delivery_proof"]["proof_id"], "msg-123")
         self.assertEqual(receipt_payload["alert_artifact_id"], "alert:gooaye:positive-20260421T000500Z")
 
+    def test_write_dispatcher_artifacts_restores_public_e2e_run_id_parameter(self):
+        with tempfile.TemporaryDirectory() as temp_dir:
+            workspace = Path(temp_dir)
+            runtime_payload = _delivered_runtime_payload(bundle_id="")
+            runtime_payload["alert_disposition"].pop("e2e_run_id", None)
+
+            result = write_dispatcher_artifacts(
+                workspace_dir=workspace,
+                thesis_id="gooaye",
+                runtime_payload=runtime_payload,
+                delivery_receipt={
+                    "sink": "openclaw_heartbeat",
+                    "delivery_status": "delivered",
+                    "delivery_proof": {
+                        "boundary": "openclaw_heartbeat",
+                        "sink_message_id": "msg-456",
+                    },
+                },
+                e2e_run_id="bundle-restored-public-api",
+                now_utc="2026-04-21T00:00:00+00:00",
+            )
+
+            alert_path = workspace / result["alert_artifact_path"]
+            receipt_path = workspace / result["receipt_artifact_path"]
+            alert_payload = json.loads(alert_path.read_text(encoding="utf-8"))
+            receipt_payload = json.loads(receipt_path.read_text(encoding="utf-8"))
+
+        self.assertEqual(alert_payload["alert_disposition"]["e2e_run_id"], "bundle-restored-public-api")
+        self.assertEqual(receipt_payload["e2e_run_id"], "bundle-restored-public-api")
+
     def test_written_dispatcher_artifacts_are_bundle_and_runtime_contract_compatible(self):
         with tempfile.TemporaryDirectory() as temp_dir:
             workspace = Path(temp_dir)

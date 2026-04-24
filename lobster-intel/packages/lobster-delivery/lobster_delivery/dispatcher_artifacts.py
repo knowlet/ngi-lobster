@@ -207,6 +207,7 @@ def write_dispatcher_artifacts(
     thesis_id: str,
     runtime_payload: dict[str, Any],
     delivery_receipt: dict[str, Any] | None = None,
+    e2e_run_id: str | None = None,
     now_utc: str | None = None,
 ) -> dict[str, Any]:
     rendered = build_dispatcher_artifact_payloads(
@@ -214,6 +215,7 @@ def write_dispatcher_artifacts(
         thesis_id=thesis_id,
         runtime_payload=runtime_payload,
         delivery_receipt=delivery_receipt,
+        e2e_run_id=e2e_run_id,
         now_utc=now_utc,
     )
 

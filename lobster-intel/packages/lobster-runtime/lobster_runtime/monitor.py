@@ -5,7 +5,7 @@ from datetime import datetime
 from typing import Any
 
 TARGET_CONTRACT_MISMATCH_REASON = "legacy_target_mismatch"
-TARGET_CONTRACT_MISSING_REASON = "suppressed_runtime_target_missing"
+TARGET_CONTRACT_MISSING_REASON = "runtime_target_missing"
 TARGET_CONTRACT_OK_REASON = "active_target_contract_ok"
 
 

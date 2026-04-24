@@ -138,3 +138,12 @@
 - [x] Re-ran `git push origin HEAD`; DNS still blocked (`Could not resolve host: github.com`, rc=128).
 - [x] No repo content changes made; checkpoint captured for immediate resume.
 - [ ] Retry Task 1 and Task 2 after network restoration, then finish Task 4 push/PR sync milestone.
+
+### Task 17: 2026-04-24 09:00+08:00 network-blocked checkpoint
+- [x] Re-ran `git fetch --prune origin`; DNS still blocked (`Could not resolve host: github.com`, rc=128).
+- [x] Re-ran `git rebase --fork-point origin/main`; branch remains up-to-date against local tracking ref (rc=0).
+- [x] Re-ran `gh pr list --state all --limit 20`; blocked by API connectivity (`error connecting to api.github.com`, rc=1).
+- [x] Re-ran `gh issue list --state all --limit 20`; blocked by API connectivity (`error connecting to api.github.com`, rc=1).
+- [x] Re-ran `git push origin HEAD`; DNS still blocked (`Could not resolve host: github.com`, rc=128).
+- [x] No repo content changes made; checkpoint captured for immediate resume.
+- [ ] Retry Task 1 and Task 2 after network restoration, then finish Task 4 push/PR sync milestone.

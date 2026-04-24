@@ -156,3 +156,12 @@
 - [x] 2026-04-24 10:02:08+08:00: `git push origin HEAD` retried and failed (`Could not resolve host: github.com`, rc=128).
 - [x] No repo content changes made; checkpoint captured for immediate resume.
 - [ ] Retry Task 1 and Task 2 after network restoration, then finish Task 4 push/PR sync milestone.
+
+### Task 19: 2026-04-24 11:00+08:00 network-blocked checkpoint
+- [x] 2026-04-24 11:02:33+08:00: `git fetch --prune origin` retried and failed (`Could not resolve host: github.com`, rc=128).
+- [x] 2026-04-24 11:02:33+08:00: `gh pr list --state all --limit 20` retried and failed (`error connecting to api.github.com`, rc=1).
+- [x] 2026-04-24 11:02:33+08:00: `gh issue list --state all --limit 20` retried and failed (`error connecting to api.github.com`, rc=1).
+- [x] 2026-04-24 11:02:33+08:00: `git rebase --fork-point origin/main` retried and remains up-to-date against local tracking ref.
+- [x] 2026-04-24 11:02:33+08:00: `git push origin HEAD` retried and failed (`Could not resolve host: github.com`, rc=128).
+- [x] 2026-04-24 11:02:33+08:00: No repo content changes made beyond this plan checkpoint.
+- [ ] Retry Task 1 and Task 2 after network restoration, then finish Task 4 push/PR sync milestone.

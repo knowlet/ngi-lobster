@@ -282,4 +282,12 @@
 - [x] 2026-04-25 00:02:33+08:00: `gh pr list --state all --limit 20` retried and failed (`error connecting to api.github.com`).
 - [x] 2026-04-25 00:02:33+08:00: `gh issue list --state all --limit 20` retried and failed (`error connecting to api.github.com`).
 - [x] 2026-04-25 00:02:33+08:00: Working tree clean on `codex/pr21-recut-dispatcher-receipt-guard` and plan file advanced to Task 32.
-- [ ] Retry Task 1 and Task 2 after network restoration, then complete Task 4 push/PR sync flow.
+- [x] 2026-04-25 01:02:04+08:00: `git fetch --prune origin` retried and failed (`Could not resolve host: github.com`, rc=128).
+- [x] 2026-04-25 01:02:04+08:00: `git rebase --fork-point origin/main` retried and branch is up-to-date against local tracking reference.
+- [x] 2026-04-25 01:02:04+08:00: `gh pr list --state all --limit 20` retried and failed (`error connecting to api.github.com`).
+- [x] 2026-04-25 01:02:04+08:00: `gh issue list --state all --limit 20` retried and failed (`error connecting to api.github.com`).
+- [x] 2026-04-25 01:02:04+08:00: `git push origin HEAD` retried and failed (`Could not resolve host: github.com`, rc=128).
+
+### Task 33: 2026-04-25 01:00+08:00 network-blocked checkpoint
+- [x] 2026-04-25 01:02:04+08:00: Remote sync/rebase/triage/push actions all attempted and remained blocked by DNS/API.
+- [ ] Retry Task 1 and Task 2 (remote sync + review/issue triage) when network is restored, then execute Task 4 and PR sync flow.

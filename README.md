@@ -48,6 +48,16 @@ Current status:
 
 So the install surface is starting to look right, but runtime feature parity is not finished yet.
 
+## Dispatcher acceptance cut shortcut
+
+The current P0 product cut is still the same dispatcher-path acceptance proof. From repo root, run:
+
+```bash
+npm run test:dispatcher-cut
+```
+
+That one command executes the focused dispatcher acceptance / contract test set against the local `.venv`, so PO can quickly re-check the highest-priority cut before asking for review or upstreaming.
+
 ## Current state
 
 The repo already contains:

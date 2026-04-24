@@ -267,3 +267,12 @@
 - [x] 2026-04-24 22:03:02+08:00: `git push origin HEAD` retried and failed (`Could not resolve host: github.com`, rc=128).
 - [x] 2026-04-24 22:03:02+08:00: Working tree remained clean and HEAD unchanged at `3b43de6`.
 - [ ] Retry Task 1 and Task 2 after network restoration, then complete Task 4 push/PR sync flow.
+
+### Task 31: 2026-04-24 23:00+08:00 network-blocked checkpoint
+- [x] 2026-04-24 23:02:38+08:00: `git fetch --prune origin` retried and failed (`Could not resolve host: github.com`, rc=128).
+- [x] 2026-04-24 23:02:38+08:00: `git rebase --fork-point origin/main` retried and reports branch up-to-date against local tracking.
+- [x] 2026-04-24 23:02:38+08:00: `gh pr list --state all --limit 20` retried and failed (`error connecting to api.github.com`).
+- [x] 2026-04-24 23:02:38+08:00: `gh issue list --state all --limit 20` retried and failed (`error connecting to api.github.com`).
+- [x] 2026-04-24 23:02:38+08:00: `git push origin HEAD` retried and failed (`Could not resolve host: github.com`, rc=128).
+- [x] 2026-04-24 23:02:38+08:00: Added this checkpoint entry and left branch on clean state for immediate network recovery.
+- [ ] Retry Task 1 and Task 2 after network restoration, then complete Task 4 push/PR sync flow.

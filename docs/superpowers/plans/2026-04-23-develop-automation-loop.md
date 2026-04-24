@@ -212,3 +212,12 @@
 - [x] 2026-04-24 16:05:00+08:00: Branch remains `codex/pr21-recut-dispatcher-receipt-guard` (`ahead 2, behind 1`) and commit is now `d68aa87` after local rebase rewrite.
 - [x] 2026-04-24 16:05:00+08:00: Updated develop-loop plan for local checkpoint handoff and automation memory entry.
 - [ ] Retry Task 1/2 immediately when DNS/API recovery allows, then execute Task 4 push/PR sync flow.
+
+### Task 25: 2026-04-24 17:00+08:00 network-blocked checkpoint
+- [x] 2026-04-24 17:02:04+08:00: `git fetch --prune origin` retried and blocked by DNS (`Could not resolve host: github.com`, rc=128).
+- [x] 2026-04-24 17:02:04+08:00: `git rebase --fork-point origin/main` retried and remains up-to-date against local tracking ref.
+- [x] 2026-04-24 17:02:04+08:00: `gh pr list --state all --limit 20` retried and failed (`error connecting to api.github.com`).
+- [x] 2026-04-24 17:02:04+08:00: `gh issue list --state all --limit 20` retried and failed (`error connecting to api.github.com`).
+- [x] 2026-04-24 17:02:04+08:00: `git push origin HEAD` retried and blocked by DNS (`Could not resolve host: github.com`, rc=128).
+- [x] 2026-04-24 17:02:04+08:00: Working tree is clean; branch is `codex/pr21-recut-dispatcher-receipt-guard` (`ahead 3, behind 1`).
+- [ ] Retry Task 1 and Task 2 after DNS/API recovery, then complete Task 4 milestone push/PR sync flow.

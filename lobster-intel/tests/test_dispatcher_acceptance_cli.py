@@ -103,7 +103,8 @@ def _install_real_runtime_spine_workspace(tmp_path: Path) -> tuple[str, str, str
         {
             "artifact_id": f"receipt:{thesis_id}:{positive_run_id}",
             "run_id": positive_run_id,
-            "contract_version": "ngi_runtime_spine.v1",
+            "thesis_id": thesis_id,
+            "contract_version": "alert-contract-v1",
             "sink": "openclaw_heartbeat",
             "delivery_status": "delivered",
             "alert_artifact_id": f"alert:{thesis_id}:{positive_run_id}",

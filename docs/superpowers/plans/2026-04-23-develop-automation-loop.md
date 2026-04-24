@@ -249,3 +249,12 @@
 - [x] 2026-04-24 20:02:35+08:00: `git push origin HEAD` retried and failed (`Could not resolve host: github.com`, rc=128).
 - [x] 2026-04-24 20:02:35+08:00: Working tree remains clean on `codex/pr21-recut-dispatcher-receipt-guard` at `f8db57d`.
 - [ ] Retry Task 1 and Task 2 when network is restored, then complete Task 4 push/PR sync flow.
+
+### Task 29: 2026-04-24 21:00+08:00 network-blocked checkpoint
+- [x] 2026-04-24 21:02:04+08:00: `git fetch --prune origin` retried and failed (`Could not resolve host: github.com`, rc=128).
+- [x] 2026-04-24 21:02:04+08:00: `git rebase --fork-point origin/main` retried and reports branch up-to-date against local tracking.
+- [x] 2026-04-24 21:02:04+08:00: `gh pr list --state all --limit 20` retried and failed (`error connecting to api.github.com`).
+- [x] 2026-04-24 21:02:04+08:00: `gh issue list --state all --limit 20` retried and failed (`error connecting to api.github.com`).
+- [x] 2026-04-24 21:02:04+08:00: `git push origin HEAD` retried and failed (`Could not resolve host: github.com`, rc=128).
+- [x] 2026-04-24 21:02:04+08:00: Working tree is clean on `codex/pr21-recut-dispatcher-receipt-guard` (`ahead 8`, `behind 2`, HEAD `66075bc`).
+- [ ] Retry Task 1 and Task 2 after network restoration, then complete Task 4 push/PR sync flow.

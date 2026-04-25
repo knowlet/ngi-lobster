@@ -446,3 +446,12 @@
 - [x] 2026-04-25 19:02:05+08:00: `git push origin HEAD` failed (`Could not resolve host: github.com`, rc=128).
 - [x] 2026-04-25 19:02:05+08:00: Checked plan/workspace state; no repo content changes required beyond checkpoint doc update and branch remained clean.
 - [ ] Retry Task 1 and Task 2 after DNS/API restoration, then complete Task 4 push/PR sync flow.
+
+### Task 52: 2026-04-25 20:00+08:00 network-blocked checkpoint
+- [x] 2026-04-25 20:02:39+08:00: `git fetch --prune origin` failed (`Could not resolve host: github.com`, rc=128).
+- [x] 2026-04-25 20:02:39+08:00: `git rebase --fork-point origin/main` reported branch `codex/pr21-recut-dispatcher-receipt-guard` is up to date against local tracking.
+- [x] 2026-04-25 20:02:39+08:00: `gh pr list --state all --limit 20` failed (`error connecting to api.github.com`).
+- [x] 2026-04-25 20:02:39+08:00: `gh issue list --state all --limit 20` failed (`error connecting to api.github.com`).
+- [x] 2026-04-25 20:02:39+08:00: `git push origin HEAD` failed (`Could not resolve host: github.com`, rc=128).
+- [x] 2026-04-25 20:02:39+08:00: Working tree remained clean after checkpoint update and `git rebase --fork-point` no-op check.
+- [ ] Retry Task 1 and Task 2 after network restoration, then complete Task 4 `docs commit + push/PR sync` flow.

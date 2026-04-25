@@ -16,13 +16,17 @@ I traced the exact stale reason-code string in the workspace and found:
   - `shared-projects/intelligence-model/latest_ngi.json`
   - `alert_disposition.reason_code = target_contract_market_slug_mismatch`
   - `alert_explain_contract.reason_code = target_contract_market_slug_mismatch`
+- repo search now narrows the probable writer seam:
+  - `ngi-lobster/lobster-intel/packages/lobster-runtime/lobster_runtime/runtime_spine.py:120` is the repo path that writes runtime JSON artifacts
+  - `ngi-lobster/lobster-intel/packages/lobster-delivery/lobster_delivery/dispatcher_artifacts.py` is the downstream normalization path that republishes dispatcher-visible payloads
+  - so the first proof target is no longer abstract “trace the writer somehow”; it is to compare the live entrypoint against `runtime_spine -> dispatcher_artifacts` in repo versus the standalone workspace copy under `/Users/knowlet/.openclaw/workspace/lobster-intel`
 
 So the new highest-confidence explanation is no longer just “maybe stale deploy path”; it is specifically that the real writer path is still coupled to the standalone workspace copy or code cloned from it.
 
 ## Please review exactly this
 1. Do you agree the smallest implementation cut is to trace and switch the real writer/runtime entrypoint onto the repo-normalized contract path, instead of patching downstream verifiers again?
 2. If both copies must temporarily coexist, what is the thinnest sync mechanism to guarantee one canonical reason-code source (`legacy_target_mismatch`) and prevent slug-drift-only suppressions from reappearing?
-3. Which file/entrypoint would you inspect first to prove which runtime copy generated `latest_ngi.json`?
+3. Given the narrowed search above, would you inspect the live runtime entrypoint feeding `runtime_spine.py` first, or the callsite that republishes into dispatcher artifacts first?
 
 ## Why this matters now
 - DQ is currently `pass`

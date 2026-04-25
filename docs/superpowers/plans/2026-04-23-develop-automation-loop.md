@@ -22,6 +22,7 @@
 - [x] 2026-04-23 23:02:42+08:00: `git fetch --prune origin` failed (`Could not resolve host: github.com`); `git rebase --fork-point origin/main` reports branch up-to-date vs local `origin/main`.
 - [x] 2026-04-24 00:01:36+08:00: `git fetch --prune origin` still blocked by DNS; `git rebase --fork-point origin/main` again reports branch up-to-date vs local `origin/main`.
 - [x] 2026-04-24 01:01:01+08:00: `git fetch --prune origin` still blocked by DNS (`Could not resolve host: github.com`); `git rebase --fork-point origin/main` reports branch up-to-date against local `origin/main`.
+- [x] 2026-04-25 21:10:10+08:00: `git fetch --prune origin` blocked (`Could not resolve host: github.com`); `git rebase --fork-point origin/main` reports branch up-to-date against local tracking.
 - [ ] Retry fetch when network is available and decide whether to rebase onto latest `main`.
 
 ### Task 2: Review PR / Issue / Comment queue
@@ -35,6 +36,7 @@
 - [x] 2026-04-23 23:02:42+08:00: `gh pr list --state all --author @me --limit 10` failed (`error connecting to api.github.com`), confirming PR/comment triage is blocked.
 - [x] 2026-04-24 00:01:36+08:00: Rechecked `gh pr list --state all --limit 20` and `gh issue list --state all --limit 20`; both failed with GitHub API connectivity errors.
 - [x] 2026-04-24 01:01:01+08:00: `gh pr list --state all --limit 20` failed with `error connecting to api.github.com`; `gh issue list --state all --limit 20` also failed.
+- [x] 2026-04-25 21:10:10+08:00: Rechecked `gh pr list --state all --limit 20` and `gh issue list --state all --limit 20`; both blocked (`error connecting to api.github.com`), no triage possible.
 - [ ] Re-check PR/issue/comment queues once DNS/network is restored.
 
 ### Task 3: Continue implementation and keep documentation updated
@@ -56,6 +58,7 @@
 - [x] Record current blocker and next step for review/sync in a dedicated progress doc.
 - [x] Record a local checkpoint commit-ready note in progress doc for when network is restored.
 - [ ] Push after network restoration and open PR sync to `main` when milestone changes are present.
+- [ ] 2026-04-25 21:10:10+08:00: Re-attempted `git push origin HEAD`; still blocked by DNS (`Could not resolve host: github.com`) and publish is pending.
 
 ### Task 6: Local checkpoint hygiene
 

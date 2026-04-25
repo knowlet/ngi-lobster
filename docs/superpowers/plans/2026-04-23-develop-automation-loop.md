@@ -354,3 +354,12 @@
 - [x] 2026-04-25 08:10:00+08:00: `git push origin HEAD` retried and failed (`Could not resolve host: github.com`, rc=128).
 - [x] 2026-04-25 08:10:00+08:00: `docs/superpowers/plans/2026-04-23-develop-automation-loop.md` checkpoint updated for immediate resume after network restore; working tree still clean with no code change.
 - [ ] Retry Task 1 and Task 2 as soon as connectivity returns, then execute Task 4 (push + PR sync) and resume normal implementation work.
+
+### Task 41: 2026-04-25 09:00+08:00 network-blocked checkpoint
+- [x] 2026-04-25 09:01:10+08:00: `git fetch --prune origin` retried and failed (`Could not resolve host: github.com`, rc=128).
+- [x] 2026-04-25 09:01:10+08:00: `git rebase --fork-point origin/main` retried and branch is up to date against local tracking.
+- [x] 2026-04-25 09:01:10+08:00: `gh pr list --state all --limit 20` retried and failed (`error connecting to api.github.com`).
+- [x] 2026-04-25 09:01:10+08:00: `gh issue list --state all --limit 20` retried and failed (`error connecting to api.github.com`).
+- [x] 2026-04-25 09:01:10+08:00: `git push origin HEAD` retried and failed (`Could not resolve host: github.com`, rc=128).
+- [x] 2026-04-25 09:01:10+08:00: `docs/superpowers/plans/2026-04-23-develop-automation-loop.md` updated with Task 41 checkpoint; working tree clean and `HEAD` is `8f2bf56`.
+- [ ] Retry Task 1 and Task 2 immediately when connectivity returns, then perform Task 4 push/PR sync milestone.

@@ -8,21 +8,21 @@ import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-WORKSPACE_ROOT = ROOT.parent.parent
-SYNC_PATHS = (
+DEFAULT_WORKSPACE_ROOT = ROOT.parent.parent
+RELATIVE_SYNC_PATHS = (
     (
-        ROOT / "packages" / "lobster-runtime" / "lobster_runtime" / "monitor.py",
-        WORKSPACE_ROOT / "lobster-intel" / "packages" / "lobster-runtime" / "lobster_runtime" / "monitor.py",
+        Path("packages/lobster-runtime/lobster_runtime/monitor.py"),
+        Path("lobster-intel/packages/lobster-runtime/lobster_runtime/monitor.py"),
         "runtime monitor",
     ),
     (
-        ROOT / "packages" / "lobster-runtime" / "lobster_runtime" / "runtime_spine.py",
-        WORKSPACE_ROOT / "lobster-intel" / "packages" / "lobster-runtime" / "lobster_runtime" / "runtime_spine.py",
+        Path("packages/lobster-runtime/lobster_runtime/runtime_spine.py"),
+        Path("lobster-intel/packages/lobster-runtime/lobster_runtime/runtime_spine.py"),
         "runtime spine",
     ),
     (
-        ROOT / "packages" / "lobster-delivery" / "lobster_delivery" / "dispatcher_artifacts.py",
-        WORKSPACE_ROOT / "lobster-intel" / "packages" / "lobster-delivery" / "lobster_delivery" / "dispatcher_artifacts.py",
+        Path("packages/lobster-delivery/lobster_delivery/dispatcher_artifacts.py"),
+        Path("lobster-intel/packages/lobster-delivery/lobster_delivery/dispatcher_artifacts.py"),
         "dispatcher artifacts",
     ),
 )
@@ -40,7 +40,30 @@ def parse_args() -> argparse.Namespace:
         action="store_true",
         help="exit non-zero when any standalone workspace copy differs instead of overwriting it",
     )
+    parser.add_argument(
+        "--repo-root",
+        type=Path,
+        default=ROOT,
+        help="override the tracked ngi-lobster repo root (defaults to this script's repo)",
+    )
+    parser.add_argument(
+        "--standalone-root",
+        type=Path,
+        default=DEFAULT_WORKSPACE_ROOT,
+        help="override the standalone workspace root that contains lobster-intel/",
+    )
     return parser.parse_args()
+
+
+def build_sync_paths(repo_root: Path, standalone_root: Path) -> tuple[tuple[Path, Path, str], ...]:
+    return tuple(
+        (
+            repo_root / repo_rel,
+            standalone_root / standalone_rel,
+            label,
+        )
+        for repo_rel, standalone_rel, label in RELATIVE_SYNC_PATHS
+    )
 
 
 def diff_label(repo_path: Path, standalone_path: Path, label: str) -> str:
@@ -50,8 +73,12 @@ def diff_label(repo_path: Path, standalone_path: Path, label: str) -> str:
 def main() -> int:
     args = parse_args()
     diff_messages: list[str] = []
+    sync_paths = build_sync_paths(
+        repo_root=args.repo_root.resolve(),
+        standalone_root=args.standalone_root.resolve(),
+    )
 
-    for repo_path, standalone_path, label in SYNC_PATHS:
+    for repo_path, standalone_path, label in sync_paths:
         if not repo_path.exists():
             print(f"repo path missing for {label}: {repo_path}", file=sys.stderr)
             return 2

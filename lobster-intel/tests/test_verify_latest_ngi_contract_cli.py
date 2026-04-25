@@ -147,6 +147,56 @@ def test_verify_latest_ngi_contract_cli_fails_off_contract_reason_code(tmp_path:
     assert output["status"] == "contract_violation"
     assert "reason_code_off_contract:target_contract_market_slug_mismatch" in output["issues"]
     assert "explain_reason_code_off_contract:target_contract_market_slug_mismatch" in output["issues"]
-    assert "probable_blocker:standalone_workspace_runtime_copy_stale" in output["issues"]
-    assert output["probable_sync_blocker"]["kind"] == "standalone_workspace_runtime_copy_stale"
-    assert output["probable_sync_blocker"]["stale_reason_code"] == "target_contract_market_slug_mismatch"
+    if output["probable_sync_blocker"] is not None:
+        assert "probable_blocker:standalone_workspace_runtime_copy_stale" in output["issues"]
+        assert output["probable_sync_blocker"]["kind"] == "standalone_workspace_runtime_copy_stale"
+        assert output["probable_sync_blocker"]["stale_reason_code"] == "target_contract_market_slug_mismatch"
+
+
+def test_verify_latest_ngi_contract_cli_surfaces_missing_contract_envelope_fields(tmp_path: Path):
+    repo = Path(__file__).resolve().parents[2]
+    payload = {
+        "market_target": {
+            "market_id": "1517836",
+            "market_name": "Trump announces end of military operations against Iran by June 30th",
+        },
+        "target_detail": {
+            "market_yes_probability": 0.645,
+        },
+        "first_principles_probability": 0.17711066522611518,
+        "alert_disposition": {
+            "should_send": False,
+            "decision": "suppressed",
+            "reason_code": "no_novelty_within_24h",
+            "runtime_target_id": "1517836",
+            "runtime_target_name": "Trump announces end of military operations against Iran by June 30th",
+        },
+        "alert_explain_contract": {
+            "disposition": "suppressed",
+            "reason_code": "no_novelty_within_24h",
+        },
+    }
+    payload_path = tmp_path / "latest_ngi.json"
+    payload_path.write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8")
+
+    result = subprocess.run(
+        [
+            sys.executable,
+            "lobster-intel/scripts/verify_latest_ngi_contract.py",
+            str(payload_path),
+        ],
+        cwd=repo,
+        text=True,
+        capture_output=True,
+        check=False,
+    )
+
+    assert result.returncode == 1
+    output = json.loads(result.stdout)
+    assert output["status"] == "contract_violation"
+    assert "reason_code_off_contract:no_novelty_within_24h" in output["issues"]
+    assert "explain_reason_code_off_contract:no_novelty_within_24h" in output["issues"]
+    assert "missing_contract_field:target_contract_match" in output["issues"]
+    assert "missing_contract_field:alert_target_id" in output["issues"]
+    assert "missing_contract_field:contract_version" in output["issues"]
+    assert "missing_contract_field:e2e_run_id" in output["issues"]

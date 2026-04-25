@@ -81,6 +81,10 @@ def main(argv: list[str]) -> int:
     if explain_reason not in P0_ALLOWED_REASON_CODES:
         issues.append(f"explain_reason_code_off_contract:{explain_reason}")
 
+    if result.get("status") == "contract_incomplete":
+        for field in result.get("missing_fields") or []:
+            issues.append(f"missing_contract_field:{field}")
+
     probable_sync_blocker = None
     if issues:
         probable_sync_blocker = detect_probable_sync_blocker()

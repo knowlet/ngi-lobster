@@ -29,6 +29,50 @@ UNIFIED_DB_FILE = os.path.join(SCRIPT_DIR, "intelligence_store.sqlite")
 
 # Gap threshold on top of trigger conditions emitted by compute_ngi_fusion.py
 ALERT_THRESHOLD = 0.15
+
+
+def _iso_to_run_token(timestamp_utc):
+    if not timestamp_utc:
+        return "legacy-monitor-unknown"
+    return (
+        "legacy-monitor-"
+        + str(timestamp_utc).replace(':', '').replace('-', '').replace('+00:00', 'Z').replace('+0000', 'Z')
+    )
+
+
+def _build_alert_contract_payload(data, alert_decision, alert_reason):
+    market_target = data.get('market_target') or {}
+    runtime_target_id = market_target.get('market_id') or market_target.get('market_slug')
+    runtime_target_name = market_target.get('market_name') or market_target.get('market_question')
+    run_token = _iso_to_run_token(data.get('timestamp_utc'))
+    disposition = {
+        'should_send': alert_decision == 'would_send',
+        'decision': 'would_send' if alert_decision == 'would_send' else 'suppressed',
+        'reason_code': alert_reason,
+        'runtime_target_id': runtime_target_id,
+        'runtime_target_name': runtime_target_name,
+        'alert_target_id': runtime_target_id,
+        'target_contract_match': None if not runtime_target_id else True,
+        'contract_version': data.get('contract_version') or 'legacy-monitor-contract-v1',
+        'e2e_run_id': run_token,
+    }
+    explain_contract = {
+        'disposition': disposition['decision'],
+        'reason_code': alert_reason,
+        'runtime_target_id': runtime_target_id,
+        'runtime_target_name': runtime_target_name,
+        'alert_target_id': runtime_target_id,
+        'target_contract_match': disposition['target_contract_match'],
+        'contract_version': disposition['contract_version'],
+        'e2e_run_id': run_token,
+    }
+    return {
+        **data,
+        'alert_disposition': disposition,
+        'alert_explain_contract': explain_contract,
+    }
+
+
 def run_fusion():
     try:
         result = subprocess.run(
@@ -170,13 +214,6 @@ def main():
         print("Failed to compute NGI.", file=sys.stderr)
         sys.exit(1)
 
-    try:
-        with open(OUTPUT_FILE, 'w') as f:
-            json.dump(data, f, indent=2)
-        print(f"Result written to {OUTPUT_FILE}")
-    except Exception as e:
-        print(f"Failed to write output file: {e}", file=sys.stderr)
-
     ngi = data.get('ngi')
     expl = build_explanation(data) if ngi is not None else None
     gap_triggered = bool(data.get('gap_triggered'))
@@ -184,19 +221,33 @@ def main():
     if ngi is not None and gap_triggered and ngi > ALERT_THRESHOLD:
         decision = should_send_alert(data, expl, load_alert_state())
         if decision.should_send:
+            alert_decision = 'would_send'
+            alert_reason = decision.reason
             save_alert_state(build_signature(data, expl))
-            write_run_to_db(data, expl, 'would_send', decision.reason)
+            write_run_to_db(data, expl, alert_decision, alert_reason)
             print(f"Gap triggered and above threshold; stored as would_send: {decision.reason}")
         else:
-            write_run_to_db(data, expl, 'suppressed', decision.reason)
+            alert_decision = 'suppressed'
+            alert_reason = decision.reason
+            write_run_to_db(data, expl, alert_decision, alert_reason)
             print(f"Gap triggered but suppressed: {decision.reason}")
     else:
         # Keep last_alert_state aligned with current state/target context even when no alert fires.
         save_alert_state(build_signature(data, expl or {
             "reasons": [], "reason_keys": [], "market_misses": [], "miss_keys": [], "watch_next": [], "watch_keys": []
         }))
-        write_run_to_db(data, expl, 'below_threshold', 'no_actionable_gap')
+        alert_decision = 'below_threshold'
+        alert_reason = 'no_actionable_gap'
+        write_run_to_db(data, expl, alert_decision, alert_reason)
         print(f"No actionable gap (ngi={ngi}, gap_triggered={gap_triggered}).")
+
+    data = _build_alert_contract_payload(data, alert_decision, alert_reason)
+    try:
+        with open(OUTPUT_FILE, 'w') as f:
+            json.dump(data, f, indent=2)
+        print(f"Result written to {OUTPUT_FILE}")
+    except Exception as e:
+        print(f"Failed to write output file: {e}", file=sys.stderr)
 
 
 if __name__ == "__main__":

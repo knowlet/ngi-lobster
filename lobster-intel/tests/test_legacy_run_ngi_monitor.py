@@ -1,0 +1,49 @@
+from __future__ import annotations
+
+import importlib.util
+import sys
+import types
+from pathlib import Path
+
+
+stub_runtime = types.ModuleType("lobster_runtime")
+stub_runtime.build_explanation = lambda data: data
+stub_runtime.build_signature = lambda data, expl: {"data": data, "expl": expl}
+stub_runtime.should_send_alert = lambda data, expl, prior_state: None
+sys.modules.setdefault("lobster_runtime", stub_runtime)
+
+MODULE_PATH = Path(__file__).resolve().parents[2] / "legacy" / "intelligence-model" / "run_ngi_monitor.py"
+SPEC = importlib.util.spec_from_file_location("run_ngi_monitor", MODULE_PATH)
+run_ngi_monitor = importlib.util.module_from_spec(SPEC)
+assert SPEC is not None and SPEC.loader is not None
+SPEC.loader.exec_module(run_ngi_monitor)
+
+
+def test_build_alert_contract_payload_adds_live_contract_envelope_for_suppressed_output():
+    payload = run_ngi_monitor._build_alert_contract_payload(
+        {
+            "timestamp_utc": "2026-04-25T22:32:45.343547+00:00",
+            "market_target": {
+                "market_id": "1517836",
+                "market_name": "Trump announces end of military operations against Iran by June 30th",
+            },
+        },
+        "suppressed",
+        "no_novelty_within_24h",
+    )
+
+    disposition = payload["alert_disposition"]
+    explain = payload["alert_explain_contract"]
+
+    assert disposition["should_send"] is False
+    assert disposition["decision"] == "suppressed"
+    assert disposition["reason_code"] == "no_novelty_within_24h"
+    assert disposition["runtime_target_id"] == "1517836"
+    assert disposition["alert_target_id"] == "1517836"
+    assert disposition["target_contract_match"] is True
+    assert disposition["contract_version"] == "legacy-monitor-contract-v1"
+    assert disposition["e2e_run_id"] == "legacy-monitor-20260425T223245.343547Z"
+
+    assert explain["reason_code"] == "no_novelty_within_24h"
+    assert explain["alert_target_id"] == "1517836"
+    assert explain["e2e_run_id"] == disposition["e2e_run_id"]

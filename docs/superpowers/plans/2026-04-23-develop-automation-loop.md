@@ -425,3 +425,11 @@
 - [x] 2026-04-25 16:02:10+08:00: `git push origin HEAD` failed (`Could not resolve host: github.com`, rc=128).
 - [x] 2026-04-25 16:02:10+08:00: `develop/superpowers` plan updated and working tree remained clean.
 - [ ] Retry Task 1 and Task 2 after DNS/API restoration, then complete Task 4 push/PR sync flow.
+### Task 49: 2026-04-25 17:01:34+08:00 network-blocked checkpoint
+- [x] `git fetch --prune origin` retried and failed with DNS resolution (`Could not resolve host: github.com`, rc=128).
+- [x] `git rebase --fork-point origin/main` retried and remained up-to-date against local tracking ref.
+- [x] `gh pr list --state all --limit 20` retried and failed with GitHub API connectivity (`error connecting to api.github.com`, rc=1).
+- [x] `gh issue list --state all --limit 20` retried and failed with GitHub API connectivity (`error connecting to api.github.com`, rc=1).
+- [x] `git push origin HEAD` retried and remained blocked by DNS (`Could not resolve host: github.com`, rc=128).
+- [x] No PR/issue/actionable item available; no additional repo code changes this run.
+- [ ] Retry Task 1 and Task 2 with network recovery, then complete Task 4 push/PR sync milestone.

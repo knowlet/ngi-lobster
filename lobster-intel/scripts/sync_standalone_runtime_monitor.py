@@ -9,50 +9,82 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 WORKSPACE_ROOT = ROOT.parent.parent
-REPO_MONITOR_PATH = ROOT / "packages" / "lobster-runtime" / "lobster_runtime" / "monitor.py"
-STANDALONE_MONITOR_PATH = WORKSPACE_ROOT / "lobster-intel" / "packages" / "lobster-runtime" / "lobster_runtime" / "monitor.py"
+SYNC_PATHS = (
+    (
+        ROOT / "packages" / "lobster-runtime" / "lobster_runtime" / "monitor.py",
+        WORKSPACE_ROOT / "lobster-intel" / "packages" / "lobster-runtime" / "lobster_runtime" / "monitor.py",
+        "runtime monitor",
+    ),
+    (
+        ROOT / "packages" / "lobster-runtime" / "lobster_runtime" / "runtime_spine.py",
+        WORKSPACE_ROOT / "lobster-intel" / "packages" / "lobster-runtime" / "lobster_runtime" / "runtime_spine.py",
+        "runtime spine",
+    ),
+    (
+        ROOT / "packages" / "lobster-delivery" / "lobster_delivery" / "dispatcher_artifacts.py",
+        WORKSPACE_ROOT / "lobster-intel" / "packages" / "lobster-delivery" / "lobster_delivery" / "dispatcher_artifacts.py",
+        "dispatcher artifacts",
+    ),
+)
 
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
-        description="Sync the standalone workspace lobster-intel runtime monitor with the tracked ngi-lobster repo copy.",
+        description=(
+            "Sync the standalone workspace lobster-intel runtime/dispatcher contract paths "
+            "with the tracked ngi-lobster repo copies."
+        ),
     )
     parser.add_argument(
         "--check",
         action="store_true",
-        help="exit non-zero when the standalone workspace copy differs instead of overwriting it",
+        help="exit non-zero when any standalone workspace copy differs instead of overwriting it",
     )
     return parser.parse_args()
 
 
+def diff_label(repo_path: Path, standalone_path: Path, label: str) -> str:
+    return f"{label}: {standalone_path} != {repo_path}"
+
+
 def main() -> int:
     args = parse_args()
+    diff_messages: list[str] = []
 
-    if not REPO_MONITOR_PATH.exists():
-        print(f"repo monitor missing: {REPO_MONITOR_PATH}", file=sys.stderr)
-        return 2
-    if not STANDALONE_MONITOR_PATH.parent.exists():
-        print(f"standalone monitor parent missing: {STANDALONE_MONITOR_PATH.parent}", file=sys.stderr)
-        return 2
+    for repo_path, standalone_path, label in SYNC_PATHS:
+        if not repo_path.exists():
+            print(f"repo path missing for {label}: {repo_path}", file=sys.stderr)
+            return 2
+        if not standalone_path.parent.exists():
+            print(f"standalone path parent missing for {label}: {standalone_path.parent}", file=sys.stderr)
+            return 2
 
-    differs = not STANDALONE_MONITOR_PATH.exists() or not filecmp.cmp(
-        REPO_MONITOR_PATH,
-        STANDALONE_MONITOR_PATH,
-        shallow=False,
-    )
+        differs = not standalone_path.exists() or not filecmp.cmp(
+            repo_path,
+            standalone_path,
+            shallow=False,
+        )
+        if differs:
+            diff_messages.append(diff_label(repo_path, standalone_path, label))
+            if not args.check:
+                shutil.copyfile(repo_path, standalone_path)
 
     if args.check:
-        if differs:
-            print(
-                f"standalone runtime monitor differs: {STANDALONE_MONITOR_PATH} != {REPO_MONITOR_PATH}",
-                file=sys.stderr,
-            )
+        if diff_messages:
+            print("standalone runtime contract paths differ:", file=sys.stderr)
+            for message in diff_messages:
+                print(f"- {message}", file=sys.stderr)
             return 1
-        print(f"standalone runtime monitor already synced: {STANDALONE_MONITOR_PATH}")
+        print("standalone runtime contract paths already synced")
         return 0
 
-    shutil.copyfile(REPO_MONITOR_PATH, STANDALONE_MONITOR_PATH)
-    print(f"synced standalone runtime monitor: {STANDALONE_MONITOR_PATH}")
+    if diff_messages:
+        print("synced standalone runtime contract paths:")
+        for message in diff_messages:
+            print(f"- {message}")
+        return 0
+
+    print("standalone runtime contract paths already synced")
     return 0
 
 

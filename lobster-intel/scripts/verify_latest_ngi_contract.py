@@ -9,6 +9,8 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 WORKSPACE_ROOT = ROOT.parent.parent
 DEFAULT_LATEST_NGI_PATH = WORKSPACE_ROOT / "shared-projects" / "intelligence-model" / "latest_ngi.json"
+STANDALONE_MONITOR_PATH = WORKSPACE_ROOT / "lobster-intel" / "packages" / "lobster-runtime" / "lobster_runtime" / "monitor.py"
+STALE_REASON_CODE = "target_contract_market_slug_mismatch"
 for package_dir in (
     ROOT / "packages" / "lobster-core",
     ROOT / "packages" / "lobster-delivery",
@@ -38,6 +40,25 @@ def resolve_latest_ngi_path(argv: list[str]) -> Path:
     raise SystemExit(2)
 
 
+def detect_probable_sync_blocker() -> dict[str, object] | None:
+    if not STANDALONE_MONITOR_PATH.exists():
+        return None
+
+    content = STANDALONE_MONITOR_PATH.read_text(encoding="utf-8")
+    stale_reason_present = STALE_REASON_CODE in content
+    on_contract_reason_present = "legacy_target_mismatch" in content
+
+    if not stale_reason_present:
+        return None
+
+    return {
+        "kind": "standalone_workspace_runtime_copy_stale",
+        "path": str(STANDALONE_MONITOR_PATH),
+        "stale_reason_code": STALE_REASON_CODE,
+        "on_contract_reason_present": on_contract_reason_present,
+    }
+
+
 def main(argv: list[str]) -> int:
     path = resolve_latest_ngi_path(argv)
     payload = json.loads(path.read_text())
@@ -54,6 +75,12 @@ def main(argv: list[str]) -> int:
     if explain_reason not in P0_ALLOWED_REASON_CODES:
         issues.append(f"explain_reason_code_off_contract:{explain_reason}")
 
+    probable_sync_blocker = None
+    if issues:
+        probable_sync_blocker = detect_probable_sync_blocker()
+        if probable_sync_blocker:
+            issues.append("probable_blocker:standalone_workspace_runtime_copy_stale")
+
     status = "ok" if result.get("status") == "ok" and not issues else "contract_violation"
     output = {
         "status": status,
@@ -61,6 +88,7 @@ def main(argv: list[str]) -> int:
         "issues": issues,
         "alert_contract_view": result,
         "allowed_reason_codes": sorted(P0_ALLOWED_REASON_CODES),
+        "probable_sync_blocker": probable_sync_blocker,
     }
     print(json.dumps(output, indent=2, ensure_ascii=False, sort_keys=True))
     return 0 if status == "ok" else 1

@@ -51,6 +51,7 @@ def test_verify_latest_ngi_contract_cli_accepts_on_contract_payload(tmp_path: Pa
     output = json.loads(result.stdout)
     assert output["status"] == "ok"
     assert output["issues"] == []
+    assert output["probable_sync_blocker"] is None
 
 
 def test_verify_latest_ngi_contract_cli_uses_env_or_default_path_when_arg_omitted(tmp_path: Path):
@@ -146,3 +147,6 @@ def test_verify_latest_ngi_contract_cli_fails_off_contract_reason_code(tmp_path:
     assert output["status"] == "contract_violation"
     assert "reason_code_off_contract:target_contract_market_slug_mismatch" in output["issues"]
     assert "explain_reason_code_off_contract:target_contract_market_slug_mismatch" in output["issues"]
+    assert "probable_blocker:standalone_workspace_runtime_copy_stale" in output["issues"]
+    assert output["probable_sync_blocker"]["kind"] == "standalone_workspace_runtime_copy_stale"
+    assert output["probable_sync_blocker"]["stale_reason_code"] == "target_contract_market_slug_mismatch"

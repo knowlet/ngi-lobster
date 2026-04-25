@@ -9,6 +9,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 WORKSPACE_ROOT = ROOT.parent.parent
 DEFAULT_LATEST_NGI_PATH = WORKSPACE_ROOT / "shared-projects" / "intelligence-model" / "latest_ngi.json"
+REPO_MONITOR_PATH = ROOT / "packages" / "lobster-runtime" / "lobster_runtime" / "monitor.py"
 STANDALONE_MONITOR_PATH = WORKSPACE_ROOT / "lobster-intel" / "packages" / "lobster-runtime" / "lobster_runtime" / "monitor.py"
 STALE_REASON_CODE = "target_contract_market_slug_mismatch"
 for package_dir in (
@@ -41,20 +42,25 @@ def resolve_latest_ngi_path(argv: list[str]) -> Path:
 
 
 def detect_probable_sync_blocker() -> dict[str, object] | None:
-    if not STANDALONE_MONITOR_PATH.exists():
+    if not STANDALONE_MONITOR_PATH.exists() or not REPO_MONITOR_PATH.exists():
         return None
 
-    content = STANDALONE_MONITOR_PATH.read_text(encoding="utf-8")
-    stale_reason_present = STALE_REASON_CODE in content
-    on_contract_reason_present = "legacy_target_mismatch" in content
+    standalone_content = STANDALONE_MONITOR_PATH.read_text(encoding="utf-8")
+    repo_content = REPO_MONITOR_PATH.read_text(encoding="utf-8")
+    stale_reason_present = STALE_REASON_CODE in standalone_content
+    repo_copy_differs = standalone_content != repo_content
+    on_contract_reason_present = "legacy_target_mismatch" in standalone_content
 
-    if not stale_reason_present:
+    if not stale_reason_present and not repo_copy_differs:
         return None
 
     return {
         "kind": "standalone_workspace_runtime_copy_stale",
         "path": str(STANDALONE_MONITOR_PATH),
+        "repo_monitor_path": str(REPO_MONITOR_PATH),
         "stale_reason_code": STALE_REASON_CODE,
+        "stale_reason_present": stale_reason_present,
+        "repo_copy_differs": repo_copy_differs,
         "on_contract_reason_present": on_contract_reason_present,
     }
 

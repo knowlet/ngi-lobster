@@ -39,6 +39,13 @@
 
 ### Task 1: Remote sync and rebase decision
 
+### Task 87: 2026-04-27 05:03:12 +0800 network-blocked checkpoint
+
+- [x] `git status --short --branch` now shows clean branch at `ahead 86, behind 24`.
+- [x] `git rev-parse --short HEAD` now reports `13cace0`.
+- [x] `git push origin HEAD` attempted and failed (`Could not resolve host: github.com`, rc=128).
+- [x] Latest local checkpoint commit is `13cace0`; remote publication pending.
+
 ### Task 86: 2026-04-27 05:03:06 +0800 network-blocked checkpoint
 
 - [x] `git rev-parse --short HEAD` now reports `bf8f5af`.

@@ -529,7 +529,16 @@
 - [x] 2026-04-26 04:03:00+08:00: `gh issue list --state all --limit 20` failed with `error connecting to api.github.com`.
 - [x] 2026-04-26 04:03:00+08:00: `git push origin HEAD` still blocked by DNS (`Could not resolve host: github.com`, rc=128).
 - [x] Working tree remains clean and branch is `codex/pr21-recut-dispatcher-receipt-guard` `ahead 57, behind 24`.
-- [ ] Retry Task 1/2 when network is restored, then execute push + PR sync step toward `main`.
+ - [ ] Retry Task 1/2 when network is restored, then execute push + PR sync step toward `main`.
+
+### Task 63: 2026-04-26 08:00+08:00 network-blocked checkpoint
+- [x] 2026-04-26 08:01:20+0800: `git fetch --prune origin` retried and failed (`Could not resolve host: github.com`, rc=128).
+- [x] 2026-04-26 08:01:20+0800: `git rebase --fork-point origin/main` retried and branch is up-to-date against local tracking.
+- [x] 2026-04-26 08:01:20+0800: `gh pr list --state all --limit 20` retried and was blocked (`error connecting to api.github.com`, rc=1).
+- [x] 2026-04-26 08:01:20+0800: `gh issue list --state all --limit 20` retried and was blocked (`error connecting to api.github.com`, rc=1).
+- [x] 2026-04-26 08:01:20+0800: `git push origin HEAD` retried and failed (`Could not resolve host: github.com`, rc=128).
+- [x] Working tree remains clean on `codex/pr21-recut-dispatcher-receipt-guard` with local commit `83d5691`; branch status is `ahead 61, behind 24`.
+- [ ] Retry Task 1 and Task 2 after network restoration, then complete Task 4 `docs commit + push/PR sync` flow.
 
 ### Task 61: 2026-04-26 06:00+08:00 network-blocked checkpoint
 - [x] 2026-04-26 06:02:41+0800: `git fetch --prune origin` retried and failed (`Could not resolve host: github.com`, rc=128).

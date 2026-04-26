@@ -23,6 +23,7 @@
 - [x] 2026-04-24 00:01:36+08:00: `git fetch --prune origin` still blocked by DNS; `git rebase --fork-point origin/main` again reports branch up-to-date vs local `origin/main`.
 - [x] 2026-04-24 01:01:01+08:00: `git fetch --prune origin` still blocked by DNS (`Could not resolve host: github.com`); `git rebase --fork-point origin/main` reports branch up-to-date against local `origin/main`.
 - [x] 2026-04-25 21:10:10+08:00: `git fetch --prune origin` blocked (`Could not resolve host: github.com`); `git rebase --fork-point origin/main` reports branch up-to-date against local tracking.
+- [x] 2026-04-26 09:03:05+08:00: `git fetch --prune origin` blocked (`Could not resolve host: github.com`, rc=128); `git rebase --fork-point origin/main` reports branch up-to-date against local tracking.
 - [ ] Retry fetch when network is available and decide whether to rebase onto latest `main`.
 
 ### Task 2: Review PR / Issue / Comment queue
@@ -37,6 +38,7 @@
 - [x] 2026-04-24 00:01:36+08:00: Rechecked `gh pr list --state all --limit 20` and `gh issue list --state all --limit 20`; both failed with GitHub API connectivity errors.
 - [x] 2026-04-24 01:01:01+08:00: `gh pr list --state all --limit 20` failed with `error connecting to api.github.com`; `gh issue list --state all --limit 20` also failed.
 - [x] 2026-04-25 21:10:10+08:00: Rechecked `gh pr list --state all --limit 20` and `gh issue list --state all --limit 20`; both blocked (`error connecting to api.github.com`), no triage possible.
+- [x] 2026-04-26 09:03:05+08:00: Rechecked `gh pr list --state all --limit 20` and `gh issue list --state all --limit 20`; both blocked with `error connecting to api.github.com` (rc=1), no PR/Issue triage possible.
 - [ ] Re-check PR/issue/comment queues once DNS/network is restored.
 
 ### Task 3: Continue implementation and keep documentation updated

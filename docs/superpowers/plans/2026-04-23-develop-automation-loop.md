@@ -700,3 +700,12 @@
 - [x] `git push origin HEAD` was retried and failed (`Could not resolve host: github.com`, rc=128).
 - [x] `git status --short --branch` reports clean working tree (`ahead 77, behind 24`) on `codex/pr21-recut-dispatcher-receipt-guard`.
 - [ ] Retry Task 1 and Task 2 when network access is restored; then run `git push origin HEAD` and reopen PR sync flow.
+
+### Task 80: 2026-04-27 01:02+08:00 network-blocked checkpoint
+- [x] `git fetch --prune origin` was retried and failed (`Could not resolve host: github.com`, rc=128).
+- [x] `git rebase --fork-point origin/main` was retried and branch is up-to-date against local tracking ref.
+- [x] `gh pr list --state all --limit 20` was retried and failed (`error connecting to api.github.com`, rc=1); PR/issue triage remains blocked.
+- [x] `gh issue list --state all --limit 20` was retried and failed (`error connecting to api.github.com`, rc=1); issue triage remains blocked.
+- [x] `git push origin HEAD` was retried and failed (`Could not resolve host: github.com`, rc=128).
+- [x] Working tree is clean; latest local `HEAD` is `2698f2b` on `codex/pr21-recut-dispatcher-receipt-guard`; status remains `ahead 78, behind 24`.
+- [ ] Retry Task 1 and Task 2 once network and GitHub API access are restored, then complete Task 4 (`git push` + PR sync) milestone.

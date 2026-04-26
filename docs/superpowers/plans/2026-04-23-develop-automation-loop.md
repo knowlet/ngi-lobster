@@ -39,6 +39,13 @@
 
 ### Task 1: Remote sync and rebase decision
 
+### Task 85: 2026-04-27 05:02:56 +0800 network-blocked checkpoint
+
+- [x] `docs/superpowers/plans/2026-04-23-develop-automation-loop.md` updated with Task 84 content.
+- [x] `git status --short --branch` shows clean branch `codex/pr21-recut-dispatcher-receipt-guard...origin/codex/pr21-recut-dispatcher-receipt-guard [ahead 84, behind 24]`.
+- [x] `git push origin HEAD` attempted and failed (`Could not resolve host: github.com`, rc=128).
+- [x] Latest local checkpoint commit is `2ac690f`; remote publication pending.
+
 ### Task 75: 2026-04-26 20:01:00+08:00 network-blocked checkpoint
 
 - [x] `git fetch --prune origin` retried and failed (`Could not resolve host: github.com`, rc=128).

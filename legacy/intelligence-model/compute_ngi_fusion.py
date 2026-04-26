@@ -8,6 +8,7 @@ import json
 import os
 import sys
 from datetime import datetime, timedelta, timezone
+from pathlib import Path
 import sqlite3
 import requests
 
@@ -335,6 +336,9 @@ def main():
             adsb_used=used_adsb,
             firehose_events_analyzed=len(events),
             firehose_peace_score=firehose_score,
+            firehose_source_run_id=None,
+            firehose_latest_event_at_utc=None,
+            firehose_latest_collected_at_utc=None,
             adsb_weight=W_ADSB,
             firehose_weight=W_FIREHOSE,
             first_principles_probability=fp_peace,

@@ -12,6 +12,16 @@
 
 ### Task 1: Remote sync and rebase decision
 
+### Task 75: 2026-04-26 20:01:00+08:00 network-blocked checkpoint
+
+- [x] `git fetch --prune origin` retried and failed (`Could not resolve host: github.com`, rc=128).
+- [x] `git rebase --fork-point origin/main` retried and reports branch is up-to-date against local tracking.
+- [x] `gh pr list --state all --limit 20` retried and failed (`error connecting to api.github.com`, rc=1); API triage remains blocked.
+- [x] `gh issue list --state all --limit 20` retried and failed (`error connecting to api.github.com`, rc=1); Issue triage remains blocked.
+- [x] `git push origin HEAD` retried and failed (`Could not resolve host: github.com`, rc=128).
+- [x] Local tree remains clean (`git status --short --branch` reports `ahead 73, behind 24` on `codex/pr21-recut-dispatcher-receipt-guard`).
+
+
 **Files:** None
 
 - [x] Confirm remote origin URL is configured.

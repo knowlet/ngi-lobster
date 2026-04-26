@@ -55,6 +55,16 @@
 - [x] `git push origin HEAD` attempted and failed (`Could not resolve host: github.com`, rc=128).
 - [x] Working tree remains clean and branch is `codex/pr21-recut-dispatcher-receipt-guard` at `ahead 87, behind 24` on `HEAD` `55b90b2`.
 
+### Task 89: 2026-04-27 07:02:45 +0800 network-blocked checkpoint
+
+- [x] `git fetch --prune origin` was attempted and blocked (`Could not resolve host: github.com`, rc=128).
+- [x] `git rebase --fork-point origin/main` reports branch is up-to-date against local tracking.
+- [x] `gh pr list --state all --limit 20` was attempted and failed (`error connecting to api.github.com`, rc=1); review triage blocked.
+- [x] `gh issue list --state all --limit 20` was attempted and failed (`error connecting to api.github.com`, rc=1); issue triage blocked.
+- [x] `git push origin HEAD` was attempted and failed (`Could not resolve host: github.com`, rc=128).
+- [x] Working tree remains clean and branch is `codex/pr21-recut-dispatcher-receipt-guard` at `ahead 88, behind 24` on `HEAD` `786b0d8`.
+- [ ] Retry Task 1 and Task 2 when network access is restored, then complete Task 4 (`git push` + PR sync to main).
+
 ### Task 86: 2026-04-27 05:03:06 +0800 network-blocked checkpoint
 
 - [x] `git rev-parse --short HEAD` now reports `bf8f5af`.

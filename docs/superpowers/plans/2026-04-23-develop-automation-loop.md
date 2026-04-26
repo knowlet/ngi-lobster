@@ -595,3 +595,13 @@
 - [x] 2026-04-26 11:02:35+08:00: `git push origin HEAD` retried and was blocked by DNS (`Could not resolve host: github.com`, rc=128).
 - [x] 2026-04-26 11:02:35+08:00: Working tree remains clean on `codex/pr21-recut-dispatcher-receipt-guard` at local commit `bae0e48`; branch status is `ahead 64, behind 24`.
 - [ ] Retry Task 1 and Task 2 when network is restored, then execute Task 4 (`git push` + PR sync) milestone.
+
+### Task 69: 2026-04-26 14:02+08:00 network-blocked checkpoint
+- [x] 2026-04-26 14:02:40+08:00: `git fetch --prune origin` was blocked (`Could not resolve host: github.com`, rc=128).
+- [x] 2026-04-26 14:02:40+08:00: `git rebase --fork-point origin/main` reports branch is up-to-date against local tracking.
+- [x] 2026-04-26 14:02:40+08:00: `gh pr list --state all --limit 20` was blocked (`error connecting to api.github.com`, rc=1).
+- [x] 2026-04-26 14:02:40+08:00: `gh issue list --state all --limit 20` was blocked (`error connecting to api.github.com`, rc=1).
+- [x] 2026-04-26 14:02:40+08:00: `git push origin HEAD` was blocked (`Could not resolve host: github.com`, rc=128).
+- [x] Working tree remains clean, no local repo content changes.
+- [x] Checkpoint context: `codex/pr21-recut-dispatcher-receipt-guard` at `027d6a7` with branch status `ahead 67, behind 24`.
+- [ ] Retry Task 1 and Task 2 when network is restored, then complete Task 4 push/PR sync milestone.

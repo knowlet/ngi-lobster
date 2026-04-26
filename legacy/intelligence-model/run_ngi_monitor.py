@@ -8,14 +8,20 @@ import sys
 import subprocess
 import sqlite3
 from datetime import datetime, timezone
+from pathlib import Path
 
-LOBSTER_PACKAGES = "/Users/knowlet/.openclaw/workspace/lobster-intel/packages"
+REPO_ROOT = Path(__file__).resolve().parents[2]
+LOBSTER_PACKAGES = Path(
+    os.environ.get("LOBSTER_PACKAGES_DIR")
+    or (REPO_ROOT / "lobster-intel" / "packages")
+).resolve()
 for package_dir in (
-    os.path.join(LOBSTER_PACKAGES, "lobster-core"),
-    os.path.join(LOBSTER_PACKAGES, "lobster-runtime"),
+    LOBSTER_PACKAGES / "lobster-core",
+    LOBSTER_PACKAGES / "lobster-runtime",
 ):
-    if package_dir not in sys.path:
-        sys.path.insert(0, package_dir)
+    package_dir_str = str(package_dir)
+    if package_dir_str not in sys.path:
+        sys.path.insert(0, package_dir_str)
 
 from lobster_runtime import build_explanation, build_signature, should_send_alert
 

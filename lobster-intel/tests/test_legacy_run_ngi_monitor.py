@@ -19,6 +19,11 @@ assert SPEC is not None and SPEC.loader is not None
 SPEC.loader.exec_module(run_ngi_monitor)
 
 
+def test_legacy_monitor_uses_repo_local_lobster_packages_by_default():
+    expected = (Path(__file__).resolve().parents[2] / "lobster-intel" / "packages").resolve()
+    assert run_ngi_monitor.LOBSTER_PACKAGES == expected
+
+
 def test_build_alert_contract_payload_adds_live_contract_envelope_for_suppressed_output():
     payload = run_ngi_monitor._build_alert_contract_payload(
         {

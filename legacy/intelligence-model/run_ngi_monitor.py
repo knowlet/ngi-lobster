@@ -23,7 +23,13 @@ for package_dir in (
     if package_dir_str not in sys.path:
         sys.path.insert(0, package_dir_str)
 
-from lobster_runtime import build_explanation, build_signature, should_send_alert
+from lobster_runtime import (
+    TARGET_CONTRACT_MISMATCH_REASON,
+    TARGET_CONTRACT_OK_REASON,
+    build_explanation,
+    build_signature,
+    should_send_alert,
+)
 
 # Paths
 SCRIPT_DIR = "/Users/knowlet/.openclaw/workspace/shared-projects/intelligence-model"
@@ -46,15 +52,24 @@ def _iso_to_run_token(timestamp_utc):
     )
 
 
+def _map_public_reason_code(alert_decision, alert_reason):
+    if alert_decision == 'would_send':
+        return alert_reason
+    if alert_reason == TARGET_CONTRACT_MISMATCH_REASON:
+        return TARGET_CONTRACT_MISMATCH_REASON
+    return TARGET_CONTRACT_OK_REASON
+
+
 def _build_alert_contract_payload(data, alert_decision, alert_reason):
     market_target = data.get('market_target') or {}
     runtime_target_id = market_target.get('market_id') or market_target.get('market_slug')
     runtime_target_name = market_target.get('market_name') or market_target.get('market_question')
     run_token = _iso_to_run_token(data.get('timestamp_utc'))
+    public_reason_code = _map_public_reason_code(alert_decision, alert_reason)
     disposition = {
         'should_send': alert_decision == 'would_send',
         'decision': 'would_send' if alert_decision == 'would_send' else 'suppressed',
-        'reason_code': alert_reason,
+        'reason_code': public_reason_code,
         'runtime_target_id': runtime_target_id,
         'runtime_target_name': runtime_target_name,
         'alert_target_id': runtime_target_id,
@@ -64,13 +79,14 @@ def _build_alert_contract_payload(data, alert_decision, alert_reason):
     }
     explain_contract = {
         'disposition': disposition['decision'],
-        'reason_code': alert_reason,
+        'reason_code': public_reason_code,
         'runtime_target_id': runtime_target_id,
         'runtime_target_name': runtime_target_name,
         'alert_target_id': runtime_target_id,
         'target_contract_match': disposition['target_contract_match'],
         'contract_version': disposition['contract_version'],
         'e2e_run_id': run_token,
+        'internal_runtime_reason_code': alert_reason,
     }
     return {
         **data,

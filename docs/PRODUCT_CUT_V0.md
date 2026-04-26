@@ -53,7 +53,8 @@ For any live NGI gap view, the product contract is the runtime artifact itself, 
 14. Positive-control delivery is not valid if it only exists inside mocks, unit-test doubles, or local log replays. The E2E evidence bundle must include machine-readable proof that the delivered fixture crossed the real dispatcher or delivery network boundary, or an explicitly declared external sink boundary used by production wiring.
 15. `runtime_target_id` in dispatcher-visible output must come directly from the runtime active target contract (`latest_ngi.json.market_target` / `target_detail` lineage), not merely from a self-consistent alert payload.
 16. Renderer-only or markdown-only smoke does not close this cut. The cut closes only when consumer or dispatcher output on the real delivery path shows the exact contract fields for both fixtures, so PO can audit the gate decision without reading source code.
-17. Until step 16 is proven, `positive-control delivered` is not a valid project status. The only valid status is `explain-contract E2E still blocking`, even if background generation, renderer output, or manual replay already look correct.
+17. Internal runtime policy labels are not automatically valid downstream product `reason_code`s. In particular, `no_novelty_within_24h` may exist inside runtime gating or explain/debug traces, but live delivery surfaces must map it onto an approved dispatcher-facing contract code before writing `latest_ngi.json`, and that outward record must still preserve `target_contract_match`, `alert_target_id`, `contract_version`, and `e2e_run_id`.
+18. Until step 16 is proven, `positive-control delivered` is not a valid project status. The only valid status is `explain-contract E2E still blocking`, even if background generation, renderer output, or manual replay already look correct.
 
 ### Current DoD for the highest-priority cut
 

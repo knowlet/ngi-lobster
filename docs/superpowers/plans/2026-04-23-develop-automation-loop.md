@@ -10,8 +10,6 @@
 
 ---
 
-### Task 1: Remote sync and rebase decision
-
 ### Task 82: 2026-04-27 03:01:13 +0800 network-blocked checkpoint
 
 - [x] `git fetch --prune origin` attempted and blocked (`Could not resolve host: github.com`, rc=128).

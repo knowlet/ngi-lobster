@@ -773,7 +773,11 @@ def _decide_alert(
 
     if compare_mode == "suppressed":
         should_send = False
-        reason_code = (compare_artifact["fallback_reason_codes"] or ["suppressed_compare_mode"])[0]
+        fallback_reason_codes = compare_artifact["fallback_reason_codes"] or ["suppressed_compare_mode"]
+        if TARGET_CONTRACT_MISMATCH_REASON in fallback_reason_codes:
+            reason_code = TARGET_CONTRACT_MISMATCH_REASON
+        else:
+            reason_code = fallback_reason_codes[0]
         novelty_basis = "compare_suppressed"
     elif not (confidence_gate and freshness_gate and dq_gate):
         should_send = False

@@ -17,6 +17,7 @@ for rel in [
 
 from lobster_delivery import write_dispatcher_e2e_bundle
 from lobster_runtime import ThesisRuntimeInput, run_thesis_runtime
+from lobster_runtime.runtime_spine import _decide_alert, compare_targets
 
 
 def _source_payload(*, plugin: str, source_id: str, source_type: str, title: str, now_utc: str) -> dict:
@@ -165,3 +166,44 @@ def test_runtime_spine_uses_dispatcher_contract_reason_code_for_legacy_target_mi
     assert positive.delivery_receipt["delivery_proof"]["boundary"] == "openclaw_heartbeat"
     assert bundle["bundle"]["fixtures"][0]["reason_code"] == "legacy_target_mismatch"
     assert bundle["bundle"]["fixtures"][1]["delivery_proof"]["proof_id"] == f"heartbeat:{positive.run_id}"
+
+
+def test_runtime_spine_prefers_contract_reason_code_when_mismatch_is_not_first_fallback(tmp_path: Path):
+    compare_artifact = compare_targets(
+        active_target={
+            "market_id": "1517836",
+            "market_slug": "trump-end-ops-june-30",
+            "semantic_frame": "truce_outcome",
+            "probability_direction": "yes_is_peace",
+            "fallback_used": True,
+        },
+        market_candidate={
+            "market_id": "legacy-430",
+            "market_slug": "iran-israel-ceasefire-by-april-30",
+            "semantic_frame": "truce_outcome",
+            "probability_direction": "yes_is_peace",
+        },
+    )
+    runtime_snapshot = {
+        "confidence": 0.9,
+        "freshness": "fresh",
+        "dq_status": "pass",
+        "compare_mode": "suppressed",
+        "ngi_gap": 0.2,
+    }
+    inp = ThesisRuntimeInput(thesis_id="gooaye", workspace_dir=tmp_path)
+
+    alert_artifact = _decide_alert(
+        inp=inp,
+        run_id="run-1",
+        created_at_utc="2026-04-21T00:00:00+00:00",
+        runtime_snapshot=runtime_snapshot,
+        compare_artifact={**compare_artifact, "artifact_id": "compare:gooaye:run-1"},
+        prior_runtime_snapshot=None,
+    )
+
+    assert compare_artifact["fallback_reason_codes"] == [
+        "live_search_fallback",
+        "legacy_target_mismatch",
+    ]
+    assert alert_artifact["reason_code"] == "legacy_target_mismatch"

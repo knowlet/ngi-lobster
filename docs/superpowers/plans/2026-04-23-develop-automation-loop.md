@@ -872,3 +872,12 @@
 - [x] `git push origin HEAD` was attempted and blocked (`Could not resolve host: github.com`, rc=128).
 - [x] `git status --short --branch` is clean; branch is `codex/pr21-recut-dispatcher-receipt-guard` at `ahead 114, behind 24` on `HEAD` `6fd8a95`.
 - [ ] Retry Task 1 and Task 2 when network/API access returns, then complete Task 4 (`git push`) and Task 5 (`main` 同步/PR 流程).
+
+### Task 99: 2026-04-27 16:01:13 +0800 network-blocked checkpoint
+- [x] `git fetch --prune origin` was attempted and blocked (`Could not resolve host: github.com`, rc=128).
+- [x] `git rebase --fork-point origin/main` reports branch is up-to-date against local tracking.
+- [x] `gh pr list --state all --limit 20` was attempted and failed (`error connecting to api.github.com`, rc=1); review triage blocked.
+- [x] `gh issue list --state all --limit 20` was attempted and failed (`error connecting to api.github.com`, rc=1); issue triage blocked.
+- [x] `git push origin HEAD` was attempted and blocked (`Could not resolve host: github.com`, rc=128).
+- [x] `git status --short --branch` is clean; branch is `codex/pr21-recut-dispatcher-receipt-guard` at `ahead 115, behind 24` on `HEAD` `09cf28a`.
+- [ ] Retry Task 1 and Task 2 when network/API access returns, then complete Task 4 (`git push`) and Task 5 (`main` 同步/PR 流程).

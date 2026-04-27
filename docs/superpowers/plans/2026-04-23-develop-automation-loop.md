@@ -219,6 +219,16 @@
 
 - [x] Log a concrete local verification that no-op rebase is safe against `origin/main`.
 
+### Task 101: 2026-04-27 18:01:12+08:00 network-blocked checkpoint
+
+- [x] `git fetch --prune origin` was attempted and blocked (`Could not resolve host: github.com`, rc=128).
+- [x] `git rebase --fork-point origin/main` successfully replayed 90 commits and completed cleanly.
+- [x] `gh pr list --state all --limit 20` was attempted and failed (`error connecting to api.github.com`); review triage blocked.
+- [x] `gh issue list --state all --limit 20` was attempted and failed (`error connecting to api.github.com`); issue triage blocked.
+- [x] `git push origin HEAD` was attempted and was blocked (`Could not resolve host: github.com`, rc=128).
+- [x] Working tree remains clean and branch is `codex/pr21-recut-dispatcher-receipt-guard` at `ahead 118, behind 24` on `HEAD` `92a7e75`.
+- [ ] Retry `Task 1`, `Task 2`, and `Task 5` when DNS/API access is restored, then complete `Task 4` (`git push`) and PR sync to main.
+
 ### Task 5: Remote sync checkpoint
 
 - [x] Re-attempted `git fetch --prune origin` on 2026-04-23 18:02:38+08:00; still blocked by DNS (`Could not resolve host: github.com`).

@@ -54,7 +54,8 @@ For any live NGI gap view, the product contract is the runtime artifact itself, 
 15. `runtime_target_id` in dispatcher-visible output must come directly from the runtime active target contract (`latest_ngi.json.market_target` / `target_detail` lineage), not merely from a self-consistent alert payload.
 16. Renderer-only or markdown-only smoke does not close this cut. The cut closes only when consumer or dispatcher output on the real delivery path shows the exact contract fields for both fixtures, so PO can audit the gate decision without reading source code.
 17. Internal runtime policy labels are not automatically valid downstream product `reason_code`s. In particular, `no_novelty_within_24h` may exist inside runtime gating or explain/debug traces, but live delivery surfaces must map it onto an approved dispatcher-facing contract code before writing `latest_ngi.json`, and that outward record must still preserve `target_contract_match`, `alert_target_id`, `contract_version`, and `e2e_run_id`.
-18. Until step 16 is proven, `positive-control delivered` is not a valid project status. The only valid status is `explain-contract E2E still blocking`, even if background generation, renderer output, or manual replay already look correct.
+18. PO decision for the active-target freshness-suppressed case: when `target_contract_match=true` and the internal runtime label is `no_novelty_within_24h`, the outward dispatcher-facing `reason_code` must be `active_target_contract_ok`. The internal label must be preserved separately as `internal_runtime_reason_code`; it must not replace the public contract code.
+19. Until step 16 is proven, `positive-control delivered` is not a valid project status. The only valid status is `explain-contract E2E still blocking`, even if background generation, renderer output, or manual replay already look correct.
 
 ### Current DoD for the highest-priority cut
 

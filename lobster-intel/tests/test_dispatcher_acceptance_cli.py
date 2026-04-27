@@ -119,6 +119,35 @@ def _install_real_runtime_spine_workspace(tmp_path: Path) -> tuple[str, str, str
     return thesis_id, suppressed_run_id, positive_run_id
 
 
+def _write_valid_latest_ngi(path: Path) -> None:
+    _write_json(
+        path,
+        {
+            "first_principles_probability": 0.1443,
+            "market_target": {
+                "market_id": "1517836",
+                "market_name": "Trump announces end of military operations against Iran by June 30th",
+            },
+            "target_detail": {"market_yes_probability": 0.83},
+            "alert_disposition": {
+                "should_send": False,
+                "decision": "suppressed",
+                "reason_code": "legacy_target_mismatch",
+                "target_contract_match": False,
+                "runtime_target_id": "1517836",
+                "runtime_target_name": "Trump announces end of military operations against Iran by June 30th",
+                "alert_target_id": "legacy-430",
+                "contract_version": "alert-contract-v1",
+                "e2e_run_id": "bundle-20260421-operator",
+            },
+            "alert_explain_contract": {
+                "disposition": "suppressed",
+                "reason_code": "legacy_target_mismatch",
+            },
+        },
+    )
+
+
 def test_run_dispatcher_acceptance_cli_writes_artifacts_and_bundle(tmp_path: Path):
     thesis_id, suppressed_run_id, positive_run_id = _install_real_runtime_spine_workspace(tmp_path)
     script_path = ROOT / "lobster-intel" / "scripts" / "run_dispatcher_acceptance.py"
@@ -229,3 +258,87 @@ def test_run_dispatcher_acceptance_cli_rejects_mismatched_persisted_receipt(tmp_
 
     assert completed.returncode == 1
     assert "persisted receipt metadata does not match requested positive run" in completed.stderr
+
+
+def test_run_dispatcher_acceptance_cli_can_gate_on_latest_ngi_contract(tmp_path: Path):
+    thesis_id, suppressed_run_id, positive_run_id = _install_real_runtime_spine_workspace(tmp_path)
+    latest_ngi_path = tmp_path / "shared-projects" / "intelligence-model" / "latest_ngi.json"
+    _write_valid_latest_ngi(latest_ngi_path)
+    script_path = ROOT / "lobster-intel" / "scripts" / "run_dispatcher_acceptance.py"
+
+    completed = subprocess.run(
+        [
+            sys.executable,
+            str(script_path),
+            "--workspace",
+            str(tmp_path),
+            "--thesis-id",
+            thesis_id,
+            "--bundle-id",
+            "bundle-20260421-operator",
+            "--suppressed-run-id",
+            suppressed_run_id,
+            "--positive-run-id",
+            positive_run_id,
+            "--verify-latest-ngi-path",
+            str(latest_ngi_path),
+        ],
+        cwd=ROOT,
+        text=True,
+        capture_output=True,
+        check=False,
+    )
+
+    assert completed.returncode == 0, completed.stderr
+    payload = json.loads(completed.stdout)
+    assert payload["latest_ngi_contract"]["status"] == "ok"
+    assert payload["latest_ngi_contract"]["path"] == str(latest_ngi_path)
+
+
+def test_run_dispatcher_acceptance_cli_fails_closed_on_off_contract_latest_ngi(tmp_path: Path):
+    thesis_id, suppressed_run_id, positive_run_id = _install_real_runtime_spine_workspace(tmp_path)
+    latest_ngi_path = tmp_path / "shared-projects" / "intelligence-model" / "latest_ngi.json"
+    _write_json(
+        latest_ngi_path,
+        {
+            "market_target": {"market_id": "1517836", "market_name": "Target"},
+            "target_detail": {"market_yes_probability": 0.83},
+            "first_principles_probability": 0.1443,
+            "alert_disposition": {
+                "should_send": False,
+                "decision": "suppressed",
+                "reason_code": "no_novelty_within_24h",
+            },
+            "alert_explain_contract": {
+                "disposition": "suppressed",
+                "reason_code": "no_novelty_within_24h",
+            },
+        },
+    )
+    script_path = ROOT / "lobster-intel" / "scripts" / "run_dispatcher_acceptance.py"
+
+    completed = subprocess.run(
+        [
+            sys.executable,
+            str(script_path),
+            "--workspace",
+            str(tmp_path),
+            "--thesis-id",
+            thesis_id,
+            "--bundle-id",
+            "bundle-20260421-operator",
+            "--suppressed-run-id",
+            suppressed_run_id,
+            "--positive-run-id",
+            positive_run_id,
+            "--verify-latest-ngi-path",
+            str(latest_ngi_path),
+        ],
+        cwd=ROOT,
+        text=True,
+        capture_output=True,
+        check=False,
+    )
+
+    assert completed.returncode == 1
+    assert "latest_ngi contract violation" in completed.stderr

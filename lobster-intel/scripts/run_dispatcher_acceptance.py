@@ -18,7 +18,7 @@ for package_dir in (
     sys.path.insert(0, str(package_dir))
 
 from lobster_delivery import write_dispatcher_artifacts, write_dispatcher_e2e_bundle
-from lobster_delivery import build_dispatcher_artifact_payloads, build_e2e_contract_bundle_view
+from lobster_delivery import build_alert_contract_view, build_dispatcher_artifact_payloads, build_e2e_contract_bundle_view
 
 
 def _load_json(path: str | Path) -> dict:
@@ -30,6 +30,46 @@ def _load_optional_json(path: str | Path) -> dict | None:
     if not resolved.exists():
         return None
     return _load_json(resolved)
+
+
+P0_ALLOWED_REASON_CODES = {
+    "legacy_target_mismatch",
+    "suppressed_runtime_target_missing",
+    "active_target_contract_ok",
+    "explanation_or_target_changed",
+    "ngi_changed_major",
+}
+
+
+def _verify_latest_ngi_contract(path: str | Path) -> dict:
+    payload = _load_json(path)
+    result = build_alert_contract_view(payload)
+    disposition_reason = ((payload.get("alert_disposition") or {}).get("reason_code"))
+    explain_reason = ((payload.get("alert_explain_contract") or {}).get("reason_code"))
+
+    issues: list[str] = []
+    if disposition_reason != explain_reason:
+        issues.append("reason_code_mismatch:alert_disposition_vs_alert_explain_contract")
+    if disposition_reason not in P0_ALLOWED_REASON_CODES:
+        issues.append(f"reason_code_off_contract:{disposition_reason}")
+    if explain_reason not in P0_ALLOWED_REASON_CODES:
+        issues.append(f"explain_reason_code_off_contract:{explain_reason}")
+    if result.get("status") == "contract_incomplete":
+        for field in result.get("missing_fields") or []:
+            issues.append(f"missing_contract_field:{field}")
+
+    if issues:
+        raise ValueError(
+            "latest_ngi contract violation at "
+            f"{Path(path)}: "
+            + ", ".join(issues)
+        )
+
+    return {
+        "status": "ok",
+        "path": str(Path(path)),
+        "alert_contract_view": result,
+    }
 
 
 def _validate_persisted_receipt(
@@ -156,6 +196,7 @@ def main(argv: list[str]) -> int:
     parser.add_argument("--proof-boundary")
     parser.add_argument("--proof-id")
     parser.add_argument("--now-utc")
+    parser.add_argument("--verify-latest-ngi-path")
     args = parser.parse_args(argv[1:])
 
     runtime_root = Path(args.workspace) / "lobster-intel" / "data" / "runtime" / args.thesis_id / "runs"
@@ -168,6 +209,9 @@ def main(argv: list[str]) -> int:
             positive_runtime=positive_runtime,
             receipts_root=receipts_root,
         )
+        latest_ngi_contract = None
+        if args.verify_latest_ngi_path:
+            latest_ngi_contract = _verify_latest_ngi_contract(args.verify_latest_ngi_path)
         _preflight_bundle_contract(
             args,
             suppressed_runtime=suppressed_runtime,
@@ -208,6 +252,7 @@ def main(argv: list[str]) -> int:
                 "suppressed": suppressed,
                 "positive": positive,
                 "bundle": bundle,
+                "latest_ngi_contract": latest_ngi_contract,
             },
             ensure_ascii=False,
             indent=2,

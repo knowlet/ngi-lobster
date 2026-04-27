@@ -15,7 +15,7 @@ for rel in [
 ]:
     sys.path.insert(0, str(PACKAGES / rel))
 
-from lobster_delivery import write_dispatcher_e2e_bundle
+from lobster_delivery import build_alert_contract_view, write_dispatcher_e2e_bundle
 from lobster_runtime import ThesisRuntimeInput, run_thesis_runtime
 from lobster_runtime.runtime_spine import _decide_alert, compare_targets
 
@@ -171,7 +171,18 @@ def test_runtime_spine_uses_dispatcher_contract_reason_code_for_legacy_target_mi
         "alert_target_id": "legacy-430",
         "target_contract_match": False,
         "contract_version": suppressed.runtime_snapshot["contract_version"],
+        "e2e_run_id": suppressed.run_id,
     }
+    suppressed_contract = build_alert_contract_view({
+        "market_target": suppressed.runtime_snapshot["active_target"],
+        "target_detail": {
+            "market_yes_probability": suppressed.runtime_snapshot["market_implied_probability"],
+        },
+        "first_principles_probability": suppressed.runtime_snapshot["P_AI"],
+        "alert_disposition": suppressed.runtime_snapshot["alert_disposition"],
+    })
+
+    assert suppressed_contract["status"] == "ok"
     assert positive.alert_artifact["should_send"] is True
     assert positive.runtime_snapshot["alert_disposition"]["target_contract_match"] is True
     assert positive.runtime_snapshot["alert_disposition"]["delivery_proof"]["proof_id"] == f"heartbeat:{positive.run_id}"

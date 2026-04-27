@@ -863,6 +863,7 @@ def _runtime_alert_disposition(
     compare_artifact: dict[str, Any],
     alert_artifact: dict[str, Any],
     delivery_receipt: dict[str, Any],
+    run_id: str,
 ) -> dict[str, Any]:
     active_target = runtime_snapshot.get("active_target") or {}
     runtime_target_id = (
@@ -882,6 +883,7 @@ def _runtime_alert_disposition(
         if runtime_target_id in (None, "") or alert_target_id in (None, "")
         else runtime_target_id == alert_target_id,
         "contract_version": alert_artifact.get("contract_version") or runtime_snapshot.get("contract_version"),
+        "e2e_run_id": run_id,
     }
     delivery_proof = delivery_receipt.get("delivery_proof")
     if disposition["decision"] == "would_send" and delivery_proof is not None:
@@ -1067,6 +1069,7 @@ def run_thesis_runtime(inp: ThesisRuntimeInput) -> ThesisRuntimeResult:
         compare_artifact=compare_artifact,
         alert_artifact=alert_artifact,
         delivery_receipt=delivery_receipt,
+        run_id=run_id,
     )
 
     _persist_evidence(inp.workspace_dir, inp.thesis_id, evidence_artifacts)

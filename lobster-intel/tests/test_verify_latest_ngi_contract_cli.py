@@ -200,3 +200,15 @@ def test_verify_latest_ngi_contract_cli_surfaces_missing_contract_envelope_field
     assert "missing_contract_field:alert_target_id" in output["issues"]
     assert "missing_contract_field:contract_version" in output["issues"]
     assert "missing_contract_field:e2e_run_id" in output["issues"]
+    assert "probable_blocker:live_writer_missing_dispatcher_contract_envelope" in output["issues"]
+    assert output["probable_sync_blocker"] == {
+        "kind": "live_writer_missing_dispatcher_contract_envelope",
+        "reason_code": "no_novelty_within_24h",
+        "missing_contract_fields": [
+            "target_contract_match",
+            "alert_target_id",
+            "contract_version",
+            "e2e_run_id",
+        ],
+        "runtime_target_id": "1517836",
+    }

@@ -30,6 +30,12 @@ P0_ALLOWED_REASON_CODES = {
     "explanation_or_target_changed",
     "ngi_changed_major",
 }
+CONTRACT_ENVELOPE_FIELDS = (
+    "target_contract_match",
+    "alert_target_id",
+    "contract_version",
+    "e2e_run_id",
+)
 
 
 def resolve_latest_ngi_path(argv: list[str]) -> Path:
@@ -41,7 +47,21 @@ def resolve_latest_ngi_path(argv: list[str]) -> Path:
     raise SystemExit(2)
 
 
-def detect_probable_sync_blocker() -> dict[str, object] | None:
+def detect_probable_sync_blocker(payload: dict[str, object]) -> dict[str, object] | None:
+    disposition = payload.get("alert_disposition") or {}
+    disposition_reason = disposition.get("reason_code")
+    missing_contract_fields = [
+        field for field in CONTRACT_ENVELOPE_FIELDS if disposition.get(field) in (None, "")
+    ]
+
+    if disposition_reason == "no_novelty_within_24h" and missing_contract_fields:
+        return {
+            "kind": "live_writer_missing_dispatcher_contract_envelope",
+            "reason_code": disposition_reason,
+            "missing_contract_fields": missing_contract_fields,
+            "runtime_target_id": disposition.get("runtime_target_id"),
+        }
+
     if not STANDALONE_MONITOR_PATH.exists() or not REPO_MONITOR_PATH.exists():
         return None
 
@@ -87,9 +107,9 @@ def main(argv: list[str]) -> int:
 
     probable_sync_blocker = None
     if issues:
-        probable_sync_blocker = detect_probable_sync_blocker()
+        probable_sync_blocker = detect_probable_sync_blocker(payload)
         if probable_sync_blocker:
-            issues.append("probable_blocker:standalone_workspace_runtime_copy_stale")
+            issues.append(f"probable_blocker:{probable_sync_blocker['kind']}")
 
     status = "ok" if result.get("status") == "ok" and not issues else "contract_violation"
     output = {

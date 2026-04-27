@@ -228,6 +228,7 @@
 - [x] `git push origin HEAD` was attempted and was blocked (`Could not resolve host: github.com`, rc=128).
 - [x] Working tree remains clean and branch is `codex/pr21-recut-dispatcher-receipt-guard` at `ahead 118, behind 24` on `HEAD` `92a7e75`.
 - [ ] Retry `Task 1`, `Task 2`, and `Task 5` when DNS/API access is restored, then complete `Task 4` (`git push`) and PR sync to main.
+- [x] Follow-up: local checkpoint committed as `ab4a5d4`; branch is now `ahead 119, behind 24` and still clean; `git push origin HEAD` remains blocked by DNS.
 
 ### Task 5: Remote sync checkpoint
 

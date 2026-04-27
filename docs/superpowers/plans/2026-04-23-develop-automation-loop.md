@@ -113,6 +113,17 @@
 - [x] Working tree remains clean and branch is `codex/pr21-recut-dispatcher-receipt-guard` at `ahead 95, behind 24` on `HEAD` `85d0cd1`.
 - [ ] Retry `Task 1`, `Task 2`, and `Task 5` when DNS/API access returns, then complete `Task 4` (`git push`) and `Task 5` PR sync to `main`.
 
+### Task 96: 2026-04-27 13:01:15 +0800 network-blocked checkpoint
+
+- [x] `git fetch --prune origin` was attempted and blocked (`Could not resolve host: github.com`, rc=128).
+- [x] `git rebase --fork-point origin/main` reports branch is up-to-date against local tracking.
+- [x] `gh pr list --state all --limit 20` was attempted and blocked (`error connecting to api.github.com`); review triage blocked.
+- [x] `gh issue list --state all --limit 20` was attempted and blocked (`error connecting to api.github.com`); issue triage blocked.
+- [x] `git push origin HEAD` was attempted and blocked (`Could not resolve host: github.com`, rc=128).
+- [x] Working tree remains clean and branch is `codex/pr21-recut-dispatcher-receipt-guard` at `ahead 112, behind 24` on `HEAD` `4848e6c`.
+- [x] `git status --short --branch` shows clean state after this checkpoint entry update.
+- [ ] Retry `Task 1`, `Task 2`, and `Task 5` when DNS/API access is restored, then complete `Task 4` (`git push`) and `Task 5` PR sync to `main`.
+
 ### Task 86: 2026-04-27 05:03:06 +0800 network-blocked checkpoint
 
 - [x] `git rev-parse --short HEAD` now reports `bf8f5af`.

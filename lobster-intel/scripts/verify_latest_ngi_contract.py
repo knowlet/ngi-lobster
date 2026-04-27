@@ -50,6 +50,9 @@ def resolve_latest_ngi_path(argv: list[str]) -> Path:
 def detect_probable_sync_blocker(payload: dict[str, object]) -> dict[str, object] | None:
     disposition = payload.get("alert_disposition") or {}
     disposition_reason = disposition.get("reason_code")
+    target = payload.get("market_target") or {}
+    runtime_target_id = disposition.get("runtime_target_id") or target.get("market_id")
+    runtime_target_name = disposition.get("runtime_target_name") or target.get("market_name")
     missing_contract_fields = [
         field for field in CONTRACT_ENVELOPE_FIELDS if disposition.get(field) in (None, "")
     ]
@@ -59,7 +62,8 @@ def detect_probable_sync_blocker(payload: dict[str, object]) -> dict[str, object
             "kind": "live_writer_missing_dispatcher_contract_envelope",
             "reason_code": disposition_reason,
             "missing_contract_fields": missing_contract_fields,
-            "runtime_target_id": disposition.get("runtime_target_id"),
+            "runtime_target_id": runtime_target_id,
+            "runtime_target_name": runtime_target_name,
         }
 
     if not STANDALONE_MONITOR_PATH.exists() or not REPO_MONITOR_PATH.exists():

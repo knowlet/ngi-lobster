@@ -162,7 +162,19 @@ def test_runtime_spine_uses_dispatcher_contract_reason_code_for_legacy_target_mi
 
     assert suppressed.alert_artifact["should_send"] is False
     assert suppressed.alert_artifact["reason_code"] == "legacy_target_mismatch"
+    assert suppressed.runtime_snapshot["alert_disposition"] == {
+        "should_send": False,
+        "decision": "suppressed",
+        "reason_code": "legacy_target_mismatch",
+        "runtime_target_id": "1517836",
+        "runtime_target_name": "Trump announces end of military operations against Iran by June 30th?",
+        "alert_target_id": "legacy-430",
+        "target_contract_match": False,
+        "contract_version": suppressed.runtime_snapshot["contract_version"],
+    }
     assert positive.alert_artifact["should_send"] is True
+    assert positive.runtime_snapshot["alert_disposition"]["target_contract_match"] is True
+    assert positive.runtime_snapshot["alert_disposition"]["delivery_proof"]["proof_id"] == f"heartbeat:{positive.run_id}"
     assert positive.delivery_receipt["delivery_proof"]["boundary"] == "openclaw_heartbeat"
     assert bundle["bundle"]["fixtures"][0]["reason_code"] == "legacy_target_mismatch"
     assert bundle["bundle"]["fixtures"][1]["delivery_proof"]["proof_id"] == f"heartbeat:{positive.run_id}"

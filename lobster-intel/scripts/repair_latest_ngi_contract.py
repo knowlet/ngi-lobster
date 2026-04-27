@@ -34,6 +34,22 @@ def _resolve_target(payload: dict[str, Any]) -> tuple[str | None, str | None]:
     )
 
 
+def _resolve_target_contract_match(
+    existing_match: Any,
+    alert_target_id: Any,
+    runtime_target_id: str | None,
+) -> bool | None:
+    if existing_match is not None:
+        return bool(existing_match)
+
+    normalized_alert_target_id = str(alert_target_id).strip() or None if alert_target_id is not None else None
+    if runtime_target_id and normalized_alert_target_id:
+        return normalized_alert_target_id == runtime_target_id
+    if runtime_target_id:
+        return True
+    return None
+
+
 def repair_payload(payload: dict[str, Any]) -> dict[str, Any]:
     repaired = deepcopy(payload)
     disposition = dict(repaired.get("alert_disposition") or {})
@@ -44,14 +60,19 @@ def repair_payload(payload: dict[str, Any]) -> dict[str, Any]:
     e2e_run_id = disposition.get("e2e_run_id") or explain.get("e2e_run_id") or _resolve_run_id(repaired.get("timestamp_utc"))
     internal_reason = str(disposition.get("reason_code") or explain.get("reason_code") or "").strip() or None
     public_reason = SUPPRESSED_REASON_MAP.get(internal_reason, internal_reason)
-    target_contract_match = None if not runtime_target_id else True
+    alert_target_id = disposition.get("alert_target_id") or runtime_target_id
+    target_contract_match = _resolve_target_contract_match(
+        disposition.get("target_contract_match"),
+        alert_target_id,
+        runtime_target_id,
+    )
 
     disposition.update(
         {
             "runtime_target_id": runtime_target_id,
             "runtime_target_name": runtime_target_name,
-            "alert_target_id": disposition.get("alert_target_id") or runtime_target_id,
-            "target_contract_match": disposition.get("target_contract_match", target_contract_match),
+            "alert_target_id": alert_target_id,
+            "target_contract_match": target_contract_match,
             "contract_version": contract_version,
             "e2e_run_id": e2e_run_id,
             "reason_code": public_reason,

@@ -46,3 +46,31 @@ def test_repair_payload_backfills_legacy_live_contract_envelope():
     assert explain["alert_target_id"] == "1517836"
     assert explain["target_contract_match"] is True
     assert explain["e2e_run_id"] == disposition["e2e_run_id"]
+
+
+def test_repair_payload_marks_mismatched_target_ids_false():
+    payload = {
+        "timestamp_utc": "2026-04-25T12:55:30.291168+00:00",
+        "market_target": {
+            "market_id": "1517836",
+            "market_name": "Trump announces end of military operations against Iran by June 30th",
+        },
+        "alert_disposition": {
+            "should_send": False,
+            "decision": "suppressed",
+            "reason_code": "no_novelty_within_24h",
+            "alert_target_id": "wrong-target",
+        },
+        "alert_explain_contract": {
+            "disposition": "suppressed",
+            "reason_code": "no_novelty_within_24h",
+        },
+    }
+
+    repaired = repair_latest_ngi_contract.repair_payload(payload)
+
+    disposition = repaired["alert_disposition"]
+    explain = repaired["alert_explain_contract"]
+    assert disposition["alert_target_id"] == "wrong-target"
+    assert disposition["target_contract_match"] is False
+    assert explain["target_contract_match"] is False

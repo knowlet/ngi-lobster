@@ -394,6 +394,17 @@ That wrapper reads both runtime artifacts, reuses the persisted positive-control
 
 Receipt reuse now fails closed unless the persisted receipt includes and matches the requested positive run on `thesis_id`, `run_id`, and `contract_version`.
 
+## 8.3 Canonical real-path E2E recut order
+
+When Product Cut v0 is blocked on real-path acceptance evidence, use exactly one lineage in this order:
+
+1. regenerate the runtime artifacts first with `lobster-intel/scripts/run_thesis_runtime.py`, and record the fresh `run_id` values that will represent the suppressed legacy case and the positive-control case;
+2. audit each fresh `run_id` against the current runtime target contract with `lobster-intel/scripts/verify_runtime_target_audit.py` before writing any dispatcher bundle;
+3. materialize the shared dispatcher bundle with `lobster-intel/scripts/run_dispatcher_acceptance.py` using those audited run ids and one explicit `bundle_id`;
+4. immediately verify the emitted dispatcher bundle with `lobster-intel/scripts/verify_alert_contract_bundle.py`, then verify the live artifact surface with `lobster-intel/scripts/verify_latest_ngi_contract.py`.
+
+Do not treat a bundle as PO-acceptable if dispatcher acceptance runs before runtime-target audit, if the bundle mixes old and new `run_id` lineage, or if `verify_latest_ngi_contract.py` still fails after the recut.
+
 ## 9. Cron status
 
 There is **not yet** a final reusable cron recipe for outside installs.

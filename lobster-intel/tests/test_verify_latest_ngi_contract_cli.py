@@ -213,6 +213,12 @@ def test_verify_latest_ngi_contract_cli_surfaces_missing_contract_envelope_field
         "runtime_target_id": "1517836",
         "runtime_target_name": "Trump announces end of military operations against Iran by June 30th",
     }
+    assert output["recommended_operator_flow"] == [
+        "regenerate fresh runtime artifacts with lobster-intel/scripts/run_thesis_runtime.py before reusing any dispatcher artifacts",
+        "audit each fresh runtime run with lobster-intel/scripts/verify_runtime_target_audit.py before dispatcher acceptance",
+        "materialize one shared dispatcher bundle with lobster-intel/scripts/run_dispatcher_acceptance.py using audited run ids and one explicit bundle_id",
+        "verify the emitted bundle with lobster-intel/scripts/verify_alert_contract_bundle.py and then re-run lobster-intel/scripts/verify_latest_ngi_contract.py on latest_ngi.json",
+    ]
 
 
 def test_verify_latest_ngi_contract_cli_falls_back_to_market_target_for_live_writer_blocker(tmp_path: Path):

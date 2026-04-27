@@ -89,6 +89,19 @@ def detect_probable_sync_blocker(payload: dict[str, object]) -> dict[str, object
     }
 
 
+def build_recommended_operator_flow(probable_sync_blocker: dict[str, object] | None) -> list[str] | None:
+    if not probable_sync_blocker:
+        return None
+    if probable_sync_blocker.get("kind") != "live_writer_missing_dispatcher_contract_envelope":
+        return None
+    return [
+        "regenerate fresh runtime artifacts with lobster-intel/scripts/run_thesis_runtime.py before reusing any dispatcher artifacts",
+        "audit each fresh runtime run with lobster-intel/scripts/verify_runtime_target_audit.py before dispatcher acceptance",
+        "materialize one shared dispatcher bundle with lobster-intel/scripts/run_dispatcher_acceptance.py using audited run ids and one explicit bundle_id",
+        "verify the emitted bundle with lobster-intel/scripts/verify_alert_contract_bundle.py and then re-run lobster-intel/scripts/verify_latest_ngi_contract.py on latest_ngi.json",
+    ]
+
+
 def main(argv: list[str]) -> int:
     path = resolve_latest_ngi_path(argv)
     payload = json.loads(path.read_text())
@@ -123,6 +136,7 @@ def main(argv: list[str]) -> int:
         "alert_contract_view": result,
         "allowed_reason_codes": sorted(P0_ALLOWED_REASON_CODES),
         "probable_sync_blocker": probable_sync_blocker,
+        "recommended_operator_flow": build_recommended_operator_flow(probable_sync_blocker),
     }
     print(json.dumps(output, indent=2, ensure_ascii=False, sort_keys=True))
     return 0 if status == "ok" else 1

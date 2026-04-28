@@ -871,7 +871,7 @@ def _runtime_alert_disposition(
         or active_target.get("market_id")
         or active_target.get("market_slug")
     )
-    alert_target_id = compare_artifact.get("market_target_id") or compare_artifact.get("runtime_target_id")
+    alert_target_id = compare_artifact.get("market_target_id")
     disposition = {
         "should_send": bool(alert_artifact.get("should_send")),
         "decision": "would_send" if alert_artifact.get("should_send") else "suppressed",

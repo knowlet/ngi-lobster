@@ -60,7 +60,7 @@ def _map_public_reason_code(alert_decision, alert_reason):
     return TARGET_CONTRACT_OK_REASON
 
 
-def _build_alert_contract_payload(data, alert_decision, alert_reason):
+def _build_alert_contract_payload(data, alert_decision, alert_reason, expl=None):
     market_target = data.get('market_target') or {}
     runtime_target_id = market_target.get('market_id') or market_target.get('market_slug')
     runtime_target_name = market_target.get('market_name') or market_target.get('market_question')
@@ -88,11 +88,16 @@ def _build_alert_contract_payload(data, alert_decision, alert_reason):
         'e2e_run_id': run_token,
         'internal_runtime_reason_code': alert_reason,
     }
-    return {
+    payload = {
         **data,
         'alert_disposition': disposition,
         'alert_explain_contract': explain_contract,
     }
+    if payload.get('P_AI') is None and payload.get('first_principles_probability') is not None:
+        payload['P_AI'] = payload.get('first_principles_probability')
+    if payload.get('explain') is None and expl is not None:
+        payload['explain'] = expl
+    return payload
 
 
 def run_fusion():
@@ -263,7 +268,7 @@ def main():
         write_run_to_db(data, expl, alert_decision, alert_reason)
         print(f"No actionable gap (ngi={ngi}, gap_triggered={gap_triggered}).")
 
-    data = _build_alert_contract_payload(data, alert_decision, alert_reason)
+    data = _build_alert_contract_payload(data, alert_decision, alert_reason, expl)
     try:
         with open(OUTPUT_FILE, 'w') as f:
             json.dump(data, f, indent=2)

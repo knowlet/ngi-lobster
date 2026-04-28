@@ -66,6 +66,14 @@ npm run test:latest-ngi-cut
 
 That shortcut keeps the active runtime contract blocker on one small, repeatable validation path.
 
+When PO needs to re-check the same-bundle proof for the current highest-priority cut — shared `e2e_run_id`, suppress/pass fixtures, and bundle-level contract verification — use:
+
+```bash
+npm run test:e2e-bundle-cut
+```
+
+That shortcut keeps the real dispatcher-path evidence bundle on one repeatable acceptance command before review or merge.
+
 ## Current state
 
 The repo already contains:

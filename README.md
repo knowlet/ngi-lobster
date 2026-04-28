@@ -58,6 +58,14 @@ npm run test:dispatcher-cut
 
 That one command executes the focused dispatcher acceptance / contract test set against the local `.venv`, so PO can quickly re-check the highest-priority cut before asking for review or upstreaming.
 
+When PO only needs to re-check the live `latest_ngi.json` explain-contract surface before the full dispatcher bundle, use:
+
+```bash
+npm run test:latest-ngi-cut
+```
+
+That shortcut keeps the active runtime contract blocker on one small, repeatable validation path.
+
 ## Current state
 
 The repo already contains:

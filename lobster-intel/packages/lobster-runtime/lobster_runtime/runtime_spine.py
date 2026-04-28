@@ -857,6 +857,40 @@ def _delivery_payload(
     }
 
 
+def _runtime_alert_disposition(
+    *,
+    runtime_snapshot: dict[str, Any],
+    compare_artifact: dict[str, Any],
+    alert_artifact: dict[str, Any],
+    delivery_receipt: dict[str, Any],
+    run_id: str,
+) -> dict[str, Any]:
+    active_target = runtime_snapshot.get("active_target") or {}
+    runtime_target_id = (
+        compare_artifact.get("runtime_target_id")
+        or active_target.get("market_id")
+        or active_target.get("market_slug")
+    )
+    alert_target_id = compare_artifact.get("market_target_id")
+    disposition = {
+        "should_send": bool(alert_artifact.get("should_send")),
+        "decision": "would_send" if alert_artifact.get("should_send") else "suppressed",
+        "reason_code": alert_artifact.get("reason_code"),
+        "runtime_target_id": runtime_target_id,
+        "runtime_target_name": active_target.get("market_name") or active_target.get("market_question"),
+        "alert_target_id": alert_target_id,
+        "target_contract_match": None
+        if runtime_target_id in (None, "") or alert_target_id in (None, "")
+        else runtime_target_id == alert_target_id,
+        "contract_version": alert_artifact.get("contract_version") or runtime_snapshot.get("contract_version"),
+        "e2e_run_id": run_id,
+    }
+    delivery_proof = delivery_receipt.get("delivery_proof")
+    if disposition["decision"] == "would_send" and delivery_proof is not None:
+        disposition["delivery_proof"] = delivery_proof
+    return disposition
+
+
 def _persist_evidence(workspace_dir: str | Path, thesis_id: str, evidence_artifacts: list[dict[str, Any]]) -> None:
     for artifact in evidence_artifacts:
         path = _artifact_path(workspace_dir, "evidence", thesis_id, artifact["source_id"], f"{artifact['artifact_id']}.json")
@@ -1029,6 +1063,13 @@ def run_thesis_runtime(inp: ThesisRuntimeInput) -> ThesisRuntimeResult:
             "boundary_output": delivery_boundary["output"],
             "delivery_proof": delivery_boundary,
         }
+    )
+    runtime_snapshot["alert_disposition"] = _runtime_alert_disposition(
+        runtime_snapshot=runtime_snapshot,
+        compare_artifact=compare_artifact,
+        alert_artifact=alert_artifact,
+        delivery_receipt=delivery_receipt,
+        run_id=run_id,
     )
 
     _persist_evidence(inp.workspace_dir, inp.thesis_id, evidence_artifacts)

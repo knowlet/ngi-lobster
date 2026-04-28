@@ -57,6 +57,26 @@ def test_build_alert_contract_payload_maps_suppressed_novelty_reason_to_public_c
     assert explain["internal_runtime_reason_code"] == "no_novelty_within_24h"
 
 
+def test_build_alert_contract_payload_restores_live_contract_aliases():
+    payload = run_ngi_monitor._build_alert_contract_payload(
+        {
+            "timestamp_utc": "2026-04-25T22:32:45.343547+00:00",
+            "market_target": {
+                "market_id": "1517836",
+                "market_name": "Trump announces end of military operations against Iran by June 30th",
+            },
+            "first_principles_probability": 0.182944,
+        },
+        "suppressed",
+        "no_novelty_within_24h",
+        {"summary": "contract ok"},
+    )
+
+    assert payload["P_AI"] == 0.182944
+    assert payload["explain"] == {"summary": "contract ok"}
+
+
+
 def test_build_alert_contract_payload_keeps_legacy_mismatch_public_reason_code():
     payload = run_ngi_monitor._build_alert_contract_payload(
         {

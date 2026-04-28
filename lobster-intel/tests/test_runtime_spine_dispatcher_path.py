@@ -15,9 +15,9 @@ for rel in [
 ]:
     sys.path.insert(0, str(PACKAGES / rel))
 
-from lobster_delivery import write_dispatcher_e2e_bundle
+from lobster_delivery import build_alert_contract_view, write_dispatcher_e2e_bundle
 from lobster_runtime import ThesisRuntimeInput, run_thesis_runtime
-from lobster_runtime.runtime_spine import _decide_alert, compare_targets
+from lobster_runtime.runtime_spine import _decide_alert, _runtime_alert_disposition, compare_targets
 
 
 def _source_payload(*, plugin: str, source_id: str, source_type: str, title: str, now_utc: str) -> dict:
@@ -162,7 +162,30 @@ def test_runtime_spine_uses_dispatcher_contract_reason_code_for_legacy_target_mi
 
     assert suppressed.alert_artifact["should_send"] is False
     assert suppressed.alert_artifact["reason_code"] == "legacy_target_mismatch"
+    assert suppressed.runtime_snapshot["alert_disposition"] == {
+        "should_send": False,
+        "decision": "suppressed",
+        "reason_code": "legacy_target_mismatch",
+        "runtime_target_id": "1517836",
+        "runtime_target_name": "Trump announces end of military operations against Iran by June 30th?",
+        "alert_target_id": "legacy-430",
+        "target_contract_match": False,
+        "contract_version": suppressed.runtime_snapshot["contract_version"],
+        "e2e_run_id": suppressed.run_id,
+    }
+    suppressed_contract = build_alert_contract_view({
+        "market_target": suppressed.runtime_snapshot["active_target"],
+        "target_detail": {
+            "market_yes_probability": suppressed.runtime_snapshot["market_implied_probability"],
+        },
+        "first_principles_probability": suppressed.runtime_snapshot["P_AI"],
+        "alert_disposition": suppressed.runtime_snapshot["alert_disposition"],
+    })
+
+    assert suppressed_contract["status"] == "ok"
     assert positive.alert_artifact["should_send"] is True
+    assert positive.runtime_snapshot["alert_disposition"]["target_contract_match"] is True
+    assert positive.runtime_snapshot["alert_disposition"]["delivery_proof"]["proof_id"] == f"heartbeat:{positive.run_id}"
     assert positive.delivery_receipt["delivery_proof"]["boundary"] == "openclaw_heartbeat"
     assert bundle["bundle"]["fixtures"][0]["reason_code"] == "legacy_target_mismatch"
     assert bundle["bundle"]["fixtures"][1]["delivery_proof"]["proof_id"] == f"heartbeat:{positive.run_id}"
@@ -207,3 +230,29 @@ def test_runtime_spine_prefers_contract_reason_code_when_mismatch_is_not_first_f
         "legacy_target_mismatch",
     ]
     assert alert_artifact["reason_code"] == "legacy_target_mismatch"
+
+
+def test_runtime_alert_disposition_does_not_fallback_alert_target_id_to_runtime_target_id():
+    disposition = _runtime_alert_disposition(
+        runtime_snapshot={
+            "active_target": {
+                "market_id": "1517836",
+                "market_name": "Trump announces end of military operations against Iran by June 30th?",
+            },
+            "contract_version": "v1",
+        },
+        compare_artifact={
+            "runtime_target_id": "1517836",
+        },
+        alert_artifact={
+            "should_send": False,
+            "reason_code": "legacy_target_mismatch",
+            "contract_version": "v1",
+        },
+        delivery_receipt={},
+        run_id="run-123",
+    )
+
+    assert disposition["runtime_target_id"] == "1517836"
+    assert disposition["alert_target_id"] is None
+    assert disposition["target_contract_match"] is None

@@ -57,6 +57,14 @@ That shortcut verifies the current product contract for:
 - target alignment between the internal contract and the market detail payload
 - a fixed divergence field that downstream ops can read directly
 
+When the live runtime artifact is still off-contract but PO needs one repeatable repair step on the real workspace path, use:
+
+```bash
+npm run repair:latest-ngi-contract
+```
+
+That shortcut rewrites the default live `shared-projects/intelligence-model/latest_ngi.json` path in place so suppressed active-target artifacts regain the dispatcher-visible contract envelope (`alert_target_id`, `target_contract_match`, `contract_version`, `e2e_run_id`) before re-running the runtime contract gate.
+
 When PO needs one fast gate for the dispatcher evidence bundle contract, use:
 
 ```bash

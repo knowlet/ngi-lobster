@@ -44,12 +44,23 @@ def read_probability(payload: dict[str, object], key: str, *, context: str) -> f
     return float(value)
 
 
+def read_latest_ngi_timestamp(payload: dict[str, object]) -> str:
+    for key in ("timestamp_utc", "generated_at_utc", "created_at_utc", "updated_at_utc"):
+        value = payload.get(key)
+        if value:
+            return str(value)
+    raise RuntimeError("missing latest_ngi timestamp field")
+
+
+
 def build_summary(state_path: Path, db_path: Path, latest_ngi_path: Path) -> dict[str, object]:
     dq_status = read_top_level_scalar(state_path, "dq_status")
     latest_snapshot_at_utc = load_latest_snapshot_at_utc(db_path)
     freshness_hours = compute_freshness_hours(latest_snapshot_at_utc)
 
     latest_ngi = json.loads(latest_ngi_path.read_text(encoding="utf-8"))
+    latest_ngi_timestamp_utc = read_latest_ngi_timestamp(latest_ngi)
+    latest_ngi_age_hours = compute_freshness_hours(latest_ngi_timestamp_utc)
     market_target = latest_ngi.get("market_target") or {}
     target_detail = latest_ngi.get("target_detail") or {}
     first_principles_probability = read_probability(
@@ -68,6 +79,9 @@ def build_summary(state_path: Path, db_path: Path, latest_ngi_path: Path) -> dic
     if freshness_hours > FRESHNESS_THRESHOLD_HOURS:
         status = "fail"
         blockers.append(f"stale_data={freshness_hours:.2f}h")
+    if latest_ngi_age_hours > FRESHNESS_THRESHOLD_HOURS:
+        status = "fail"
+        blockers.append(f"stale_latest_ngi={latest_ngi_age_hours:.2f}h")
 
     return {
         "status": status,
@@ -75,6 +89,8 @@ def build_summary(state_path: Path, db_path: Path, latest_ngi_path: Path) -> dic
         "latest_snapshot_at_utc": latest_snapshot_at_utc,
         "freshness_hours": round(freshness_hours, 4),
         "freshness_threshold_hours": FRESHNESS_THRESHOLD_HOURS,
+        "latest_ngi_timestamp_utc": latest_ngi_timestamp_utc,
+        "latest_ngi_age_hours": round(latest_ngi_age_hours, 4),
         "divergence_pp": round(divergence_pp, 4),
         "first_principles_probability": first_principles_probability,
         "market_yes_probability": market_yes_probability,

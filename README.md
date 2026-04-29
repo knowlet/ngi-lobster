@@ -81,7 +81,7 @@ npm run test:e2e-bundle-cut
 
 That shortcut keeps the real dispatcher-path evidence bundle on one repeatable acceptance command before review or merge.
 
-When PO needs one fast gate for current live ops health — DQ pass/fail, market snapshot freshness, and same-target NGI divergence from `latest_ngi.json` — use:
+When PO needs one fast gate for current live ops health — DQ pass/fail, market snapshot freshness, same-target NGI divergence from `latest_ngi.json`, and the live `latest_ngi` artifact age itself — use:
 
 ```bash
 npm run test:ops-health-cut

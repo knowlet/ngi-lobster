@@ -9,6 +9,12 @@ ROOT = Path(__file__).resolve().parents[2]
 SCRIPT = ROOT / "lobster-intel" / "scripts" / "sync_standalone_runtime_monitor.py"
 RELATIVE_PATHS = [
     (
+        Path("packages/lobster-runtime/lobster_runtime/__init__.py"),
+        Path("lobster-intel/packages/lobster-runtime/lobster_runtime/__init__.py"),
+        "repo-runtime-init",
+        "standalone-runtime-init",
+    ),
+    (
         Path("packages/lobster-runtime/lobster_runtime/monitor.py"),
         Path("lobster-intel/packages/lobster-runtime/lobster_runtime/monitor.py"),
         "repo-monitor",
@@ -61,6 +67,7 @@ def test_sync_monitor_check_mode_reports_all_drifted_paths(tmp_path: Path):
     )
 
     assert result.returncode == 1
+    assert "runtime package init" in result.stderr
     assert "runtime monitor" in result.stderr
     assert "runtime spine" in result.stderr
     assert "dispatcher artifacts" in result.stderr

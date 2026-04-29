@@ -20,10 +20,17 @@ def write_db(db_path: Path, snapshot_at_utc: str):
         conn.close()
 
 
-def write_latest_ngi(path: Path, *, first_principles_probability: float = 0.17, market_yes_probability: float = 0.645):
+def write_latest_ngi(
+    path: Path,
+    *,
+    timestamp_utc: str = "2099-01-01T00:00:00+00:00",
+    first_principles_probability: float = 0.17,
+    market_yes_probability: float = 0.645,
+):
     path.write_text(
         json.dumps(
             {
+                "timestamp_utc": timestamp_utc,
                 "first_principles_probability": first_principles_probability,
                 "market_target": {
                     "market_id": "1517836",
@@ -70,13 +77,19 @@ def test_verify_runtime_ops_health_fails_on_dq_and_reports_divergence(tmp_path: 
     assert payload["blockers"] == ["dq_status=fail", "divergence_pp=47.50"]
 
 
+
 def test_verify_runtime_ops_health_fails_on_stale_data(tmp_path: Path):
     state_path = tmp_path / "STATE.yaml"
     state_path.write_text('dq_status: "pass"\n', encoding="utf-8")
     db_path = tmp_path / "intelligence_store.sqlite"
     write_db(db_path, "2026-04-20T00:00:00+00:00")
     latest_ngi_path = tmp_path / "latest_ngi.json"
-    write_latest_ngi(latest_ngi_path, first_principles_probability=0.60, market_yes_probability=0.62)
+    write_latest_ngi(
+        latest_ngi_path,
+        timestamp_utc="2099-01-01T00:00:00+00:00",
+        first_principles_probability=0.60,
+        market_yes_probability=0.62,
+    )
 
     result = run_cli(state_path, db_path, latest_ngi_path)
 
@@ -87,6 +100,31 @@ def test_verify_runtime_ops_health_fails_on_stale_data(tmp_path: Path):
     assert len(payload["blockers"]) == 1
     assert payload["blockers"][0].startswith("stale_data=")
     assert payload["freshness_hours"] > 4
+
+
+
+def test_verify_runtime_ops_health_fails_on_latest_ngi_staleness(tmp_path: Path):
+    state_path = tmp_path / "STATE.yaml"
+    state_path.write_text('dq_status: "pass"\n', encoding="utf-8")
+    db_path = tmp_path / "intelligence_store.sqlite"
+    write_db(db_path, "2099-01-01T00:00:00+00:00")
+    latest_ngi_path = tmp_path / "latest_ngi.json"
+    write_latest_ngi(
+        latest_ngi_path,
+        timestamp_utc="2026-04-20T00:00:00+00:00",
+        first_principles_probability=0.60,
+        market_yes_probability=0.62,
+    )
+
+    result = run_cli(state_path, db_path, latest_ngi_path)
+
+    assert result.returncode == 1
+    payload = json.loads(result.stdout)
+    assert payload["status"] == "fail"
+    assert payload["dq_status"] == "pass"
+    assert payload["latest_ngi_age_hours"] > 4
+    assert payload["blockers"] == [f"latest_ngi_stale={payload['latest_ngi_age_hours']:.2f}h"]
+
 
 
 def test_verify_runtime_ops_health_fails_on_divergence_threshold(tmp_path: Path):
@@ -106,6 +144,7 @@ def test_verify_runtime_ops_health_fails_on_divergence_threshold(tmp_path: Path)
     assert payload["blockers"] == ["divergence_pp=47.50"]
 
 
+
 def test_verify_runtime_ops_health_passes_when_dq_freshness_and_divergence_are_in_contract(tmp_path: Path):
     state_path = tmp_path / "STATE.yaml"
     state_path.write_text('dq_status: "pass"\n', encoding="utf-8")
@@ -123,16 +162,41 @@ def test_verify_runtime_ops_health_passes_when_dq_freshness_and_divergence_are_i
     assert payload["divergence_pp"] == 12.5
 
 
+
 def test_verify_runtime_ops_health_reports_missing_probability_fields(tmp_path: Path):
     state_path = tmp_path / "STATE.yaml"
     state_path.write_text('dq_status: "pass"\n', encoding="utf-8")
     db_path = tmp_path / "intelligence_store.sqlite"
     write_db(db_path, "2099-01-01T00:00:00")
     latest_ngi_path = tmp_path / "latest_ngi.json"
-    latest_ngi_path.write_text(json.dumps({"target_detail": {}}), encoding="utf-8")
+    latest_ngi_path.write_text(json.dumps({"timestamp_utc": "2099-01-01T00:00:00+00:00", "target_detail": {}}), encoding="utf-8")
 
     result = run_cli(state_path, db_path, latest_ngi_path)
 
     assert result.returncode == 1
     assert result.stdout == ""
     assert result.stderr.strip() == "missing latest_ngi.first_principles_probability"
+
+
+
+def test_verify_runtime_ops_health_reports_missing_latest_ngi_timestamp(tmp_path: Path):
+    state_path = tmp_path / "STATE.yaml"
+    state_path.write_text('dq_status: "pass"\n', encoding="utf-8")
+    db_path = tmp_path / "intelligence_store.sqlite"
+    write_db(db_path, "2099-01-01T00:00:00+00:00")
+    latest_ngi_path = tmp_path / "latest_ngi.json"
+    latest_ngi_path.write_text(
+        json.dumps(
+            {
+                "first_principles_probability": 0.52,
+                "target_detail": {"market_yes_probability": 0.645},
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    result = run_cli(state_path, db_path, latest_ngi_path)
+
+    assert result.returncode == 1
+    assert result.stdout == ""
+    assert result.stderr.strip().startswith("missing latest_ngi timestamp")

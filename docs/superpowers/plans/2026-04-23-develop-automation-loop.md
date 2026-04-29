@@ -945,3 +945,12 @@
 - [x] `git status --short --branch` is clean on `codex/pr21-recut-dispatcher-receipt-guard` at `ahead 96, behind 38` on `HEAD` `79f9302` after `git rebase --abort`.
 - [x] `git push origin HEAD` was attempted after the local checkpoint commit and failed (`Could not resolve host: github.com`, rc=128).
 - [ ] Retry Task 1 and Task 2 when network/API access returns, then complete Task 4 (`git push`) and Task 5 (`main` 同步/PR 流程).
+
+### Task 107: 2026-04-30 02:01+0800 network-blocked checkpoint
+- [x] `git remote -v` confirms `origin` is still `https://github.com/knowlet/ngi-lobster.git`.
+- [x] `git fetch --prune origin` was attempted and failed (`Could not resolve host: github.com`, rc=128).
+- [x] `gh pr list --state all --limit 20` was attempted and failed (`error connecting to api.github.com`, rc=1); review triage remains blocked.
+- [x] `gh issue list --state all --limit 20` was attempted and failed (`error connecting to api.github.com`, rc=1); issue triage remains blocked.
+- [x] `git rebase --fork-point origin/main` was attempted as a local tracking-ref sanity check, hit the same content conflict in `docs/superpowers/plans/2026-04-23-develop-automation-loop.md` while replaying historical checkpoint commit `868680e`, and was aborted cleanly.
+- [x] `git status --short --branch` is clean on `codex/pr21-recut-dispatcher-receipt-guard` at `ahead 97, behind 38` on `HEAD` `5320c89` after `git rebase --abort`.
+- [ ] Retry Task 1 and Task 2 when network/API access returns, then complete Task 4 (`git push`) and Task 5 (`main` 同步/PR 流程).

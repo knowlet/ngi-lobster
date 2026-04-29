@@ -89,6 +89,14 @@ npm run test:ops-health-cut
 
 That shortcut keeps the current operational blocker on one repeatable local validation path instead of reassembling ad hoc checks each heartbeat.
 
+When PO needs the live workspace blocker verdict itself as machine-readable JSON, use:
+
+```bash
+npm run verify:live-ops-health
+```
+
+That shortcut runs the live `STATE.yaml`, `intelligence_store.sqlite`, and `latest_ngi.json` paths directly so heartbeat / review handoff can cite the exact blocker payload without manually rebuilding the command.
+
 ## Current state
 
 The repo already contains:

@@ -11,6 +11,11 @@ ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_WORKSPACE_ROOT = ROOT.parent.parent
 RELATIVE_SYNC_PATHS = (
     (
+        Path("packages/lobster-runtime/lobster_runtime/__init__.py"),
+        Path("lobster-intel/packages/lobster-runtime/lobster_runtime/__init__.py"),
+        "runtime package init",
+    ),
+    (
         Path("packages/lobster-runtime/lobster_runtime/monitor.py"),
         Path("lobster-intel/packages/lobster-runtime/lobster_runtime/monitor.py"),
         "runtime monitor",

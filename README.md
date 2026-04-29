@@ -43,6 +43,14 @@ When PO needs the dispatcher + delivery contract acceptance slice, use:
 npm run test:dispatcher-cut
 ```
 
+When PO needs the full current P0 explain-contract acceptance path on one operator entrypoint, use:
+
+```bash
+npm run test:p0-cut
+```
+
+That shortcut runs the dispatcher path gate first and then the shared E2E bundle gate, so PO can validate the suppressed legacy control and delivered positive control without manually reassembling the cut.
+
 When PO needs one fast gate for the `latest_ngi.json` runtime contract, use:
 
 ```bash

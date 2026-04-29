@@ -18,6 +18,7 @@ LOBSTER_PACKAGES = Path(
 for package_dir in (
     LOBSTER_PACKAGES / "lobster-core",
     LOBSTER_PACKAGES / "lobster-runtime",
+    LOBSTER_PACKAGES / "lobster-delivery",
 ):
     package_dir_str = str(package_dir)
     if package_dir_str not in sys.path:

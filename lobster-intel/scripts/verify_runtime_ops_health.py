@@ -13,7 +13,10 @@ FRESHNESS_THRESHOLD_HOURS = 4.0
 
 
 def parse_utc_timestamp(raw: str) -> datetime:
-    return datetime.fromisoformat(raw.replace("Z", "+00:00")).astimezone(timezone.utc)
+    parsed = datetime.fromisoformat(raw.replace("Z", "+00:00"))
+    if parsed.tzinfo is None:
+        parsed = parsed.replace(tzinfo=timezone.utc)
+    return parsed.astimezone(timezone.utc)
 
 
 def compute_freshness_hours(snapshot_at_utc: str, now: datetime | None = None) -> float:
@@ -34,6 +37,13 @@ def load_latest_snapshot_at_utc(db_path: Path) -> str:
     return str(row[0])
 
 
+def read_probability(payload: dict[str, object], key: str, *, context: str) -> float:
+    value = payload.get(key)
+    if value is None:
+        raise RuntimeError(f"missing {context}.{key}")
+    return float(value)
+
+
 def build_summary(state_path: Path, db_path: Path, latest_ngi_path: Path) -> dict[str, object]:
     dq_status = read_top_level_scalar(state_path, "dq_status")
     latest_snapshot_at_utc = load_latest_snapshot_at_utc(db_path)
@@ -42,8 +52,12 @@ def build_summary(state_path: Path, db_path: Path, latest_ngi_path: Path) -> dic
     latest_ngi = json.loads(latest_ngi_path.read_text(encoding="utf-8"))
     market_target = latest_ngi.get("market_target") or {}
     target_detail = latest_ngi.get("target_detail") or {}
-    first_principles_probability = float(latest_ngi["first_principles_probability"])
-    market_yes_probability = float(target_detail["market_yes_probability"])
+    first_principles_probability = read_probability(
+        latest_ngi, "first_principles_probability", context="latest_ngi"
+    )
+    market_yes_probability = read_probability(
+        target_detail, "market_yes_probability", context="target_detail"
+    )
     divergence_pp = abs(first_principles_probability - market_yes_probability) * 100.0
 
     status = "pass"

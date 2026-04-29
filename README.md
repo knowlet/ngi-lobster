@@ -1,72 +1,63 @@
-# ngi-lobster
+# NGI Lobster
 
-A cleaned private repo for the current NGI + Lobster Intel productization effort.
+A repo for rebuilding the NGI / Lobster runtime into a product-grade path with tracked contracts, replayable artifacts, and upstreamable acceptance cuts.
 
-## Goal
+## Quick start
 
-Turn the current NGI workflow into an installable, open-source-friendly plugin system for OpenClaw-style agents.
-
-This repo is not just research notes. It is the productization track.
-
-## Repo layout
-
-- `lobster-intel/`: plugin-oriented intelligence platform scaffold
-- `legacy/intelligence-model/`: current NGI workflow code and reference artifacts being migrated into the plugin/runtime architecture
-
-## What is intentionally excluded
-
-- local databases
-- logs
-- venvs
-- secrets / tokens
-- personal memory files
-- runtime state dumps
-
-## Start here
-
-- Product / plugin architecture: `lobster-intel/README.md`
-- OpenClaw install + config guide: `docs/INSTALL_OPENCLAW.md`
-- Product cut: `docs/PRODUCT_CUT_V0.md`
-- Example environment variables: `.env.example`
-
-## Native OpenClaw install surface
-
-This repo now includes a **native OpenClaw plugin wrapper** so the install path can converge on:
+Create the local venv and install the editable packages:
 
 ```bash
-openclaw plugins install ./path/to/ngi-lobster
+python3 -m venv .venv
+./.venv/bin/pip install -e lobster-intel/packages/lobster-core \
+  -e lobster-intel/packages/lobster-delivery \
+  -e lobster-intel/packages/lobster-ingest \
+  -e lobster-intel/packages/lobster-plugins \
+  -e lobster-intel/packages/lobster-runtime
 ```
 
-Current status:
-
-- `openclaw.plugin.json` exists
-- `package.json` exists
-- `index.js` native wrapper entry exists
-- native tool `ngi_lobster_demo` exists for local smoke testing
-- native tool `ngi_lobster_run_default_workflow` now runs ingest plus thesis runtime and emits runtime/delivery artifacts
-- the heavy NGI runtime is still being migrated from `lobster-intel/` Python code into a fuller native OpenClaw plugin surface
-
-So the install surface is starting to look right, but runtime feature parity is not finished yet.
-
-## Dispatcher acceptance cut shortcut
-
-The current P0 product cut is still the same dispatcher-path acceptance proof. From repo root, run:
+Run the existing dispatcher acceptance cut:
 
 ```bash
 npm run test:dispatcher-cut
 ```
 
-That one command executes the focused dispatcher acceptance / contract test set against the local `.venv`, so PO can quickly re-check the highest-priority cut before asking for review or upstreaming.
+That command keeps the delivery contract, runtime spine, and dispatcher receipt path on one repeatable gate before merge.
 
-When PO only needs to re-check the live `latest_ngi.json` explain-contract surface before the full dispatcher bundle, use:
+## Repo layout
+
+- `lobster-intel/packages/lobster-core`: shared typing and base contracts
+- `lobster-intel/packages/lobster-delivery`: delivery contract bundle helpers
+- `lobster-intel/packages/lobster-ingest`: ingest-side helpers and models
+- `lobster-intel/packages/lobster-plugins`: plugin contract and loader
+- `lobster-intel/packages/lobster-runtime`: runtime dispatch helpers
+- `lobster-intel/scripts`: repo-level acceptance and verification scripts
+- `lobster-intel/tests`: focused contract and cut tests
+
+## Current acceptance cuts
+
+The repo keeps product slices in small repeatable cuts.
+
+When PO needs the dispatcher + delivery contract acceptance slice, use:
+
+```bash
+npm run test:dispatcher-cut
+```
+
+When PO needs one fast gate for the `latest_ngi.json` runtime contract, use:
 
 ```bash
 npm run test:latest-ngi-cut
 ```
 
-That shortcut keeps the active runtime contract blocker on one small, repeatable validation path.
+That shortcut verifies the current product contract for:
 
-When PO needs to re-check the same-bundle proof for the current highest-priority cut — shared `e2e_run_id`, suppress/pass fixtures, and bundle-level contract verification — use:
+- required top-level fields
+- required market target detail payload
+- explainer visibility for the first-principles vs market comparison
+- target alignment between the internal contract and the market detail payload
+- a fixed divergence field that downstream ops can read directly
+
+When PO needs one fast gate for the dispatcher evidence bundle contract, use:
 
 ```bash
 npm run test:e2e-bundle-cut
@@ -87,7 +78,7 @@ That shortcut keeps the current operational blocker on one repeatable local vali
 The repo already contains:
 
 - a minimal plugin contract
-n- a plugin loader
+- a plugin loader
 - a run-once runtime path
 - a delivery gate
 - a first ingest plugin example (`gooaye-tracker`)

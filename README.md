@@ -74,12 +74,20 @@ npm run test:e2e-bundle-cut
 
 That shortcut keeps the real dispatcher-path evidence bundle on one repeatable acceptance command before review or merge.
 
+When PO needs one fast gate for current live ops health — DQ pass/fail, market snapshot freshness, and same-target NGI divergence from `latest_ngi.json` — use:
+
+```bash
+npm run test:ops-health-cut
+```
+
+That shortcut keeps the current operational blocker on one repeatable local validation path instead of reassembling ad hoc checks each heartbeat.
+
 ## Current state
 
 The repo already contains:
 
 - a minimal plugin contract
-- a plugin loader
+n- a plugin loader
 - a run-once runtime path
 - a delivery gate
 - a first ingest plugin example (`gooaye-tracker`)

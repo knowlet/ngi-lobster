@@ -20,12 +20,18 @@ def write_db(db_path: Path, snapshot_at_utc: str):
         conn.close()
 
 
-def write_latest_ngi(path: Path, *, timestamp_utc: str = "2099-01-01T00:00:00+00:00"):
+def write_latest_ngi(
+    path: Path,
+    *,
+    timestamp_utc: str = "2099-01-01T00:00:00+00:00",
+    first_principles_probability: float = 0.17,
+    market_yes_probability: float = 0.645,
+):
     path.write_text(
         json.dumps(
             {
                 "timestamp_utc": timestamp_utc,
-                "first_principles_probability": 0.17,
+                "first_principles_probability": first_principles_probability,
                 "market_target": {
                     "market_id": "1517836",
                     "market_name": "Trump announces end of military operations against Iran by June 30th",
@@ -33,7 +39,7 @@ def write_latest_ngi(path: Path, *, timestamp_utc: str = "2099-01-01T00:00:00+00
                 "target_detail": {
                     "market_id": "1517836",
                     "market_question": "Trump announces end of military operations against Iran by June 30th?",
-                    "market_yes_probability": 0.645,
+                    "market_yes_probability": market_yes_probability,
                 },
             }
         ),
@@ -66,9 +72,50 @@ def test_verify_runtime_ops_health_fails_on_dq_and_reports_divergence(tmp_path: 
     assert payload["status"] == "fail"
     assert payload["dq_status"] == "fail"
     assert payload["divergence_pp"] == 47.5
+    assert payload["divergence_threshold_pp"] == 15.0
     assert payload["market_target_id"] == "1517836"
     assert payload["latest_ngi_timestamp_utc"] == "2099-01-01T00:00:00+00:00"
-    assert payload["blockers"] == ["dq_status=fail"]
+    assert payload["blockers"] == ["dq_status=fail", "divergence_pp=47.50"]
+
+
+def test_verify_runtime_ops_health_fails_on_divergence_threshold(tmp_path: Path):
+    state_path = tmp_path / "STATE.yaml"
+    state_path.write_text('dq_status: "pass"\n', encoding="utf-8")
+    db_path = tmp_path / "intelligence_store.sqlite"
+    write_db(db_path, "2099-01-01T00:00:00+00:00")
+    latest_ngi_path = tmp_path / "latest_ngi.json"
+    write_latest_ngi(latest_ngi_path)
+
+    result = run_cli(state_path, db_path, latest_ngi_path)
+
+    assert result.returncode == 1
+    payload = json.loads(result.stdout)
+    assert payload["status"] == "fail"
+    assert payload["dq_status"] == "pass"
+    assert payload["divergence_pp"] == 47.5
+    assert payload["divergence_threshold_pp"] == 15.0
+    assert payload["blockers"] == ["divergence_pp=47.50"]
+
+
+def test_verify_runtime_ops_health_passes_when_divergence_is_within_threshold(tmp_path: Path):
+    state_path = tmp_path / "STATE.yaml"
+    state_path.write_text('dq_status: "pass"\n', encoding="utf-8")
+    db_path = tmp_path / "intelligence_store.sqlite"
+    write_db(db_path, "2099-01-01T00:00:00+00:00")
+    latest_ngi_path = tmp_path / "latest_ngi.json"
+    write_latest_ngi(
+        latest_ngi_path,
+        first_principles_probability=0.50,
+        market_yes_probability=0.60,
+    )
+
+    result = run_cli(state_path, db_path, latest_ngi_path)
+
+    assert result.returncode == 0
+    payload = json.loads(result.stdout)
+    assert payload["status"] == "pass"
+    assert payload["divergence_pp"] == 10.0
+    assert payload["blockers"] == []
 
 
 def test_verify_runtime_ops_health_fails_on_stale_data(tmp_path: Path):
@@ -77,7 +124,7 @@ def test_verify_runtime_ops_health_fails_on_stale_data(tmp_path: Path):
     db_path = tmp_path / "intelligence_store.sqlite"
     write_db(db_path, "2026-04-20T00:00:00+00:00")
     latest_ngi_path = tmp_path / "latest_ngi.json"
-    write_latest_ngi(latest_ngi_path)
+    write_latest_ngi(latest_ngi_path, first_principles_probability=0.50, market_yes_probability=0.60)
 
     result = run_cli(state_path, db_path, latest_ngi_path)
 
@@ -96,7 +143,12 @@ def test_verify_runtime_ops_health_fails_on_stale_latest_ngi(tmp_path: Path):
     db_path = tmp_path / "intelligence_store.sqlite"
     write_db(db_path, "2099-01-01T00:00:00+00:00")
     latest_ngi_path = tmp_path / "latest_ngi.json"
-    write_latest_ngi(latest_ngi_path, timestamp_utc="2026-04-20T00:00:00+00:00")
+    write_latest_ngi(
+        latest_ngi_path,
+        timestamp_utc="2026-04-20T00:00:00+00:00",
+        first_principles_probability=0.50,
+        market_yes_probability=0.60,
+    )
 
     result = run_cli(state_path, db_path, latest_ngi_path)
 

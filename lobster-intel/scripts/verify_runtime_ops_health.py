@@ -10,6 +10,7 @@ from read_state_field import read_top_level_scalar
 
 
 FRESHNESS_THRESHOLD_HOURS = 4.0
+DIVERGENCE_THRESHOLD_PP = 15.0
 
 
 def parse_utc_timestamp(raw: str) -> datetime:
@@ -82,6 +83,9 @@ def build_summary(state_path: Path, db_path: Path, latest_ngi_path: Path) -> dic
     if latest_ngi_age_hours > FRESHNESS_THRESHOLD_HOURS:
         status = "fail"
         blockers.append(f"stale_latest_ngi={latest_ngi_age_hours:.2f}h")
+    if divergence_pp > DIVERGENCE_THRESHOLD_PP:
+        status = "fail"
+        blockers.append(f"divergence_pp={divergence_pp:.2f}")
 
     return {
         "status": status,
@@ -92,6 +96,7 @@ def build_summary(state_path: Path, db_path: Path, latest_ngi_path: Path) -> dic
         "latest_ngi_timestamp_utc": latest_ngi_timestamp_utc,
         "latest_ngi_age_hours": round(latest_ngi_age_hours, 4),
         "divergence_pp": round(divergence_pp, 4),
+        "divergence_threshold_pp": DIVERGENCE_THRESHOLD_PP,
         "first_principles_probability": first_principles_probability,
         "market_yes_probability": market_yes_probability,
         "market_target_id": market_target.get("market_id") or target_detail.get("market_id"),

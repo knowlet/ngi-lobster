@@ -65,6 +65,14 @@ npm run repair:latest-ngi-contract
 
 That shortcut rewrites the default live `shared-projects/intelligence-model/latest_ngi.json` path in place so suppressed active-target artifacts regain the dispatcher-visible contract envelope (`alert_target_id`, `target_contract_match`, `contract_version`, `e2e_run_id`) before re-running the runtime contract gate.
 
+When PO needs the smallest single-command cut for the live `latest_ngi.json` path — repair first, then immediately prove the runtime contract still passes — use:
+
+```bash
+npm run test:live-latest-ngi-cut
+```
+
+That shortcut turns the current P0 live-artifact blocker into one reviewable command instead of a manual two-step sequence during heartbeat or review handoff.
+
 When PO needs one fast gate for the dispatcher evidence bundle contract, use:
 
 ```bash

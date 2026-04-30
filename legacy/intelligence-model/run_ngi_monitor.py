@@ -33,12 +33,13 @@ from lobster_runtime import (
 )
 
 # Paths
-SCRIPT_DIR = "/Users/knowlet/.openclaw/workspace/shared-projects/intelligence-model"
-FUSION_SCRIPT = os.path.join(SCRIPT_DIR, "compute_ngi_fusion.py")
-OUTPUT_FILE = os.path.join(SCRIPT_DIR, "latest_ngi.json")
-ALERT_STATE_FILE = os.path.join(SCRIPT_DIR, "last_alert_state.json")
-DB_FILE = os.path.join(SCRIPT_DIR, "ngi_history.sqlite")
-UNIFIED_DB_FILE = os.path.join(SCRIPT_DIR, "intelligence_store.sqlite")
+LEGACY_DIR = Path(__file__).resolve().parent
+WORKSPACE_INTEL_DIR = Path("/Users/knowlet/.openclaw/workspace/shared-projects/intelligence-model")
+FUSION_SCRIPT = str(LEGACY_DIR / "compute_ngi_fusion.py")
+OUTPUT_FILE = str(WORKSPACE_INTEL_DIR / "latest_ngi.json")
+ALERT_STATE_FILE = str(WORKSPACE_INTEL_DIR / "last_alert_state.json")
+DB_FILE = str(WORKSPACE_INTEL_DIR / "ngi_history.sqlite")
+UNIFIED_DB_FILE = str(WORKSPACE_INTEL_DIR / "intelligence_store.sqlite")
 
 # Gap threshold on top of trigger conditions emitted by compute_ngi_fusion.py
 ALERT_THRESHOLD = 0.15
@@ -108,7 +109,7 @@ def run_fusion():
             capture_output=True,
             text=True,
             timeout=90,
-            cwd=SCRIPT_DIR
+            cwd=str(LEGACY_DIR)
         )
         if result.returncode != 0:
             print(f"Fusion script failed: {result.stderr}", file=sys.stderr)

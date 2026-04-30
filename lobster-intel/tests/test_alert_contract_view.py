@@ -317,3 +317,30 @@ def test_alert_contract_view_falls_back_to_legacy_p_ai_field():
 
     assert result["status"] == "ok"
     assert result["view"]["p_ai"] == 0.61
+
+
+def test_alert_contract_view_projects_signed_divergence_fields_for_downstream_ops():
+    payload = {
+        "market_target": {
+            "market_id": "1517836",
+            "market_name": "Trump announces end of military operations against Iran by June 30th",
+        },
+        "target_detail": {"market_yes_probability": 0.54},
+        "first_principles_probability": 0.11563298545602181,
+        "alert_disposition": {
+            "should_send": False,
+            "decision": "suppressed",
+            "reason_code": "divergence_gate_blocked",
+            "runtime_target_id": "1517836",
+            "alert_target_id": "1517836",
+            "contract_version": "v1",
+            "e2e_run_id": "e2e-20260430-02",
+        },
+    }
+
+    result = build_alert_contract_view(payload)
+
+    assert result["status"] == "ok"
+    assert result["view"]["divergence_pp"] == 42.4367
+    assert result["view"]["first_principles_minus_market_pp"] == -42.4367
+    assert result["view"]["direction"] == "first_principles_below_market"

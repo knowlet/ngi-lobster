@@ -55,6 +55,14 @@ def load_latest_ngi_timestamp_utc(latest_ngi: dict[str, object]) -> str:
     )
 
 
+def compute_gap_direction(gap_vs_market_pp: float) -> str:
+    if gap_vs_market_pp > 0:
+        return "market_above_p_ai"
+    if gap_vs_market_pp < 0:
+        return "market_below_p_ai"
+    return "aligned"
+
+
 def build_summary(state_path: Path, db_path: Path, latest_ngi_path: Path) -> dict[str, object]:
     dq_status = read_top_level_scalar(state_path, "dq_status")
     latest_snapshot_at_utc = load_latest_snapshot_at_utc(db_path)
@@ -72,6 +80,7 @@ def build_summary(state_path: Path, db_path: Path, latest_ngi_path: Path) -> dic
         target_detail, "market_yes_probability", context="target_detail"
     )
     divergence_pp = abs(first_principles_probability - market_yes_probability) * 100.0
+    gap_vs_market_pp = (market_yes_probability - first_principles_probability) * 100.0
 
     status = "pass"
     blockers: list[str] = []
@@ -101,6 +110,9 @@ def build_summary(state_path: Path, db_path: Path, latest_ngi_path: Path) -> dic
         "divergence_threshold_pp": DIVERGENCE_THRESHOLD_PP,
         "first_principles_probability": first_principles_probability,
         "market_yes_probability": market_yes_probability,
+        "gap_vs_market_pp": round(gap_vs_market_pp, 4),
+        "gap_direction": compute_gap_direction(gap_vs_market_pp),
+        "probability_mode": target_detail.get("probability_mode") or latest_ngi.get("probability_mode") or "unknown",
         "market_target_id": market_target.get("market_id") or target_detail.get("market_id"),
         "market_target_name": market_target.get("market_name") or target_detail.get("market_question"),
         "blockers": blockers,

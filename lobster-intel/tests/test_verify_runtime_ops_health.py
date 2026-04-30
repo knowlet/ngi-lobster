@@ -26,6 +26,7 @@ def write_latest_ngi(
     timestamp_utc: str = "2099-01-01T00:00:00+00:00",
     first_principles_probability: float = 0.17,
     market_yes_probability: float = 0.645,
+    probability_mode: str = "yes_is_peace",
 ):
     path.write_text(
         json.dumps(
@@ -40,6 +41,7 @@ def write_latest_ngi(
                     "market_id": "1517836",
                     "market_question": "Trump announces end of military operations against Iran by June 30th?",
                     "market_yes_probability": market_yes_probability,
+                    "probability_mode": probability_mode,
                 },
             }
         ),
@@ -73,6 +75,9 @@ def test_verify_runtime_ops_health_fails_on_dq_and_reports_divergence(tmp_path: 
     assert payload["dq_status"] == "fail"
     assert payload["divergence_pp"] == 47.5
     assert payload["divergence_threshold_pp"] == 15.0
+    assert payload["gap_vs_market_pp"] == 47.5
+    assert payload["gap_direction"] == "market_above_p_ai"
+    assert payload["probability_mode"] == "yes_is_peace"
     assert payload["market_target_id"] == "1517836"
     assert payload["blockers"] == ["dq_status=fail", "divergence_pp=47.50"]
 
@@ -160,6 +165,25 @@ def test_verify_runtime_ops_health_passes_when_dq_freshness_and_divergence_are_i
     assert payload["status"] == "pass"
     assert payload["blockers"] == []
     assert payload["divergence_pp"] == 12.5
+    assert payload["gap_vs_market_pp"] == 12.5
+    assert payload["gap_direction"] == "market_above_p_ai"
+
+
+
+def test_verify_runtime_ops_health_reports_market_below_p_ai_direction(tmp_path: Path):
+    state_path = tmp_path / "STATE.yaml"
+    state_path.write_text('dq_status: "pass"\n', encoding="utf-8")
+    db_path = tmp_path / "intelligence_store.sqlite"
+    write_db(db_path, "2099-01-01T00:00:00+00:00")
+    latest_ngi_path = tmp_path / "latest_ngi.json"
+    write_latest_ngi(latest_ngi_path, first_principles_probability=0.72, market_yes_probability=0.61)
+
+    result = run_cli(state_path, db_path, latest_ngi_path)
+
+    assert result.returncode == 0
+    payload = json.loads(result.stdout)
+    assert payload["gap_vs_market_pp"] == -11.0
+    assert payload["gap_direction"] == "market_below_p_ai"
 
 
 

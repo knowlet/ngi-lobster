@@ -73,14 +73,16 @@ def test_verify_runtime_ops_health_fails_on_dq_and_reports_divergence(tmp_path: 
     payload = json.loads(result.stdout)
     assert payload["status"] == "fail"
     assert payload["dq_status"] == "fail"
+    assert payload["stale_data"] is False
+    assert payload["latest_ngi_stale"] is False
     assert payload["divergence_pp"] == 47.5
     assert payload["divergence_threshold_pp"] == 15.0
+    assert payload["divergence_blocking"] is True
     assert payload["first_principles_minus_market_pp"] == -47.5
     assert payload["direction"] == "first_principles_below_market"
     assert payload["probability_mode"] == "yes_is_peace"
     assert payload["market_target_id"] == "1517836"
     assert payload["blockers"] == ["dq_status=fail", "divergence_pp=47.50"]
-
 
 
 def test_verify_runtime_ops_health_fails_on_stale_data(tmp_path: Path):
@@ -102,10 +104,12 @@ def test_verify_runtime_ops_health_fails_on_stale_data(tmp_path: Path):
     payload = json.loads(result.stdout)
     assert payload["status"] == "fail"
     assert payload["dq_status"] == "pass"
+    assert payload["stale_data"] is True
+    assert payload["latest_ngi_stale"] is False
+    assert payload["divergence_blocking"] is False
     assert len(payload["blockers"]) == 1
     assert payload["blockers"][0].startswith("stale_data=")
     assert payload["freshness_hours"] > 4
-
 
 
 def test_verify_runtime_ops_health_fails_on_latest_ngi_staleness(tmp_path: Path):
@@ -127,9 +131,11 @@ def test_verify_runtime_ops_health_fails_on_latest_ngi_staleness(tmp_path: Path)
     payload = json.loads(result.stdout)
     assert payload["status"] == "fail"
     assert payload["dq_status"] == "pass"
+    assert payload["stale_data"] is False
+    assert payload["latest_ngi_stale"] is True
+    assert payload["divergence_blocking"] is False
     assert payload["latest_ngi_age_hours"] > 4
     assert payload["blockers"] == [f"latest_ngi_stale={payload['latest_ngi_age_hours']:.2f}h"]
-
 
 
 def test_verify_runtime_ops_health_fails_when_latest_ngi_is_stale_and_divergence_is_blocking(tmp_path: Path):
@@ -151,15 +157,17 @@ def test_verify_runtime_ops_health_fails_when_latest_ngi_is_stale_and_divergence
     payload = json.loads(result.stdout)
     assert payload["status"] == "fail"
     assert payload["dq_status"] == "pass"
+    assert payload["stale_data"] is False
+    assert payload["latest_ngi_stale"] is True
     assert payload["latest_ngi_age_hours"] > 4
     assert payload["divergence_pp"] == 42.0
+    assert payload["divergence_blocking"] is True
     assert payload["first_principles_minus_market_pp"] == -42.0
     assert payload["direction"] == "first_principles_below_market"
     assert payload["blockers"] == [
         f"latest_ngi_stale={payload['latest_ngi_age_hours']:.2f}h",
         "divergence_pp=42.00",
     ]
-
 
 
 def test_verify_runtime_ops_health_fails_on_divergence_threshold(tmp_path: Path):
@@ -176,8 +184,10 @@ def test_verify_runtime_ops_health_fails_on_divergence_threshold(tmp_path: Path)
     payload = json.loads(result.stdout)
     assert payload["status"] == "fail"
     assert payload["dq_status"] == "pass"
+    assert payload["stale_data"] is False
+    assert payload["latest_ngi_stale"] is False
+    assert payload["divergence_blocking"] is True
     assert payload["blockers"] == ["divergence_pp=47.50"]
-
 
 
 def test_verify_runtime_ops_health_passes_when_dq_freshness_and_divergence_are_in_contract(tmp_path: Path):
@@ -193,11 +203,13 @@ def test_verify_runtime_ops_health_passes_when_dq_freshness_and_divergence_are_i
     assert result.returncode == 0
     payload = json.loads(result.stdout)
     assert payload["status"] == "pass"
+    assert payload["stale_data"] is False
+    assert payload["latest_ngi_stale"] is False
+    assert payload["divergence_blocking"] is False
     assert payload["blockers"] == []
     assert payload["divergence_pp"] == 12.5
     assert payload["first_principles_minus_market_pp"] == -12.5
     assert payload["direction"] == "first_principles_below_market"
-
 
 
 def test_verify_runtime_ops_health_reports_first_principles_above_market_direction(tmp_path: Path):
@@ -216,7 +228,6 @@ def test_verify_runtime_ops_health_reports_first_principles_above_market_directi
     assert payload["direction"] == "first_principles_above_market"
 
 
-
 def test_verify_runtime_ops_health_reports_missing_probability_fields(tmp_path: Path):
     state_path = tmp_path / "STATE.yaml"
     state_path.write_text('dq_status: "pass"\n', encoding="utf-8")
@@ -230,7 +241,6 @@ def test_verify_runtime_ops_health_reports_missing_probability_fields(tmp_path: 
     assert result.returncode == 1
     assert result.stdout == ""
     assert result.stderr.strip() == "missing latest_ngi.first_principles_probability"
-
 
 
 def test_verify_runtime_ops_health_reports_missing_latest_ngi_timestamp(tmp_path: Path):

@@ -81,19 +81,22 @@ def build_summary(state_path: Path, db_path: Path, latest_ngi_path: Path) -> dic
     )
     divergence_pp = abs(first_principles_probability - market_yes_probability) * 100.0
     first_principles_minus_market_pp = (first_principles_probability - market_yes_probability) * 100.0
+    stale_data = freshness_hours > FRESHNESS_THRESHOLD_HOURS
+    latest_ngi_stale = latest_ngi_age_hours > FRESHNESS_THRESHOLD_HOURS
+    divergence_blocking = divergence_pp > DIVERGENCE_THRESHOLD_PP
 
     status = "pass"
     blockers: list[str] = []
     if dq_status != "pass":
         status = "fail"
         blockers.append(f"dq_status={dq_status}")
-    if freshness_hours > FRESHNESS_THRESHOLD_HOURS:
+    if stale_data:
         status = "fail"
         blockers.append(f"stale_data={freshness_hours:.2f}h")
-    if latest_ngi_age_hours > FRESHNESS_THRESHOLD_HOURS:
+    if latest_ngi_stale:
         status = "fail"
         blockers.append(f"latest_ngi_stale={latest_ngi_age_hours:.2f}h")
-    if divergence_pp > DIVERGENCE_THRESHOLD_PP:
+    if divergence_blocking:
         status = "fail"
         blockers.append(f"divergence_pp={divergence_pp:.2f}")
 
@@ -103,11 +106,14 @@ def build_summary(state_path: Path, db_path: Path, latest_ngi_path: Path) -> dic
         "latest_snapshot_at_utc": latest_snapshot_at_utc,
         "freshness_hours": round(freshness_hours, 4),
         "freshness_threshold_hours": FRESHNESS_THRESHOLD_HOURS,
+        "stale_data": stale_data,
         "latest_ngi_timestamp_utc": latest_ngi_timestamp_utc,
         "latest_ngi_age_hours": round(latest_ngi_age_hours, 4),
         "latest_ngi_threshold_hours": FRESHNESS_THRESHOLD_HOURS,
+        "latest_ngi_stale": latest_ngi_stale,
         "divergence_pp": round(divergence_pp, 4),
         "divergence_threshold_pp": DIVERGENCE_THRESHOLD_PP,
+        "divergence_blocking": divergence_blocking,
         "first_principles_probability": first_principles_probability,
         "market_yes_probability": market_yes_probability,
         "first_principles_minus_market_pp": round(first_principles_minus_market_pp, 4),

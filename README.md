@@ -63,7 +63,7 @@ That shortcut verifies the current product contract for:
 - required market target detail payload
 - explainer visibility for the first-principles vs market comparison
 - target alignment between the internal contract and the market detail payload
-- a fixed divergence field that downstream ops can read directly
+- a signed divergence field and direction that downstream ops can read directly
 
 When the live runtime artifact is still off-contract but PO needs one repeatable repair step on the real workspace path, use:
 

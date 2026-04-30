@@ -75,8 +75,8 @@ def test_verify_runtime_ops_health_fails_on_dq_and_reports_divergence(tmp_path: 
     assert payload["dq_status"] == "fail"
     assert payload["divergence_pp"] == 47.5
     assert payload["divergence_threshold_pp"] == 15.0
-    assert payload["gap_vs_market_pp"] == 47.5
-    assert payload["gap_direction"] == "market_above_p_ai"
+    assert payload["first_principles_minus_market_pp"] == -47.5
+    assert payload["direction"] == "first_principles_below_market"
     assert payload["probability_mode"] == "yes_is_peace"
     assert payload["market_target_id"] == "1517836"
     assert payload["blockers"] == ["dq_status=fail", "divergence_pp=47.50"]
@@ -165,12 +165,12 @@ def test_verify_runtime_ops_health_passes_when_dq_freshness_and_divergence_are_i
     assert payload["status"] == "pass"
     assert payload["blockers"] == []
     assert payload["divergence_pp"] == 12.5
-    assert payload["gap_vs_market_pp"] == 12.5
-    assert payload["gap_direction"] == "market_above_p_ai"
+    assert payload["first_principles_minus_market_pp"] == -12.5
+    assert payload["direction"] == "first_principles_below_market"
 
 
 
-def test_verify_runtime_ops_health_reports_market_below_p_ai_direction(tmp_path: Path):
+def test_verify_runtime_ops_health_reports_first_principles_above_market_direction(tmp_path: Path):
     state_path = tmp_path / "STATE.yaml"
     state_path.write_text('dq_status: "pass"\n', encoding="utf-8")
     db_path = tmp_path / "intelligence_store.sqlite"
@@ -182,8 +182,8 @@ def test_verify_runtime_ops_health_reports_market_below_p_ai_direction(tmp_path:
 
     assert result.returncode == 0
     payload = json.loads(result.stdout)
-    assert payload["gap_vs_market_pp"] == -11.0
-    assert payload["gap_direction"] == "market_below_p_ai"
+    assert payload["first_principles_minus_market_pp"] == 11.0
+    assert payload["direction"] == "first_principles_above_market"
 
 
 

@@ -36,6 +36,11 @@ CONTRACT_ENVELOPE_FIELDS = (
     "contract_version",
     "e2e_run_id",
 )
+SIGNED_DIVERGENCE_FIELDS = (
+    "divergence_pp",
+    "first_principles_minus_market_pp",
+    "direction",
+)
 
 
 def resolve_latest_ngi_path(argv: list[str]) -> Path:
@@ -122,6 +127,11 @@ def main(argv: list[str]) -> int:
         for field in result.get("missing_fields") or []:
             issues.append(f"missing_contract_field:{field}")
 
+    if payload.get("gap_triggered"):
+        for field in SIGNED_DIVERGENCE_FIELDS:
+            if payload.get(field) in (None, ""):
+                issues.append(f"missing_signed_divergence_field:{field}")
+
     probable_sync_blocker = None
     if issues:
         probable_sync_blocker = detect_probable_sync_blocker(payload)
@@ -135,6 +145,7 @@ def main(argv: list[str]) -> int:
         "issues": issues,
         "alert_contract_view": result,
         "allowed_reason_codes": sorted(P0_ALLOWED_REASON_CODES),
+        "required_signed_divergence_fields_when_gap_triggered": list(SIGNED_DIVERGENCE_FIELDS),
         "probable_sync_blocker": probable_sync_blocker,
         "recommended_operator_flow": build_recommended_operator_flow(probable_sync_blocker),
     }

@@ -103,7 +103,7 @@ def build_alert_contract_view(runtime_data: dict[str, Any]) -> dict[str, Any]:
         "alert_target_id": alert_disposition.get("alert_target_id"),
         "contract_version": alert_disposition.get("contract_version"),
         "e2e_run_id": _first_present(alert_disposition, *E2E_RUN_ID_ALIASES),
-        "p_ai": runtime_data.get("first_principles_probability"),
+        "p_ai": _first_present(runtime_data, "first_principles_probability", "P_AI"),
         "market_yes_probability": target_detail.get("market_yes_probability"),
     }
     view["target_contract_match"] = _resolve_target_contract_match(alert_disposition, view)

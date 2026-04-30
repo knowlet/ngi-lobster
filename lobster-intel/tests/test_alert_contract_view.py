@@ -292,3 +292,28 @@ def test_e2e_contract_bundle_view_accepts_complete_shared_bundle():
         "suppressed",
         "would_send",
     ]
+
+
+def test_alert_contract_view_falls_back_to_legacy_p_ai_field():
+    payload = {
+        "market_target": {
+            "market_id": "1517836",
+            "market_name": "Trump announces end of military operations against Iran by June 30th",
+        },
+        "target_detail": {"market_yes_probability": 0.42},
+        "P_AI": 0.61,
+        "alert_disposition": {
+            "should_send": False,
+            "decision": "suppressed",
+            "reason_code": "legacy_target_mismatch",
+            "runtime_target_id": "1517836",
+            "alert_target_id": "legacy-430",
+            "contract_version": "v1",
+            "e2e_run_id": "e2e-20260430-01",
+        },
+    }
+
+    result = build_alert_contract_view(payload)
+
+    assert result["status"] == "ok"
+    assert result["view"]["p_ai"] == 0.61

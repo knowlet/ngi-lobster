@@ -84,10 +84,16 @@ That shortcut keeps the real dispatcher-path evidence bundle on one repeatable a
 When PO needs one fast gate for current live ops health — DQ pass/fail, market snapshot freshness, and same-target NGI divergence from `latest_ngi.json` — use:
 
 ```bash
-npm run test:ops-health-cut
+npm run check:ops-health-live
 ```
 
-That shortcut keeps the current operational blocker on one repeatable local validation path instead of reassembling ad hoc checks each heartbeat.
+That shortcut runs the real workspace health verifier against the live `STATE.yaml`, `intelligence_store.sqlite`, and `latest_ngi.json` paths so PO can re-check the current operational blocker without reassembling ad hoc heartbeat commands.
+
+When implementation work changes the verifier itself, keep its focused regression gate on:
+
+```bash
+npm run test:ops-health-cut
+```
 
 ## Current state
 

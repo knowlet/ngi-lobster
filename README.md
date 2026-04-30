@@ -81,13 +81,15 @@ npm run test:e2e-bundle-cut
 
 That shortcut keeps the real dispatcher-path evidence bundle on one repeatable acceptance command before review or merge.
 
-When PO needs one fast gate for current live ops health — DQ pass/fail, market snapshot freshness, and same-target NGI divergence from `latest_ngi.json` — use:
+When PO needs one fast gate for current live ops health — DQ pass/fail, market snapshot freshness, same-target NGI divergence from `latest_ngi.json`, and whether the runtime artifact itself is stale — use:
 
 ```bash
 npm run check:ops-health-live
 ```
 
 That shortcut runs the real workspace health verifier against the live `STATE.yaml`, `intelligence_store.sqlite`, and `latest_ngi.json` paths so PO can re-check the current operational blocker without reassembling ad hoc heartbeat commands.
+
+Important product rule: a fresh database snapshot does **not** mean live NGI is current. If `latest_ngi_age_hours > 4`, the live runtime artifact is stale and any progress/delivery claim must remain blocking even when DQ is `pass` and snapshot freshness is green.
 
 When implementation work changes the verifier itself, keep its focused regression gate on:
 

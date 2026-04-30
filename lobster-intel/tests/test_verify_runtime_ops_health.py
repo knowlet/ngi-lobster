@@ -132,6 +132,36 @@ def test_verify_runtime_ops_health_fails_on_latest_ngi_staleness(tmp_path: Path)
 
 
 
+def test_verify_runtime_ops_health_fails_when_latest_ngi_is_stale_and_divergence_is_blocking(tmp_path: Path):
+    state_path = tmp_path / "STATE.yaml"
+    state_path.write_text('dq_status: "pass"\n', encoding="utf-8")
+    db_path = tmp_path / "intelligence_store.sqlite"
+    write_db(db_path, "2099-01-01T00:00:00+00:00")
+    latest_ngi_path = tmp_path / "latest_ngi.json"
+    write_latest_ngi(
+        latest_ngi_path,
+        timestamp_utc="2026-04-20T00:00:00+00:00",
+        first_principles_probability=0.12,
+        market_yes_probability=0.54,
+    )
+
+    result = run_cli(state_path, db_path, latest_ngi_path)
+
+    assert result.returncode == 1
+    payload = json.loads(result.stdout)
+    assert payload["status"] == "fail"
+    assert payload["dq_status"] == "pass"
+    assert payload["latest_ngi_age_hours"] > 4
+    assert payload["divergence_pp"] == 42.0
+    assert payload["first_principles_minus_market_pp"] == -42.0
+    assert payload["direction"] == "first_principles_below_market"
+    assert payload["blockers"] == [
+        f"latest_ngi_stale={payload['latest_ngi_age_hours']:.2f}h",
+        "divergence_pp=42.00",
+    ]
+
+
+
 def test_verify_runtime_ops_health_fails_on_divergence_threshold(tmp_path: Path):
     state_path = tmp_path / "STATE.yaml"
     state_path.write_text('dq_status: "pass"\n', encoding="utf-8")
@@ -223,4 +253,6 @@ def test_verify_runtime_ops_health_reports_missing_latest_ngi_timestamp(tmp_path
 
     assert result.returncode == 1
     assert result.stdout == ""
-    assert result.stderr.strip().startswith("missing latest_ngi timestamp")
+    assert result.stderr.strip() == (
+        "missing latest_ngi timestamp (expected one of: timestamp_utc, generated_at_utc, created_at_utc, updated_at_utc, snapshot_at_utc)"
+    )

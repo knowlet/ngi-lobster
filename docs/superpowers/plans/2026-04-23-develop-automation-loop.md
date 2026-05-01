@@ -455,3 +455,10 @@
 - [x] 2026-05-02 00:03:09+0800: `gh issue list --state all --limit 20` retried and failed (`error connecting to api.github.com`).
 - [x] 2026-05-02 00:03:09+0800: No unchecked local implementation-plan item is available; open work remains network-gated sync, review triage, push, and PR sync.
 - [ ] Retry Task 1 and Task 2 immediately when connectivity returns, then perform Task 4 push/PR sync milestone.
+
+### Task 52: 2026-05-02 00:48+08:00 upstream blocker checkpoint
+- [x] 2026-05-02 00:48:00+0800: Confirmed remote sync is restored; branch `codex/pr29-clean-runtime-cut` is at `00ca83a` locally and on `origin/codex/pr29-clean-runtime-cut`.
+- [x] 2026-05-02 00:48:00+0800: Verified PR #30 (`docs: provide clean PR29 checkpoint replacement branch`) is open against `main` with `mergeStateStatus=UNSTABLE` only because `CommitCheck` is still `PENDING`.
+- [x] 2026-05-02 00:48:00+0800: Captured the exact remote blocker: GitHub Marketplace `CommitCheck` cannot complete without private-repo plan/setup (`https://github.com/marketplace/commitcheck/plan/MDIyOk1hcmtldHBsYWNlTGlzdGluZ1BsYW41NTY5#pricing-and-setup`).
+- [x] 2026-05-02 00:48:00+0800: Next cut stays unchanged until external plan/setup unblock or check removal; no additional local code/doc delta is required before that gate clears.
+- [ ] Once `CommitCheck` is removed or passes, merge PR #30 immediately and reopen runtime work on top of `main`.

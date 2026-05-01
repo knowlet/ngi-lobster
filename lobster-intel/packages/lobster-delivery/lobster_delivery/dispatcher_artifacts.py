@@ -26,6 +26,36 @@ def _first_present(mapping: dict[str, Any], *keys: str) -> Any:
     return None
 
 
+def _resolve_runtime_target_id(
+    runtime_payload: dict[str, Any],
+    compare_payload: dict[str, Any],
+) -> Any:
+    for key in ("market_target", "active_target", "target_detail"):
+        target = runtime_payload.get(key)
+        if isinstance(target, dict):
+            runtime_target_id = target.get("market_id")
+            if not _missing(runtime_target_id):
+                return runtime_target_id
+
+    return compare_payload.get("runtime_target_id")
+
+
+def _resolve_runtime_target_name(runtime_payload: dict[str, Any], compare_payload: dict[str, Any]) -> Any:
+    active_target = runtime_payload.get("active_target") or {}
+    market_target = runtime_payload.get("market_target") or {}
+    target_detail = runtime_payload.get("target_detail") or {}
+
+    return (
+        active_target.get("market_name")
+        or active_target.get("market_question")
+        or market_target.get("market_name")
+        or market_target.get("market_question")
+        or target_detail.get("market_name")
+        or target_detail.get("market_question")
+        or compare_payload.get("runtime_target_name")
+    )
+
+
 def _now_utc(value: str | None = None) -> str:
     if value:
         return value
@@ -73,7 +103,14 @@ def _project_runtime_disposition(
     alert_payload = _load_json(delivery_root / "alerts" / f"{run_id}.json")
     active_target = runtime_payload.get("active_target") or {}
     should_send = bool(alert_payload.get("should_send"))
-    runtime_target_id = compare_payload.get("runtime_target_id") or active_target.get("market_id") or active_target.get("market_slug")
+    runtime_target_id = _resolve_runtime_target_id(
+        runtime_payload=runtime_payload,
+        compare_payload=compare_payload,
+    )
+    runtime_target_name = _resolve_runtime_target_name(
+        runtime_payload=runtime_payload,
+        compare_payload=compare_payload,
+    )
     alert_target_id = compare_payload.get("market_target_id") or compare_payload.get("runtime_target_id")
 
     return {
@@ -84,8 +121,7 @@ def _project_runtime_disposition(
         if _missing(runtime_target_id) or _missing(alert_target_id)
         else runtime_target_id == alert_target_id,
         "runtime_target_id": runtime_target_id,
-        "runtime_target_name": active_target.get("market_name")
-        or active_target.get("market_question"),
+        "runtime_target_name": runtime_target_name,
         "alert_target_id": alert_target_id,
         "contract_version": alert_payload.get("contract_version") or runtime_payload.get("contract_version"),
     }

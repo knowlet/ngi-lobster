@@ -6,7 +6,9 @@
 
 **Tech Stack:** Git, GitHub remote workflow, project plan docs.
 
-**Status:** In progress on local branch `codex/pr21-recut-dispatcher-receipt-guard`.
+**Status:** In progress on local branch `codex/pr29-clean-runtime-cut` for PR #30.
+
+> **PR29 checkpoint note:** This document is a clean PR29/PR30 docs-only handoff cut. Historical references to `codex/pr21-recut-dispatcher-receipt-guard` below are preserved as execution context from the original runtime branch, not as the active review branch for this replacement PR.
 
 ---
 
@@ -381,3 +383,130 @@
 - [x] 2026-04-25 11:01:08+0800: `git push origin HEAD` retried and failed (`Could not resolve host: github.com`, rc=128).
 - [x] 2026-04-25 11:01:08+0800: `docs/superpowers/plans/2026-04-23-develop-automation-loop.md` updated as latest network-blocked checkpoint; working tree is clean and `HEAD` remains `3d7f395`.
 - [ ] Retry Task 1 and Task 2 immediately when connectivity returns, then perform Task 4 push/PR sync milestone.
+
+### Task 44: 2026-05-01 17:02+08:00 network-blocked checkpoint
+- [x] 2026-05-01 17:02:21+0800: Current branch is `codex/pr29-clean-runtime-cut` at `4deb554`, matching local `origin/main` before this checkpoint.
+- [x] 2026-05-01 17:02:21+0800: `git fetch --prune origin` retried and failed (`Could not resolve host: github.com`, rc=128), so upstream freshness cannot be verified.
+- [x] 2026-05-01 17:02:21+0800: `git rebase --fork-point origin/main` reports the branch is up to date against local tracking only.
+- [x] 2026-05-01 17:02:21+0800: `gh pr list --state all --limit 20` retried and failed (`error connecting to api.github.com`).
+- [x] 2026-05-01 17:02:21+0800: `gh issue list --state all --limit 20` retried and failed (`error connecting to api.github.com`).
+- [x] 2026-05-01 17:02:21+0800: Open plan items remain network-gated: remote sync/rebase, PR/comment/issue triage, push, and PR sync.
+- [ ] Retry Task 1 and Task 2 immediately when connectivity returns, then perform Task 4 push/PR sync milestone.
+
+### Task 45: 2026-05-01 18:03+08:00 network-blocked checkpoint
+- [x] 2026-05-01 18:03:05+0800: Current branch is `codex/pr29-clean-runtime-cut` at `14bebae`, matching stale local `origin/codex/pr29-clean-runtime-cut`.
+- [x] 2026-05-01 18:03:05+0800: `git fetch --prune origin` retried and failed (`Could not resolve host: github.com`, rc=128), so upstream freshness cannot be verified.
+- [x] 2026-05-01 18:03:05+0800: `git rebase --fork-point origin/main` reports the branch is up to date against local tracking only.
+- [x] 2026-05-01 18:03:05+0800: `gh pr list --state all --limit 20` retried and failed (`error connecting to api.github.com`).
+- [x] 2026-05-01 18:03:05+0800: `gh issue list --state all --limit 20` retried and failed (`error connecting to api.github.com`).
+- [x] 2026-05-01 18:03:05+0800: No unchecked local implementation-plan item is available; open work remains network-gated sync, review triage, push, and PR sync.
+- [ ] Retry Task 1 and Task 2 immediately when connectivity returns, then perform Task 4 push/PR sync milestone.
+
+### Task 46: 2026-05-01 19:02+08:00 network-blocked checkpoint
+- [x] 2026-05-01 19:02:36+0800: Current branch is `codex/pr29-clean-runtime-cut` at `7da90d8`, matching stale local `origin/codex/pr29-clean-runtime-cut`.
+- [x] 2026-05-01 19:02:36+0800: `git fetch --prune origin` retried and failed (`Could not resolve host: github.com`, rc=128), so upstream freshness cannot be verified.
+- [x] 2026-05-01 19:02:36+0800: `git rebase --fork-point origin/main` reports the branch is up to date against local tracking only.
+- [x] 2026-05-01 19:02:36+0800: `gh pr list --state all --limit 20` retried and failed (`error connecting to api.github.com`).
+- [x] 2026-05-01 19:02:36+0800: `gh issue list --state all --limit 20` retried and failed (`error connecting to api.github.com`).
+- [x] 2026-05-01 19:02:36+0800: Open plan work is still network-gated: remote sync/rebase, PR/comment/issue triage, push, and PR sync.
+- [ ] Retry Task 1 and Task 2 immediately when connectivity returns, then perform Task 4 push/PR sync milestone.
+
+### Task 47: 2026-05-01 20:03+08:00 network-blocked checkpoint
+- [x] 2026-05-01 20:03:35+0800: Current branch is `codex/pr29-clean-runtime-cut` at `6ace8b4`, matching stale local `origin/codex/pr29-clean-runtime-cut`.
+- [x] 2026-05-01 20:03:35+0800: `git fetch --prune origin` retried and failed (`Could not resolve host: github.com`, rc=128), so upstream freshness cannot be verified.
+- [x] 2026-05-01 20:03:35+0800: `git rebase --fork-point origin/main` reports the branch is up to date against local tracking only.
+- [x] 2026-05-01 20:03:35+0800: `gh pr list --state all --limit 20` retried and failed (`error connecting to api.github.com`).
+- [x] 2026-05-01 20:03:35+0800: `gh issue list --state all --limit 20` retried and failed (`error connecting to api.github.com`).
+- [x] 2026-05-01 20:03:35+0800: No unchecked local implementation-plan item is available; open work remains network-gated sync, review triage, push, and PR sync.
+- [ ] Retry Task 1 and Task 2 immediately when connectivity returns, then perform Task 4 push/PR sync milestone.
+
+### Task 48: 2026-05-01 21:03+08:00 network-blocked checkpoint
+- [x] 2026-05-01 21:03:37+0800: Current branch is `codex/pr29-clean-runtime-cut` at `155c162`, matching stale local `origin/codex/pr29-clean-runtime-cut`.
+- [x] 2026-05-01 21:03:37+0800: `git fetch --prune origin` retried and failed (`Could not resolve host: github.com`, rc=128), so upstream freshness cannot be verified.
+- [x] 2026-05-01 21:03:37+0800: `git rebase --fork-point origin/main` reports the branch is up to date against local tracking only.
+- [x] 2026-05-01 21:03:37+0800: `gh pr list --state all --limit 20` retried and failed (`error connecting to api.github.com`).
+- [x] 2026-05-01 21:03:37+0800: `gh issue list --state all --limit 20` retried and failed (`error connecting to api.github.com`).
+- [x] 2026-05-01 21:03:37+0800: Open plan work remains network-gated: remote sync/rebase, PR/comment/issue triage, push, and PR sync.
+- [ ] Retry Task 1 and Task 2 immediately when connectivity returns, then perform Task 4 push/PR sync milestone.
+
+### Task 49: 2026-05-01 22:02+08:00 network-blocked checkpoint
+- [x] 2026-05-01 22:02:34+0800: Current branch is `codex/pr29-clean-runtime-cut` at `cde3de4`, matching stale local `origin/codex/pr29-clean-runtime-cut`.
+- [x] 2026-05-01 22:02:34+0800: `git fetch --prune origin` retried and failed (`Could not resolve host: github.com`, rc=128), so upstream freshness cannot be verified.
+- [x] 2026-05-01 22:02:34+0800: `git rebase --fork-point origin/main` reports the branch is up to date against local tracking only.
+- [x] 2026-05-01 22:02:34+0800: `gh pr list --state all --limit 20` retried and failed (`error connecting to api.github.com`).
+- [x] 2026-05-01 22:02:34+0800: `gh issue list --state all --limit 20` retried and failed (`error connecting to api.github.com`).
+- [x] 2026-05-01 22:02:34+0800: No unchecked local implementation-plan item is available; open work remains network-gated sync, review triage, push, and PR sync.
+- [ ] Retry Task 1 and Task 2 immediately when connectivity returns, then perform Task 4 push/PR sync milestone.
+
+### Task 50: 2026-05-01 23:03+08:00 network-blocked checkpoint
+- [x] 2026-05-01 23:03:07+0800: Current branch is `codex/pr29-clean-runtime-cut` at `3b712cb`, matching stale local `origin/codex/pr29-clean-runtime-cut`.
+- [x] 2026-05-01 23:03:07+0800: `git fetch --prune origin` retried and failed (`Could not resolve host: github.com`, rc=128), so upstream freshness cannot be verified.
+- [x] 2026-05-01 23:03:07+0800: `git rebase --fork-point origin/main` reports the branch is up to date against local tracking only.
+- [x] 2026-05-01 23:03:07+0800: `gh pr list --state all --limit 20` retried and failed (`error connecting to api.github.com`).
+- [x] 2026-05-01 23:03:07+0800: `gh issue list --state all --limit 20` retried and failed (`error connecting to api.github.com`).
+- [x] 2026-05-01 23:03:07+0800: No unchecked local implementation-plan item is available; open work remains network-gated sync, review triage, push, and PR sync.
+- [ ] Retry Task 1 and Task 2 immediately when connectivity returns, then perform Task 4 push/PR sync milestone.
+
+### Task 51: 2026-05-02 00:03+08:00 network-blocked checkpoint
+- [x] 2026-05-02 00:03:09+0800: Current branch is `codex/pr29-clean-runtime-cut` at `70cb260`, matching stale local `origin/codex/pr29-clean-runtime-cut`.
+- [x] 2026-05-02 00:03:09+0800: `git fetch --prune origin` retried and failed (`Could not resolve host: github.com`, rc=128), so upstream freshness cannot be verified.
+- [x] 2026-05-02 00:03:09+0800: `git rebase --fork-point origin/main` reports the branch is up to date against local tracking only.
+- [x] 2026-05-02 00:03:09+0800: `gh pr list --state all --limit 20` retried and failed (`error connecting to api.github.com`).
+- [x] 2026-05-02 00:03:09+0800: `gh issue list --state all --limit 20` retried and failed (`error connecting to api.github.com`).
+- [x] 2026-05-02 00:03:09+0800: No unchecked local implementation-plan item is available; open work remains network-gated sync, review triage, push, and PR sync.
+- [ ] Retry Task 1 and Task 2 immediately when connectivity returns, then perform Task 4 push/PR sync milestone.
+
+### Task 52: 2026-05-02 00:48+08:00 upstream blocker checkpoint
+- [x] 2026-05-02 00:48:00+0800: Confirmed remote sync is restored; branch `codex/pr29-clean-runtime-cut` is at `00ca83a` locally and on `origin/codex/pr29-clean-runtime-cut`.
+- [x] 2026-05-02 00:48:00+0800: Verified PR #30 (`docs: provide clean PR29 checkpoint replacement branch`) is open against `main` with `mergeStateStatus=UNSTABLE` only because `CommitCheck` is still `PENDING`.
+- [x] 2026-05-02 00:48:00+0800: Captured the exact remote blocker: GitHub Marketplace `CommitCheck` cannot complete without private-repo plan/setup (`https://github.com/marketplace/commitcheck/plan/MDIyOk1hcmtldHBsYWNlTGlzdGluZ1BsYW41NTY5#pricing-and-setup`).
+- [x] 2026-05-02 00:48:00+0800: Next cut stays unchanged until external plan/setup unblock or check removal; no additional local code/doc delta is required before that gate clears.
+- [ ] Once `CommitCheck` is removed or passes, merge PR #30 immediately and reopen runtime work on top of `main`.
+
+### Task 53: 2026-05-02 01:03+08:00 network-regressed PR30 checkpoint
+- [x] 2026-05-02 01:03:20+0800: Current branch is `codex/pr29-clean-runtime-cut` at `1026b3f`, matching stale local `origin/codex/pr29-clean-runtime-cut`.
+- [x] 2026-05-02 01:03:20+0800: `git fetch --prune origin` retried after the prior restored-sync checkpoint and failed again (`Could not resolve host: github.com`, rc=128), so upstream freshness cannot be verified in this run.
+- [x] 2026-05-02 01:03:20+0800: `git rebase --fork-point origin/main` reports the branch is up to date against local tracking only.
+- [x] 2026-05-02 01:03:20+0800: `gh pr list --state all --limit 20` and `gh issue list --state all --limit 20` failed with `error connecting to api.github.com`, so PR #30 merge-state and issue triage cannot be refreshed.
+- [x] 2026-05-02 01:03:20+0800: No local implementation delta is required while PR #30 remains gated by the external `CommitCheck` setup/removal decision captured in Task 52.
+- [ ] Retry GitHub access, confirm PR #30 `CommitCheck` status, then merge or resume runtime work only after that gate clears.
+
+### Task 54: 2026-05-02 02:01+08:00 network-blocked PR30 checkpoint
+- [x] 2026-05-02 02:01:40+0800: Current branch is `codex/pr29-clean-runtime-cut` at `f1cf9d9`, matching stale local `origin/codex/pr29-clean-runtime-cut`.
+- [x] 2026-05-02 02:01:40+0800: `git fetch --prune origin` retried and failed (`Could not resolve host: github.com`, rc=128), so upstream freshness cannot be verified in this run.
+- [x] 2026-05-02 02:01:40+0800: `git rebase --fork-point origin/main` reports the branch is up to date against local tracking only.
+- [x] 2026-05-02 02:01:40+0800: `gh pr list --state all --limit 20` and `gh issue list --state all --limit 20` failed with `error connecting to api.github.com`, so PR #30 merge-state and issue triage cannot be refreshed.
+- [x] 2026-05-02 02:01:40+0800: Open local work remains unchanged: PR #30 is still governed by the Task 52 external `CommitCheck` setup/removal gate, and no unchecked non-network implementation slice is available.
+- [ ] Retry GitHub access, confirm PR #30 `CommitCheck` status, then merge or resume runtime work only after that gate clears.
+
+### Task 55: 2026-05-02 03:03+08:00 network-blocked PR30 checkpoint
+- [x] 2026-05-02 03:03:55+0800: Current branch is `codex/pr29-clean-runtime-cut` at `f6943a9`, matching stale local `origin/codex/pr29-clean-runtime-cut`.
+- [x] 2026-05-02 03:03:55+0800: `git fetch --prune origin` retried and failed (`Could not resolve host: github.com`, rc=128), so upstream freshness cannot be verified in this run.
+- [x] 2026-05-02 03:03:55+0800: `git rebase --fork-point origin/main` reports the branch is up to date against local tracking only.
+- [x] 2026-05-02 03:03:55+0800: `gh pr list --state all --limit 20` and `gh issue list --state all --limit 20` failed with `error connecting to api.github.com`, so PR #30 merge-state and issue triage cannot be refreshed.
+- [x] 2026-05-02 03:03:55+0800: Open local work remains unchanged: PR #30 is still governed by the Task 52 external `CommitCheck` setup/removal gate, and no unchecked non-network implementation slice is available.
+- [ ] Retry GitHub access, confirm PR #30 `CommitCheck` status, then merge or resume runtime work only after that gate clears.
+
+### Task 56: 2026-05-02 04:02+08:00 network-blocked PR30 checkpoint
+- [x] 2026-05-02 04:02:08+0800: Current branch is `codex/pr29-clean-runtime-cut` at `1394a84`, matching stale local `origin/codex/pr29-clean-runtime-cut`.
+- [x] 2026-05-02 04:02:08+0800: `git fetch --prune origin` retried and failed (`Could not resolve host: github.com`, rc=128), so upstream freshness cannot be verified in this run.
+- [x] 2026-05-02 04:02:08+0800: `git rebase --fork-point origin/main` reports the branch is up to date against local tracking only.
+- [x] 2026-05-02 04:02:08+0800: `gh pr list --state all --limit 20` and `gh issue list --state all --limit 20` failed with `error connecting to api.github.com`, so PR #30 merge-state and issue triage cannot be refreshed.
+- [x] 2026-05-02 04:02:08+0800: Open local work remains unchanged: PR #30 is still governed by the Task 52 external `CommitCheck` setup/removal gate, and no unchecked non-network implementation slice is available.
+- [ ] Retry GitHub access, confirm PR #30 `CommitCheck` status, then merge or resume runtime work only after that gate clears.
+
+### Task 57: 2026-05-02 05:03+08:00 network-blocked PR30 checkpoint
+- [x] 2026-05-02 05:03:17+0800: Current branch is `codex/pr29-clean-runtime-cut` at `3a493bc`, matching local `origin/codex/pr29-clean-runtime-cut` before this checkpoint.
+- [x] 2026-05-02 05:03:17+0800: `git fetch --prune origin` retried and failed (`Could not resolve host: github.com`, rc=128), so upstream freshness cannot be verified in this run.
+- [x] 2026-05-02 05:03:17+0800: `git rebase --fork-point origin/main` reports the branch is up to date against local tracking only.
+- [x] 2026-05-02 05:03:17+0800: `gh pr list --state all --limit 20` and `gh issue list --state all --limit 20` failed with `error connecting to api.github.com`, so PR #30 merge-state and issue triage cannot be refreshed.
+- [x] 2026-05-02 05:03:17+0800: Open local work remains unchanged: PR #30 is still governed by the Task 52 external `CommitCheck` setup/removal gate, and no unchecked non-network implementation slice is available.
+- [ ] Retry GitHub access, confirm PR #30 `CommitCheck` status, then merge or resume runtime work only after that gate clears.
+
+### Task 58: 2026-05-02 06:03+08:00 network-blocked PR30 checkpoint
+- [x] 2026-05-02 06:03:06+0800: Current branch is `codex/pr29-clean-runtime-cut` at `434ddda`, matching local `origin/codex/pr29-clean-runtime-cut` before this checkpoint.
+- [x] 2026-05-02 06:03:06+0800: `git fetch --prune origin` retried and failed (`Could not resolve host: github.com`, rc=128), so upstream freshness cannot be verified in this run.
+- [x] 2026-05-02 06:03:06+0800: `git rebase --fork-point origin/main` reports the branch is up to date against local tracking only.
+- [x] 2026-05-02 06:03:06+0800: `gh pr list --state all --limit 20` and `gh issue list --state all --limit 20` failed with `error connecting to api.github.com`, so PR #30 merge-state and issue triage cannot be refreshed.
+- [x] 2026-05-02 06:03:06+0800: Open local work remains unchanged: PR #30 is still governed by the Task 52 external `CommitCheck` setup/removal gate, and no unchecked non-network implementation slice is available.
+- [ ] Retry GitHub access, confirm PR #30 `CommitCheck` status, then merge or resume runtime work only after that gate clears.

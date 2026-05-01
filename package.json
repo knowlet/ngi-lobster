@@ -12,7 +12,9 @@
     "repair:latest-ngi-contract": "./.venv/bin/python lobster-intel/scripts/repair_latest_ngi_contract.py",
     "test:e2e-bundle-cut": "PYTHONPATH=lobster-intel/packages/lobster-core:lobster-intel/packages/lobster-delivery:lobster-intel/packages/lobster-ingest:lobster-intel/packages/lobster-plugins:lobster-intel/packages/lobster-runtime ./.venv/bin/python -m pytest lobster-intel/tests/test_dispatcher_e2e_bundle.py lobster-intel/tests/test_verify_alert_contract_bundle_cli.py -q",
     "test:ops-health-cut": "PYTHONPATH=lobster-intel/scripts ./.venv/bin/python -m pytest lobster-intel/tests/test_verify_runtime_ops_health.py -q",
-    "check:ops-health-live": "./.venv/bin/python lobster-intel/scripts/verify_runtime_ops_health.py /Users/knowlet/.openclaw/workspace/shared-projects/twse-close-report/STATE.yaml /Users/knowlet/.openclaw/workspace/intelligence_store.sqlite /Users/knowlet/.openclaw/workspace/shared-projects/intelligence-model/latest_ngi.json"
+    "test:live-sync-cut": "PYTHONPATH=lobster-intel/scripts ./.venv/bin/python -m pytest lobster-intel/tests/test_build_live_progress_sync_payload.py -q",
+    "check:ops-health-live": "./.venv/bin/python lobster-intel/scripts/verify_runtime_ops_health.py /Users/knowlet/.openclaw/workspace/shared-projects/twse-close-report/STATE.yaml /Users/knowlet/.openclaw/workspace/intelligence_store.sqlite /Users/knowlet/.openclaw/workspace/shared-projects/intelligence-model/latest_ngi.json",
+    "build:live-sync-payload": "./.venv/bin/python lobster-intel/scripts/build_live_progress_sync_payload.py /Users/knowlet/.openclaw/workspace/shared-projects/twse-close-report/STATE.yaml /Users/knowlet/.openclaw/workspace/intelligence_store.sqlite /Users/knowlet/.openclaw/workspace/shared-projects/intelligence-model/latest_ngi.json"
   },
   "openclaw": {
     "extensions": [

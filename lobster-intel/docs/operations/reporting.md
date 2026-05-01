@@ -47,6 +47,36 @@ Required rendering behavior:
 
 This prevents stale `4/30 ceasefire` framing from leaking into heartbeat, digest, or scheduled report delivery when runtime has already switched to `ACTIVE_TRUCE` style monitoring.
 
+## Paperclip / Albert sync contract
+
+Any outward progress sync that claims live NGI status must reuse the same live contract instead of inventing a parallel summary layer.
+
+Canonical fields:
+- `latest_ngi.json.market_target`
+- `latest_ngi.json.target_detail`
+- `latest_ngi.json.first_principles_probability`
+- `latest_ngi.json.target_detail.market_yes_probability`
+- `latest_ngi.json.timestamp_utc` (or equivalent runtime timestamp field)
+- signed divergence fields from the live ops-health output:
+  - `divergence_pp`
+  - `direction`
+  - `first_principles_minus_market_pp`
+- blocking verdict fields from the live ops-health output:
+  - `dq_status`
+  - `stale_data`
+  - `latest_ngi_stale`
+  - `blockers`
+
+Required sync behavior:
+1. sync the exact active target identity before any prose summary
+2. always carry freshness and blocking verdict in the same payload as divergence so downstream readers cannot mistake stale output for fresh runtime intent
+3. when `divergence_pp > 15`, mark the sync as blocking and preserve signed direction instead of flattening to an unsigned gap
+4. when `dq_status != pass`, `stale_data = true`, or `latest_ngi_stale = true`, fail closed and mark the sync as blocked even if divergence is otherwise interesting
+5. include at least one runtime-backed basis line each for logistics, energy, and key statement evidence when available
+6. do not claim progress as shipped unless the sync has actually crossed the intended sink boundary or the blocker is explicitly stated
+
+This is the delivery contract for routing the fresh `latest_ngi.json` state into Paperclip / Albert without losing target lineage, signed divergence meaning, or fail-closed freshness semantics.
+
 ## Alert explain contract
 
 For any user-facing alert or suppression message, delivery must expose why the system sent, reviewed, or suppressed the item. Consumers must not invent their own explanation layer.

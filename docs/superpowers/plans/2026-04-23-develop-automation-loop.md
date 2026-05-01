@@ -6,9 +6,9 @@
 
 **Tech Stack:** Git, GitHub remote workflow, project plan docs.
 
-**Status:** In progress on local branch `codex/pr21-recut-dispatcher-receipt-guard`.
+**Status:** In progress on local branch `codex/pr29-clean-runtime-cut` for PR #30.
 
-> **PR29 checkpoint note:** This document is a clean PR29/PR30 docs-only handoff cut. The `pr21` branch name below is preserved as historical execution context from the original runtime branch, not as the active PR number for this replacement review.
+> **PR29 checkpoint note:** This document is a clean PR29/PR30 docs-only handoff cut. Historical references to `codex/pr21-recut-dispatcher-receipt-guard` below are preserved as execution context from the original runtime branch, not as the active review branch for this replacement PR.
 
 ---
 

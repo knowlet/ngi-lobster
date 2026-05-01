@@ -462,3 +462,11 @@
 - [x] 2026-05-02 00:48:00+0800: Captured the exact remote blocker: GitHub Marketplace `CommitCheck` cannot complete without private-repo plan/setup (`https://github.com/marketplace/commitcheck/plan/MDIyOk1hcmtldHBsYWNlTGlzdGluZ1BsYW41NTY5#pricing-and-setup`).
 - [x] 2026-05-02 00:48:00+0800: Next cut stays unchanged until external plan/setup unblock or check removal; no additional local code/doc delta is required before that gate clears.
 - [ ] Once `CommitCheck` is removed or passes, merge PR #30 immediately and reopen runtime work on top of `main`.
+
+### Task 53: 2026-05-02 01:03+08:00 network-regressed PR30 checkpoint
+- [x] 2026-05-02 01:03:20+0800: Current branch is `codex/pr29-clean-runtime-cut` at `1026b3f`, matching stale local `origin/codex/pr29-clean-runtime-cut`.
+- [x] 2026-05-02 01:03:20+0800: `git fetch --prune origin` retried after the prior restored-sync checkpoint and failed again (`Could not resolve host: github.com`, rc=128), so upstream freshness cannot be verified in this run.
+- [x] 2026-05-02 01:03:20+0800: `git rebase --fork-point origin/main` reports the branch is up to date against local tracking only.
+- [x] 2026-05-02 01:03:20+0800: `gh pr list --state all --limit 20` and `gh issue list --state all --limit 20` failed with `error connecting to api.github.com`, so PR #30 merge-state and issue triage cannot be refreshed.
+- [x] 2026-05-02 01:03:20+0800: No local implementation delta is required while PR #30 remains gated by the external `CommitCheck` setup/removal decision captured in Task 52.
+- [ ] Retry GitHub access, confirm PR #30 `CommitCheck` status, then merge or resume runtime work only after that gate clears.

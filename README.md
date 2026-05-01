@@ -65,6 +65,14 @@ That shortcut verifies the current product contract for:
 - target alignment between the internal contract and the market detail payload
 - a signed divergence field and direction that downstream ops can read directly
 
+When the live runtime artifact is stale and PO needs one repeatable refresh entrypoint on the real workspace path, use:
+
+```bash
+npm run refresh:latest-ngi-live
+```
+
+That shortcut runs the legacy monitor from the repo-local package path and rewrites the live `shared-projects/intelligence-model/latest_ngi.json` artifact in place, so PO can refresh the active-target contract before re-checking live ops health.
+
 When the live runtime artifact is still off-contract but PO needs one repeatable repair step on the real workspace path, use:
 
 ```bash

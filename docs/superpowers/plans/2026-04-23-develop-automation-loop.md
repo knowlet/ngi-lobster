@@ -390,3 +390,12 @@
 - [x] 2026-05-01 17:02:21+0800: `gh issue list --state all --limit 20` retried and failed (`error connecting to api.github.com`).
 - [x] 2026-05-01 17:02:21+0800: Open plan items remain network-gated: remote sync/rebase, PR/comment/issue triage, push, and PR sync.
 - [ ] Retry Task 1 and Task 2 immediately when connectivity returns, then perform Task 4 push/PR sync milestone.
+
+### Task 45: 2026-05-01 18:03+08:00 network-blocked checkpoint
+- [x] 2026-05-01 18:03:05+0800: Current branch is `codex/pr29-clean-runtime-cut` at `14bebae`, matching stale local `origin/codex/pr29-clean-runtime-cut`.
+- [x] 2026-05-01 18:03:05+0800: `git fetch --prune origin` retried and failed (`Could not resolve host: github.com`, rc=128), so upstream freshness cannot be verified.
+- [x] 2026-05-01 18:03:05+0800: `git rebase --fork-point origin/main` reports the branch is up to date against local tracking only.
+- [x] 2026-05-01 18:03:05+0800: `gh pr list --state all --limit 20` retried and failed (`error connecting to api.github.com`).
+- [x] 2026-05-01 18:03:05+0800: `gh issue list --state all --limit 20` retried and failed (`error connecting to api.github.com`).
+- [x] 2026-05-01 18:03:05+0800: No unchecked local implementation-plan item is available; open work remains network-gated sync, review triage, push, and PR sync.
+- [ ] Retry Task 1 and Task 2 immediately when connectivity returns, then perform Task 4 push/PR sync milestone.

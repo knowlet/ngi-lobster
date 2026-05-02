@@ -56,6 +56,9 @@ For any live NGI gap view, the product contract is the runtime artifact itself, 
 17. Internal runtime policy labels are not automatically valid downstream product `reason_code`s. In particular, `no_novelty_within_24h` may exist inside runtime gating or explain/debug traces, but live delivery surfaces must map it onto an approved dispatcher-facing contract code before writing `latest_ngi.json`, and that outward record must still preserve `target_contract_match`, `alert_target_id`, `contract_version`, and `e2e_run_id`.
 18. PO decision for the active-target freshness-suppressed case: when `target_contract_match=true` and the internal runtime label is `no_novelty_within_24h`, the outward dispatcher-facing `reason_code` must be `active_target_contract_ok`. The internal label must be preserved separately as `internal_runtime_reason_code`; it must not replace the public contract code.
 19. Until step 16 is proven, `positive-control delivered` is not a valid project status. The only valid status is `explain-contract E2E still blocking`, even if background generation, renderer output, or manual replay already look correct.
+20. Live NGI progress is not valid if `latest_ngi.json` is stale. Any user-facing progress, heartbeat, digest, or delivery claim must surface the runtime artifact timestamp and fail closed when `latest_ngi_age_hours > 4`.
+21. A fresh database snapshot does not override a stale runtime artifact. `market_snapshots` freshness and `latest_ngi.json` freshness are separate gates; both must be within contract before PO may treat live NGI as current.
+22. When the active-target divergence is reported, the same message must also carry the runtime freshness state (`latest_ngi_timestamp_utc`, `latest_ngi_age_hours`, threshold, and blocking verdict), so downstream consumers cannot mistake stale divergence for fresh runtime intent.
 
 ### Current DoD for the highest-priority cut
 
@@ -99,4 +102,3 @@ gooaye-tracker -> evidence -> compiled markdown digest -> runtime snapshot
 ```
 
 Once this path is solid, other trackers should plug into the same artifact flow.
-

@@ -1,0 +1,137 @@
+from __future__ import annotations
+
+import json
+import sys
+from pathlib import Path
+from typing import Any
+
+from verify_runtime_ops_health import build_summary
+
+
+REQUIRED_TOP_LEVEL_KEYS = (
+    "market_target",
+    "target_detail",
+    "first_principles_probability",
+    "alert_disposition",
+)
+
+
+def _first_reason(payload: dict[str, Any]) -> str | None:
+    explain = payload.get("explain")
+    if not isinstance(explain, dict):
+        return None
+    reasons = explain.get("reasons")
+    if isinstance(reasons, list):
+        for item in reasons:
+            if isinstance(item, str) and item.strip():
+                return item.strip()
+    return None
+
+
+def _build_basis_lines(*, latest_ngi: dict[str, Any], ops_health: dict[str, Any]) -> dict[str, str]:
+    decision = ((latest_ngi.get("alert_disposition") or {}).get("decision") or "unknown")
+    reason_code = ((latest_ngi.get("alert_disposition") or {}).get("reason_code") or "unknown")
+    logistics = _first_reason(latest_ngi) or f"live alert disposition {decision} / {reason_code}"
+    energy = (
+        "P_AI "
+        f"{ops_health['first_principles_probability'] * 100:.2f}% vs market yes "
+        f"{ops_health['market_yes_probability'] * 100:.2f}%"
+    )
+    if ops_health["blockers"]:
+        key_statement = f"ops-health blockers: {', '.join(str(item) for item in ops_health['blockers'])}"
+    else:
+        key_statement = "ops-health pass"
+    return {
+        "logistics": logistics,
+        "energy": energy,
+        "key_statement": key_statement,
+    }
+
+
+def _require_mapping(payload: dict[str, Any], key: str) -> dict[str, Any]:
+    value = payload.get(key)
+    if not isinstance(value, dict):
+        raise RuntimeError(f"missing {key}")
+    return value
+
+
+def build_live_progress_sync_payload(state_path: Path, db_path: Path, latest_ngi_path: Path) -> dict[str, Any]:
+    latest_ngi = json.loads(latest_ngi_path.read_text(encoding="utf-8"))
+    for key in REQUIRED_TOP_LEVEL_KEYS:
+        if key not in latest_ngi:
+            raise RuntimeError(f"missing latest_ngi.{key}")
+
+    market_target = _require_mapping(latest_ngi, "market_target")
+    target_detail = _require_mapping(latest_ngi, "target_detail")
+    alert_disposition = _require_mapping(latest_ngi, "alert_disposition")
+    ops_health = build_summary(state_path, db_path, latest_ngi_path)
+    basis = _build_basis_lines(latest_ngi=latest_ngi, ops_health=ops_health)
+
+    return {
+        "sync_status": "blocking" if ops_health["status"] != "pass" else "ready",
+        "sync_blocked": ops_health["status"] != "pass",
+        "market_target": {
+            "market_id": ops_health["market_target_id"],
+            "market_name": ops_health["market_target_name"],
+            "market_question": target_detail.get("market_question"),
+            "probability_mode": ops_health["probability_mode"],
+        },
+        "alert_disposition": {
+            "decision": alert_disposition.get("decision"),
+            "should_send": alert_disposition.get("should_send"),
+            "reason_code": alert_disposition.get("reason_code"),
+            "target_contract_match": alert_disposition.get("target_contract_match"),
+            "contract_version": alert_disposition.get("contract_version"),
+            "e2e_run_id": alert_disposition.get("e2e_run_id"),
+        },
+        "probabilities": {
+            "p_ai": ops_health["first_principles_probability"],
+            "market_yes_probability": ops_health["market_yes_probability"],
+        },
+        "divergence": {
+            "divergence_pp": ops_health["divergence_pp"],
+            "direction": ops_health["direction"],
+            "first_principles_minus_market_pp": ops_health["first_principles_minus_market_pp"],
+            "threshold_pp": ops_health["divergence_threshold_pp"],
+            "blocking": ops_health["divergence_blocking"],
+        },
+        "freshness": {
+            "dq_status": ops_health["dq_status"],
+            "latest_snapshot_at_utc": ops_health["latest_snapshot_at_utc"],
+            "freshness_hours": ops_health["freshness_hours"],
+            "freshness_threshold_hours": ops_health["freshness_threshold_hours"],
+            "stale_data": ops_health["stale_data"],
+            "latest_ngi_timestamp_utc": ops_health["latest_ngi_timestamp_utc"],
+            "latest_ngi_age_hours": ops_health["latest_ngi_age_hours"],
+            "latest_ngi_threshold_hours": ops_health["latest_ngi_threshold_hours"],
+            "latest_ngi_stale": ops_health["latest_ngi_stale"],
+        },
+        "blockers": list(ops_health["blockers"]),
+        "basis_lines": basis,
+    }
+
+
+def main(argv: list[str]) -> int:
+    if len(argv) != 4:
+        print(
+            "usage: build_live_progress_sync_payload.py <state.yaml> <intelligence_store.sqlite> <latest_ngi.json>",
+            file=sys.stderr,
+        )
+        return 2
+
+    state_path = Path(argv[1])
+    db_path = Path(argv[2])
+    latest_ngi_path = Path(argv[3])
+
+    try:
+        payload = build_live_progress_sync_payload(state_path, db_path, latest_ngi_path)
+    except Exception as exc:
+        print(str(exc), file=sys.stderr)
+        return 1
+
+    print(json.dumps(payload, ensure_ascii=False, sort_keys=True))
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main(sys.argv))

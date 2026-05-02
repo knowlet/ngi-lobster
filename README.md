@@ -1,52 +1,109 @@
-# ngi-lobster
+# NGI Lobster
 
-A cleaned private repo for the current NGI + Lobster Intel productization effort.
+A repo for rebuilding the NGI / Lobster runtime into a product-grade path with tracked contracts, replayable artifacts, and upstreamable acceptance cuts.
 
-## Goal
+## Quick start
 
-Turn the current NGI workflow into an installable, open-source-friendly plugin system for OpenClaw-style agents.
+Create the local venv and install the editable packages:
 
-This repo is not just research notes. It is the productization track.
+```bash
+python3 -m venv .venv
+./.venv/bin/pip install -e lobster-intel/packages/lobster-core \
+  -e lobster-intel/packages/lobster-delivery \
+  -e lobster-intel/packages/lobster-ingest \
+  -e lobster-intel/packages/lobster-plugins \
+  -e lobster-intel/packages/lobster-runtime
+```
+
+Run the existing dispatcher acceptance cut:
+
+```bash
+npm run test:dispatcher-cut
+```
+
+That command keeps the delivery contract, runtime spine, and dispatcher receipt path on one repeatable gate before merge.
 
 ## Repo layout
 
-- `lobster-intel/`: plugin-oriented intelligence platform scaffold
-- `legacy/intelligence-model/`: current NGI workflow code and reference artifacts being migrated into the plugin/runtime architecture
+- `lobster-intel/packages/lobster-core`: shared typing and base contracts
+- `lobster-intel/packages/lobster-delivery`: delivery contract bundle helpers
+- `lobster-intel/packages/lobster-ingest`: ingest-side helpers and models
+- `lobster-intel/packages/lobster-plugins`: plugin contract and loader
+- `lobster-intel/packages/lobster-runtime`: runtime dispatch helpers
+- `lobster-intel/scripts`: repo-level acceptance and verification scripts
+- `lobster-intel/tests`: focused contract and cut tests
 
-## What is intentionally excluded
+## Current acceptance cuts
 
-- local databases
-- logs
-- venvs
-- secrets / tokens
-- personal memory files
-- runtime state dumps
+The repo keeps product slices in small repeatable cuts.
 
-## Start here
-
-- Product / plugin architecture: `lobster-intel/README.md`
-- OpenClaw install + config guide: `docs/INSTALL_OPENCLAW.md`
-- Product cut: `docs/PRODUCT_CUT_V0.md`
-- Example environment variables: `.env.example`
-
-## Native OpenClaw install surface
-
-This repo now includes a **native OpenClaw plugin wrapper** so the install path can converge on:
+When PO needs the dispatcher + delivery contract acceptance slice, use:
 
 ```bash
-openclaw plugins install ./path/to/ngi-lobster
+npm run test:dispatcher-cut
 ```
 
-Current status:
+When PO needs the full current P0 explain-contract acceptance path on one operator entrypoint, use:
 
-- `openclaw.plugin.json` exists
-- `package.json` exists
-- `index.js` native wrapper entry exists
-- native tool `ngi_lobster_demo` exists for local smoke testing
-- native tool `ngi_lobster_run_default_workflow` now runs ingest plus thesis runtime and emits runtime/delivery artifacts
-- the heavy NGI runtime is still being migrated from `lobster-intel/` Python code into a fuller native OpenClaw plugin surface
+```bash
+npm run test:p0-cut
+```
 
-So the install surface is starting to look right, but runtime feature parity is not finished yet.
+That shortcut runs the dispatcher path gate first and then the shared E2E bundle gate, so PO can validate the suppressed legacy control and delivered positive control without manually reassembling the cut.
+
+When PO needs one fast gate for the `latest_ngi.json` runtime contract, use:
+
+```bash
+npm run test:latest-ngi-cut
+```
+
+That shortcut verifies the current product contract for:
+
+- required top-level fields
+- required market target detail payload
+- explainer visibility for the first-principles vs market comparison
+- target alignment between the internal contract and the market detail payload
+- a signed divergence field and direction that downstream ops can read directly
+
+When the live runtime artifact is stale and PO needs one repeatable refresh entrypoint on the real workspace path, use:
+
+```bash
+npm run refresh:latest-ngi-live
+```
+
+That shortcut runs the legacy monitor from the repo-local package path and rewrites the live `shared-projects/intelligence-model/latest_ngi.json` artifact in place, so PO can refresh the active-target contract before re-checking live ops health.
+
+When the live runtime artifact is still off-contract but PO needs one repeatable repair step on the real workspace path, use:
+
+```bash
+npm run repair:latest-ngi-contract
+```
+
+That shortcut rewrites the default live `shared-projects/intelligence-model/latest_ngi.json` path in place so suppressed active-target artifacts regain the dispatcher-visible contract envelope (`alert_target_id`, `target_contract_match`, `contract_version`, `e2e_run_id`) before re-running the runtime contract gate.
+
+When PO needs one fast gate for the dispatcher evidence bundle contract, use:
+
+```bash
+npm run test:e2e-bundle-cut
+```
+
+That shortcut keeps the real dispatcher-path evidence bundle on one repeatable acceptance command before review or merge.
+
+When PO needs one fast gate for current live ops health — DQ pass/fail, market snapshot freshness, same-target NGI divergence from `latest_ngi.json`, and whether the runtime artifact itself is stale — use:
+
+```bash
+npm run check:ops-health-live
+```
+
+That shortcut runs the real workspace health verifier against the live `STATE.yaml`, `intelligence_store.sqlite`, and `latest_ngi.json` paths so PO can re-check the current operational blocker without reassembling ad hoc heartbeat commands.
+
+Important product rule: a fresh database snapshot does **not** mean live NGI is current. If `latest_ngi_age_hours > 4`, the live runtime artifact is stale and any progress/delivery claim must remain blocking even when DQ is `pass` and snapshot freshness is green.
+
+When implementation work changes the verifier itself, keep its focused regression gate on:
+
+```bash
+npm run test:ops-health-cut
+```
 
 ## Dispatcher acceptance cut shortcut
 

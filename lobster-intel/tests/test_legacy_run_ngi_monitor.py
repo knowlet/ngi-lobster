@@ -24,6 +24,9 @@ SPEC.loader.exec_module(run_ngi_monitor)
 def test_legacy_monitor_uses_repo_local_lobster_packages_by_default():
     expected = (Path(__file__).resolve().parents[2] / "lobster-intel" / "packages").resolve()
     assert run_ngi_monitor.LOBSTER_PACKAGES == expected
+    assert str(expected / "lobster-core") in sys.path
+    assert str(expected / "lobster-runtime") in sys.path
+    assert str(expected / "lobster-delivery") in sys.path
 
 
 def test_build_alert_contract_payload_maps_suppressed_novelty_reason_to_public_contract_code():

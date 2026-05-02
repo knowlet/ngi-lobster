@@ -1,5 +1,13 @@
 from .fusion import FusionComputationInput, FusionComputationResult, build_fusion_result
-from .monitor import AlertDecision, build_explanation, build_signature, should_send_alert, validate_alert_target_contract
+from .monitor import (
+    AlertDecision,
+    TARGET_CONTRACT_MISMATCH_REASON,
+    TARGET_CONTRACT_OK_REASON,
+    build_explanation,
+    build_signature,
+    should_send_alert,
+    validate_alert_target_contract,
+)
 from .service import RuntimeEvaluationInput, RuntimeEvaluationResult, evaluate_runtime
 from .run_once import run_plugin_once, run_plugin_once_with_config
 from .runtime_spine import (
@@ -23,6 +31,8 @@ __all__ = [
     "FusionComputationResult",
     "RuntimeEvaluationInput",
     "RuntimeEvaluationResult",
+    "TARGET_CONTRACT_MISMATCH_REASON",
+    "TARGET_CONTRACT_OK_REASON",
     "ThesisRuntimeInput",
     "ThesisRuntimeResult",
     "build_explanation",

@@ -45,6 +45,26 @@ def _first_present(mapping: dict[str, Any], *keys: str) -> Any:
     return None
 
 
+def _compute_signed_divergence_direction(first_principles_minus_market_pp: float) -> str:
+    if first_principles_minus_market_pp > 0:
+        return "first_principles_above_market"
+    if first_principles_minus_market_pp < 0:
+        return "first_principles_below_market"
+    return "aligned"
+
+
+def _build_divergence_view(*, p_ai: Any, market_yes_probability: Any) -> dict[str, Any]:
+    if _missing(p_ai) or _missing(market_yes_probability):
+        return {}
+
+    first_principles_minus_market_pp = (float(p_ai) - float(market_yes_probability)) * 100.0
+    return {
+        "divergence_pp": round(abs(first_principles_minus_market_pp), 4),
+        "first_principles_minus_market_pp": round(first_principles_minus_market_pp, 4),
+        "direction": _compute_signed_divergence_direction(first_principles_minus_market_pp),
+    }
+
+
 def _validate_delivery_proof(delivery_proof: Any) -> list[str]:
     if _missing(delivery_proof):
         return ["delivery_proof"]
@@ -89,6 +109,8 @@ def build_alert_contract_view(runtime_data: dict[str, Any]) -> dict[str, Any]:
     alert_disposition = runtime_data.get("alert_disposition") or {}
     market_target = runtime_data.get("market_target") or {}
     target_detail = runtime_data.get("target_detail") or {}
+    p_ai = _first_present(runtime_data, "first_principles_probability", "P_AI")
+    market_yes_probability = target_detail.get("market_yes_probability")
 
     view = {
         "should_send": alert_disposition.get("should_send"),
@@ -103,9 +125,10 @@ def build_alert_contract_view(runtime_data: dict[str, Any]) -> dict[str, Any]:
         "alert_target_id": alert_disposition.get("alert_target_id"),
         "contract_version": alert_disposition.get("contract_version"),
         "e2e_run_id": _first_present(alert_disposition, *E2E_RUN_ID_ALIASES),
-        "p_ai": runtime_data.get("first_principles_probability"),
-        "market_yes_probability": target_detail.get("market_yes_probability"),
+        "p_ai": p_ai,
+        "market_yes_probability": market_yes_probability,
     }
+    view.update(_build_divergence_view(p_ai=p_ai, market_yes_probability=market_yes_probability))
     view["target_contract_match"] = _resolve_target_contract_match(alert_disposition, view)
 
     missing_fields = [field for field in REQUIRED_BASE_FIELDS if _missing(view[field])]

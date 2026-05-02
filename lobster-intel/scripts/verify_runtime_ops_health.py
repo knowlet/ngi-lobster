@@ -202,6 +202,8 @@ def build_summary(
     freshness_hours = compute_freshness_hours(latest_snapshot_at_utc)
 
     latest_ngi = json.loads(latest_ngi_path.read_text(encoding="utf-8"))
+    if not isinstance(latest_ngi, dict):
+        raise RuntimeError("latest_ngi payload must be a JSON object")
     latest_ngi_timestamp_utc = load_latest_ngi_timestamp_utc(latest_ngi)
     latest_ngi_age_hours = compute_freshness_hours(latest_ngi_timestamp_utc)
     market_target = read_optional_object(latest_ngi, "market_target", context="latest_ngi")

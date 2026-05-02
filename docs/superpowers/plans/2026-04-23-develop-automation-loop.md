@@ -595,3 +595,12 @@
 - [x] 2026-05-02 16:02:30+0800: Advanced the roadmap Phase A same-run reproduction slice by documenting one canonical recut checklist across README, install docs, and reporting operator docs.
 - [x] 2026-05-02 16:02:30+0800: The checklist now requires fresh suppressed and positive runtime run ids, target audit before dispatcher acceptance, one explicit bundle id, positive-control machine-readable `delivery_proof`, bundle verification, and live contract verification before PO-ready claims.
 - [ ] Retry GitHub access, confirm PR #30 `CommitCheck` status, then merge or resume runtime work only after that gate clears.
+
+### Task 69: 2026-05-02 17:03+08:00 dispatcher renderer contract gate
+- [x] 2026-05-02 17:03:46+0800: Current branch is `codex/pr29-clean-runtime-cut` at `d52d53c`, matching local `origin/codex/pr29-clean-runtime-cut` before this run.
+- [x] 2026-05-02 17:03:46+0800: `git fetch --prune origin` retried and failed (`Could not resolve host: github.com`, rc=128), so upstream freshness cannot be verified in this run.
+- [x] 2026-05-02 17:03:46+0800: `gh pr list --state all --limit 20` and `gh issue list --state all --limit 20` failed with `error connecting to api.github.com`, so PR #30 merge-state and issue triage cannot be refreshed.
+- [x] 2026-05-02 17:03:46+0800: `git rebase --fork-point origin/main` hit the known rolling-plan conflict while replaying old checkpoint commit `14bebae` and was aborted cleanly.
+- [x] 2026-05-02 17:03:46+0800: Advanced the roadmap Phase A delivery/renderer hardening slice by making direct dispatcher artifact rendering validate the normalized runtime payload with `build_alert_contract_view` before any alert/receipt files are written.
+- [x] 2026-05-02 17:03:46+0800: Added regression coverage proving a direct writer consumer without a shared explain-contract `e2e_run_id` fails closed and leaves no alert artifact behind.
+- [ ] Retry GitHub access, confirm PR #30 `CommitCheck` status, then merge or resume runtime work only after that gate clears.

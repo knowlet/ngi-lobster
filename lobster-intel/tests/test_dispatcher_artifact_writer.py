@@ -271,6 +271,34 @@ class DispatcherArtifactWriterTests(unittest.TestCase):
         self.assertEqual(alert_payload["alert_disposition"]["e2e_run_id"], "bundle-restored-public-api")
         self.assertEqual(receipt_payload["e2e_run_id"], "bundle-restored-public-api")
 
+    def test_write_dispatcher_artifacts_fails_closed_without_explain_contract_e2e_id(self):
+        with tempfile.TemporaryDirectory() as temp_dir:
+            workspace = Path(temp_dir)
+            runtime_payload = _suppressed_runtime_payload(bundle_id="")
+            runtime_payload["alert_disposition"].pop("e2e_run_id", None)
+
+            with self.assertRaises(ValueError) as exc:
+                write_dispatcher_artifacts(
+                    workspace_dir=workspace,
+                    thesis_id="gooaye",
+                    runtime_payload=runtime_payload,
+                    now_utc="2026-04-21T00:00:00+00:00",
+                )
+
+            alert_path = (
+                workspace
+                / "lobster-intel"
+                / "data"
+                / "delivery"
+                / "gooaye"
+                / "alerts"
+                / f"{runtime_payload['run_id']}.json"
+            )
+
+        self.assertIn("dispatcher alert contract incomplete", str(exc.exception))
+        self.assertIn("e2e_run_id", str(exc.exception))
+        self.assertFalse(alert_path.exists())
+
     def test_written_dispatcher_artifacts_are_bundle_and_runtime_contract_compatible(self):
         with tempfile.TemporaryDirectory() as temp_dir:
             workspace = Path(temp_dir)
@@ -411,6 +439,7 @@ class DispatcherArtifactWriterTests(unittest.TestCase):
                         encoding="utf-8"
                     )
                 ),
+                e2e_run_id="bundle-20260421-runtime-path",
                 now_utc="2026-04-21T00:00:00+00:00",
             )
             delivered = write_dispatcher_artifacts(
@@ -429,6 +458,7 @@ class DispatcherArtifactWriterTests(unittest.TestCase):
                         "sink_message_id": "heartbeat:positive-20260421T000500Z",
                     },
                 },
+                e2e_run_id="bundle-20260421-runtime-path",
                 now_utc="2026-04-21T00:01:00+00:00",
             )
             bundle = write_dispatcher_e2e_bundle(

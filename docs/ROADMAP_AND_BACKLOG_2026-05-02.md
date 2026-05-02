@@ -30,6 +30,7 @@
    - 確保任何 consumer 都不能繞過 explain-contract。
    - **Owner：姨太**
    - **交付**：對應整合測試 + 無例外路徑。
+   - 2026-05-02 17:03+08:00：已把 dispatcher artifact renderer 的直接寫入路徑接上 `build_alert_contract_view`，缺少 explain-contract 必填欄位（例如 shared `e2e_run_id`）時會在寫檔前 fail closed，避免 consumer 繞過 bundle verifier 才發現不合約。
 
 ### Phase B｜產品體驗固定化（第 2 週）
 4. **每日/每次 run 的可讀摘要體系**

@@ -5,6 +5,8 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
+from .contract import build_alert_contract_view
+
 
 DELIVERY_PROOF_ID_FIELDS = (
     "proof_id",
@@ -154,6 +156,15 @@ def _validate_delivery_receipt(delivery_receipt: dict[str, Any] | None) -> dict[
     return normalized
 
 
+def _validate_alert_contract(runtime_payload: dict[str, Any]) -> None:
+    result = build_alert_contract_view(runtime_payload)
+    if result.get("status") == "ok":
+        return
+
+    missing_fields = ", ".join(result.get("missing_fields") or [])
+    raise ValueError(f"dispatcher alert contract incomplete: {missing_fields}")
+
+
 def build_dispatcher_artifact_payloads(
     *,
     workspace_dir: str | Path,
@@ -200,6 +211,7 @@ def build_dispatcher_artifact_payloads(
     if "first_principles_probability" not in normalized_runtime_payload and normalized_runtime_payload.get("P_AI") is not None:
         normalized_runtime_payload["first_principles_probability"] = normalized_runtime_payload.get("P_AI")
     normalized_runtime_payload["alert_disposition"] = disposition
+    _validate_alert_contract(normalized_runtime_payload)
     alert_payload = {
         "schema": "lobster.delivery.dispatcher_alert.v1",
         "artifact_id": alert_artifact_id,

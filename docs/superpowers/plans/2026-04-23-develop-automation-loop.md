@@ -550,3 +550,12 @@
 - [x] 2026-05-02 11:03:42+0800: `gh pr list --state all --limit 20` and `gh issue list --state all --limit 20` failed with `error connecting to api.github.com`, so PR #30 merge-state and issue triage cannot be refreshed.
 - [x] 2026-05-02 11:03:42+0800: No unchecked non-network implementation slice is available; open local work remains gated by PR #30's Task 52 external `CommitCheck` setup/removal decision.
 - [ ] Retry GitHub access, confirm PR #30 `CommitCheck` status, then merge or resume runtime work only after that gate clears.
+
+### Task 64: 2026-05-02 12:04+08:00 active-target mismatch boolean hardening
+- [x] 2026-05-02 12:04:50+0800: Current branch is `codex/pr29-clean-runtime-cut` at `b463dd0`, matching local `origin/codex/pr29-clean-runtime-cut` before this run.
+- [x] 2026-05-02 12:04:50+0800: `git fetch --prune origin` retried and failed (`Could not resolve host: github.com`, rc=128), so upstream freshness cannot be verified in this run.
+- [x] 2026-05-02 12:04:50+0800: `gh pr list --state all --limit 20` and `gh issue list --state all --limit 20` failed with `error connecting to api.github.com`, so PR #30 merge-state and issue triage cannot be refreshed.
+- [x] 2026-05-02 12:04:50+0800: `git rebase --fork-point origin/main` hit the known rolling-plan conflict while replaying old checkpoint commit `14bebae` and was aborted cleanly.
+- [x] 2026-05-02 12:04:50+0800: Advanced the roadmap P0 active-target mismatch/outward reason boundary by preserving string false values in `repair_latest_ngi_contract.py` instead of coercing them to truthy Python booleans.
+- [x] 2026-05-02 12:04:50+0800: Added regression coverage proving `target_contract_match="false"` stays false while `no_novelty_within_24h` still maps outward to `active_target_contract_ok` and preserves `internal_runtime_reason_code`.
+- [ ] Retry GitHub access, confirm PR #30 `CommitCheck` status, then merge or resume runtime work only after that gate clears.

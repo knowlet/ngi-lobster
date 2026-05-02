@@ -58,6 +58,7 @@
 - 同次證據包重放腳本仍有 stale reuse 風險。
 - 分歧鏈路在 live path 未出示 machine-readable delivery proof。
 - active-target contract mismatch 與 outward reason 映射邊界。
+  - 2026-05-02 12:04+08:00：已加固 `repair_latest_ngi_contract.py`，避免既有 `target_contract_match="false"` 被 Python truthiness 轉成 `True`，並以 regression test 覆蓋 outward reason mapping 仍保留 internal runtime reason。
 
 ### P1（下一階段）
 - plugin 接線標準與測試套件擴充。

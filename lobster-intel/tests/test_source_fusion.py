@@ -77,6 +77,90 @@ class SourceFusionTest(unittest.TestCase):
         self.assertTrue(result.data["gap_triggered"])
         self.assertEqual(result.data["decision"], "review_or_alert")
 
+    def test_source_fusion_prefers_open_accepting_market_candidate(self):
+        result = build_source_fusion_result(
+            SourceFusionInput(
+                official_statements={"ran_at_utc": "2026-04-15T00:00:00+00:00", "evidence": {"items": []}},
+                watchlist={"ran_at_utc": "2026-04-15T01:00:00+00:00", "evidence": {"items": []}},
+                firehose=None,
+                polymarket={
+                    "ran_at_utc": "2026-04-15T02:00:00+00:00",
+                    "evidence": {
+                        "items": [
+                            {
+                                "external_id": "closed-legacy",
+                                "title": "Closed market",
+                                "url": "closed-market",
+                                "collected_at_utc": "2026-04-15T02:00:00+00:00",
+                                "metadata": {
+                                    "market_id": "closed-legacy",
+                                    "slug": "closed-market",
+                                    "yes_probability": 1.0,
+                                    "active": True,
+                                    "closed": True,
+                                    "accepting_orders": False,
+                                    "source_config": {"label": "Closed market"},
+                                },
+                            },
+                            {
+                                "external_id": "open-successor",
+                                "title": "Open successor market",
+                                "url": "open-successor",
+                                "collected_at_utc": "2026-04-15T02:01:00+00:00",
+                                "metadata": {
+                                    "market_id": "open-successor",
+                                    "slug": "open-successor",
+                                    "yes_probability": 0.42,
+                                    "active": True,
+                                    "closed": False,
+                                    "accepting_orders": True,
+                                    "source_config": {"label": "Open successor market"},
+                                },
+                            },
+                        ]
+                    },
+                },
+            )
+        )
+
+        self.assertEqual(result.data["market_target"]["market_id"], "open-successor")
+        self.assertEqual(result.data["market_target"]["market_name"], "Open successor market")
+        self.assertFalse(result.data["target_detail"]["market_closed"])
+        self.assertTrue(result.data["target_detail"]["market_accepting_orders"])
+        self.assertAlmostEqual(result.data["market_escalation_probability"], 0.58)
+
+    def test_source_fusion_preserves_market_accepting_orders_flag(self):
+        result = build_source_fusion_result(
+            SourceFusionInput(
+                official_statements={"ran_at_utc": "2026-04-15T00:00:00+00:00", "evidence": {"items": []}},
+                watchlist={"ran_at_utc": "2026-04-15T01:00:00+00:00", "evidence": {"items": []}},
+                firehose=None,
+                polymarket={
+                    "ran_at_utc": "2026-04-15T02:00:00+00:00",
+                    "evidence": {
+                        "items": [
+                            {
+                                "external_id": "1517836",
+                                "title": "Market",
+                                "url": "market-slug",
+                                "metadata": {
+                                    "market_id": "1517836",
+                                    "slug": "market-slug",
+                                    "yes_probability": 0.7,
+                                    "active": True,
+                                    "closed": False,
+                                    "accepting_orders": False,
+                                },
+                            }
+                        ]
+                    },
+                },
+            )
+        )
+
+        self.assertIs(result.data["target_detail"]["market_accepting_orders"], False)
+
+
     def test_load_source_fusion_artifacts_treats_missing_firehose_as_empty_payload(self):
         with TemporaryDirectory() as tmpdir:
             workspace = Path(tmpdir)

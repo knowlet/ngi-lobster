@@ -75,7 +75,13 @@ def _as_bool(value: object) -> bool | None:
             return True
         if normalized in {"false", "0", "no", "n", "off"}:
             return False
-    return bool(value)
+        return None
+    if isinstance(value, (int, float)):
+        if value == 1:
+            return True
+        if value == 0:
+            return False
+    return None
 
 
 def _parse_runtime_source_payload(path: Path | None) -> dict[str, Any] | None:

@@ -37,6 +37,7 @@
    - 讓 operator 一眼看出：最新 runtime timestamp、freshness、divergence、blocker 狀態。
    - **Owner：大餅**（內容與欄位定義）+ **姨太**（實作）
    - 2026-05-02 19:04+08:00：已讓 live progress sync payload 可選擇接入 polymarket runtime source，並在 `active_target` 區塊輸出 closed/accepting-orders/reselection/rollover-candidate 狀態，讓 operator 在同一份同步 payload 看到是否必須換 active target。
+   - 2026-05-02 23:03+08:00：已加固 ops-health 的 runtime-source boolean parser，`accepting_orders="unknown"` 這類 ambiguous 字串不再被 Python truthiness 當成 true，也不能在 rollover candidate ranking 裡壓過明確 open successor。
 
 5. **Freshness + DQ 監控門檻固定化**
    - 明確把 `latest_ngi_age_hours > 4` 直接設為硬阻斷。
@@ -80,6 +81,7 @@
 - 產品化交付文檔（安裝→run→驗收）一體化。
 - 主要告警文案模板以 explain-contract 欄位為唯一真值。
 - live progress sync 的 active-target rollover 欄位後續可接 Paperclip / Albert 顯示模板，避免 operator 另查 ops-health JSON。
+- tracker runtime source 的 boolean 欄位若非明確 true/false，ops-health 會以 unknown 處理；後續插件接線需維持同一 parser 契約。
 
 ### P2（改善與擴充）
 - 進一步自動化資料源補全與 source 風險檢測。

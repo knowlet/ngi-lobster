@@ -5,6 +5,7 @@ import sqlite3
 import sys
 from datetime import datetime, timezone
 from pathlib import Path
+from typing import Any
 
 from read_state_field import read_top_level_scalar
 
@@ -77,7 +78,90 @@ def _as_bool(value: object) -> bool | None:
     return bool(value)
 
 
-def build_summary(state_path: Path, db_path: Path, latest_ngi_path: Path) -> dict[str, object]:
+def _parse_runtime_source_payload(path: Path | None) -> dict[str, Any] | None:
+    if path is None or not path.exists():
+        return None
+    payload = json.loads(path.read_text(encoding="utf-8"))
+    if not isinstance(payload, dict):
+        return None
+    return payload
+
+
+def _market_item_rank(item: dict[str, Any]) -> tuple[int, int, int, float]:
+    metadata = item.get("metadata") or {}
+    accepting_orders = _as_bool(metadata.get("accepting_orders"))
+    active = _as_bool(metadata.get("active"))
+    closed = _as_bool(metadata.get("closed"))
+    latest_dt = _parse_ts(item.get("collected_at_utc")) or _parse_ts(item.get("published_at_utc"))
+    latest_ts = latest_dt.timestamp() if latest_dt is not None else float("-inf")
+    return (
+        1 if accepting_orders is True else 0,
+        1 if closed is False else 0,
+        1 if active is True else 0,
+        latest_ts,
+    )
+
+
+def _parse_ts(value: Any) -> datetime | None:
+    if not value:
+        return None
+    text = str(value)
+    if text.endswith("Z"):
+        text = text[:-1] + "+00:00"
+    try:
+        return datetime.fromisoformat(text)
+    except ValueError:
+        return None
+
+
+def _select_rollover_candidate(
+    runtime_source_payload: dict[str, Any] | None,
+    *,
+    current_market_id: str | None,
+) -> dict[str, Any] | None:
+    if not runtime_source_payload:
+        return None
+    evidence = runtime_source_payload.get("evidence") or {}
+    items = evidence.get("items") or []
+    if not isinstance(items, list):
+        return None
+
+    eligible: list[dict[str, Any]] = []
+    for item in items:
+        if not isinstance(item, dict):
+            continue
+        metadata = item.get("metadata") or {}
+        market_id = metadata.get("market_id") or item.get("external_id")
+        if current_market_id and str(market_id) == str(current_market_id):
+            continue
+        eligible.append(item)
+
+    if not eligible:
+        return None
+
+    candidate = max(eligible, key=_market_item_rank)
+    metadata = candidate.get("metadata") or {}
+    source_config = metadata.get("source_config") or {}
+    return {
+        "market_id": metadata.get("market_id") or candidate.get("external_id"),
+        "market_slug": metadata.get("slug") or candidate.get("url"),
+        "market_name": source_config.get("label") or candidate.get("title"),
+        "market_question": candidate.get("title"),
+        "market_yes_probability": metadata.get("yes_probability"),
+        "market_closed": _as_bool(metadata.get("closed")),
+        "market_active": _as_bool(metadata.get("active")),
+        "market_accepting_orders": _as_bool(metadata.get("accepting_orders")),
+        "collected_at_utc": candidate.get("collected_at_utc"),
+        "published_at_utc": candidate.get("published_at_utc"),
+    }
+
+
+def build_summary(
+    state_path: Path,
+    db_path: Path,
+    latest_ngi_path: Path,
+    runtime_source_path: Path | None = None,
+) -> dict[str, object]:
     dq_status = read_top_level_scalar(state_path, "dq_status")
     latest_snapshot_at_utc = load_latest_snapshot_at_utc(db_path)
     freshness_hours = compute_freshness_hours(latest_snapshot_at_utc)
@@ -102,6 +186,11 @@ def build_summary(state_path: Path, db_path: Path, latest_ngi_path: Path) -> dic
     market_accepting_orders = _as_bool(target_detail.get("market_accepting_orders"))
     closed_target_blocking = market_closed is True or market_accepting_orders is False
     reselection_required = closed_target_blocking
+    runtime_source_payload = _parse_runtime_source_payload(runtime_source_path)
+    rollover_candidate = _select_rollover_candidate(
+        runtime_source_payload,
+        current_market_id=str(market_target.get("market_id") or target_detail.get("market_id") or "") or None,
+    )
 
     status = "pass"
     blockers: list[str] = []
@@ -150,14 +239,15 @@ def build_summary(state_path: Path, db_path: Path, latest_ngi_path: Path) -> dic
         "closed_target_blocking": closed_target_blocking,
         "reselection_required": reselection_required,
         "next_contract_action": "reselect_active_target" if reselection_required else "keep_active_target",
+        "rollover_candidate": rollover_candidate,
         "blockers": blockers,
     }
 
 
 def main(argv: list[str]) -> int:
-    if len(argv) != 4:
+    if len(argv) not in {4, 5}:
         print(
-            "usage: verify_runtime_ops_health.py <state.yaml> <intelligence_store.sqlite> <latest_ngi.json>",
+            "usage: verify_runtime_ops_health.py <state.yaml> <intelligence_store.sqlite> <latest_ngi.json> [runtime_source_polymarket.json]",
             file=sys.stderr,
         )
         return 2
@@ -165,9 +255,10 @@ def main(argv: list[str]) -> int:
     state_path = Path(argv[1])
     db_path = Path(argv[2])
     latest_ngi_path = Path(argv[3])
+    runtime_source_path = Path(argv[4]) if len(argv) == 5 else None
 
     try:
-        summary = build_summary(state_path, db_path, latest_ngi_path)
+        summary = build_summary(state_path, db_path, latest_ngi_path, runtime_source_path)
     except Exception as exc:
         print(str(exc), file=sys.stderr)
         return 1

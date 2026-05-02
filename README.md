@@ -130,4 +130,16 @@ The repo already contains:
 
 - Firehose local `events.jsonl` normalization now writes replayable source-run artifacts, but signal filtering still needs work
 - live NGI cron still needs to be rebuilt as a product-grade path
-- tracked git history, remote sync, and PR flow are still split from this writable workspace
+- the highest-priority blocker is still one fresh same-run real dispatcher-path evidence bundle that proves the suppressed legacy control and delivered positive control under the same `contract_version` and `e2e_run_id`, with machine-readable delivery proof
+
+## Current highest-priority cut
+
+Until that evidence bundle exists on the real dispatcher path, project status stays `explain-contract E2E still blocking`.
+
+PO's repeatable acceptance entrypoint is:
+
+```bash
+npm run test:p0-cut
+```
+
+That command must remain the smallest operator path for regenerating and checking the current blocking cut before review or upstreaming.

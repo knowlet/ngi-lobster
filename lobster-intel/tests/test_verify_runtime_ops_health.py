@@ -613,6 +613,59 @@ def test_verify_runtime_ops_health_reports_missing_probability_fields(tmp_path: 
     assert result.stderr.strip() == "missing latest_ngi.first_principles_probability"
 
 
+def test_verify_runtime_ops_health_fails_when_latest_ngi_target_detail_is_not_an_object(
+    tmp_path: Path,
+):
+    state_path = tmp_path / "STATE.yaml"
+    state_path.write_text('dq_status: "pass"\n', encoding="utf-8")
+    db_path = tmp_path / "intelligence_store.sqlite"
+    write_db(db_path, "2099-01-01T00:00:00+00:00")
+    latest_ngi_path = tmp_path / "latest_ngi.json"
+    latest_ngi_path.write_text(
+        json.dumps(
+            {
+                "timestamp_utc": "2099-01-01T00:00:00+00:00",
+                "first_principles_probability": 0.52,
+                "target_detail": ["not-a-json-object"],
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    result = run_cli(state_path, db_path, latest_ngi_path)
+
+    assert result.returncode == 1
+    assert result.stdout == ""
+    assert result.stderr.strip() == "latest_ngi.target_detail must be a JSON object"
+
+
+def test_verify_runtime_ops_health_fails_when_latest_ngi_market_target_is_not_an_object(
+    tmp_path: Path,
+):
+    state_path = tmp_path / "STATE.yaml"
+    state_path.write_text('dq_status: "pass"\n', encoding="utf-8")
+    db_path = tmp_path / "intelligence_store.sqlite"
+    write_db(db_path, "2099-01-01T00:00:00+00:00")
+    latest_ngi_path = tmp_path / "latest_ngi.json"
+    latest_ngi_path.write_text(
+        json.dumps(
+            {
+                "timestamp_utc": "2099-01-01T00:00:00+00:00",
+                "first_principles_probability": 0.52,
+                "market_target": "not-a-json-object",
+                "target_detail": {"market_yes_probability": 0.645},
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    result = run_cli(state_path, db_path, latest_ngi_path)
+
+    assert result.returncode == 1
+    assert result.stdout == ""
+    assert result.stderr.strip() == "latest_ngi.market_target must be a JSON object"
+
+
 def test_verify_runtime_ops_health_reports_missing_latest_ngi_timestamp(tmp_path: Path):
     state_path = tmp_path / "STATE.yaml"
     state_path.write_text('dq_status: "pass"\n', encoding="utf-8")

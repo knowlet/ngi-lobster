@@ -46,6 +46,15 @@ def read_probability(payload: dict[str, object], key: str, *, context: str) -> f
     return float(value)
 
 
+def read_optional_object(payload: dict[str, object], key: str, *, context: str) -> dict[str, object]:
+    value = payload.get(key)
+    if value is None:
+        return {}
+    if not isinstance(value, dict):
+        raise RuntimeError(f"{context}.{key} must be a JSON object")
+    return value
+
+
 def load_latest_ngi_timestamp_utc(latest_ngi: dict[str, object]) -> str:
     for key in ("timestamp_utc", "generated_at_utc", "created_at_utc", "updated_at_utc", "snapshot_at_utc"):
         value = latest_ngi.get(key)
@@ -195,8 +204,8 @@ def build_summary(
     latest_ngi = json.loads(latest_ngi_path.read_text(encoding="utf-8"))
     latest_ngi_timestamp_utc = load_latest_ngi_timestamp_utc(latest_ngi)
     latest_ngi_age_hours = compute_freshness_hours(latest_ngi_timestamp_utc)
-    market_target = latest_ngi.get("market_target") or {}
-    target_detail = latest_ngi.get("target_detail") or {}
+    market_target = read_optional_object(latest_ngi, "market_target", context="latest_ngi")
+    target_detail = read_optional_object(latest_ngi, "target_detail", context="latest_ngi")
     first_principles_probability = read_probability(
         latest_ngi, "first_principles_probability", context="latest_ngi"
     )

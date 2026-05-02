@@ -24,6 +24,7 @@
    - 明確一個「重跑同一路徑」的操作流程（含輸入、輸出、輸出路徑、失敗原因）。
    - **Owner：姨太**（撰寫）+ **大餅**（驗收確認描述完整）
    - **交付**：README/操作清單更新，含範例與失敗對應。
+   - 2026-05-02 16:02+08:00：已把 canonical same-run real-path recut checklist 補到根 README、安裝文件與 reporting operator docs，明確規定 fresh suppressed/positive run ids、target audit、單一 bundle id、positive delivery proof 與 bundle/live contract verifier 順序。
 
 3. **Delivery/Renderer 真徑驗證加固（high）**
    - 確保任何 consumer 都不能繞過 explain-contract。

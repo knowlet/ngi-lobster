@@ -233,6 +233,13 @@ Behavior:
 - writes one auditable dispatcher bundle under `lobster-intel/data/delivery/<thesis-id>/bundles/<bundle-id>.json`
 - prints one machine-readable JSON summary covering the suppressed artifact write, positive artifact write, and final bundle path
 
+Same-run recut rules:
+- use fresh suppressed and positive runtime `run_id` values from the same recut attempt
+- audit both runtime ids before running dispatcher acceptance
+- use one new `--bundle-id` and require the bundle `e2e_run_id` to match it
+- require machine-readable `delivery_proof` on the positive-control path
+- verify the written bundle before making any PO-ready acceptance claim
+
 ## Recommended pipeline
 
 1. gather runtime state

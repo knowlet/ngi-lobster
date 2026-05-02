@@ -85,11 +85,13 @@ def _as_bool(value: object) -> bool | None:
 
 
 def _parse_runtime_source_payload(path: Path | None) -> dict[str, Any] | None:
-    if path is None or not path.exists():
+    if path is None:
         return None
+    if not path.exists():
+        raise RuntimeError("missing runtime_source payload")
     payload = json.loads(path.read_text(encoding="utf-8"))
     if not isinstance(payload, dict):
-        return None
+        raise RuntimeError("runtime_source payload must be a JSON object")
     return payload
 
 

@@ -676,3 +676,12 @@
 - [x] 2026-05-03 01:03:28+0800: Advanced the roadmap Phase B readable-summary boundary by making ops-health fail closed when active-target status booleans are explicitly present but ambiguous.
 - [x] 2026-05-03 01:03:28+0800: Added regression coverage proving `market_closed="unknown"` and `market_accepting_orders="unknown"` now produce `reselection_required=true` with explicit blockers instead of `status=pass`.
 - [ ] Retry GitHub access, confirm PR #30 `CommitCheck` status, then merge or resume runtime work only after that gate clears.
+
+### Task 78: 2026-05-03 02:03+08:00 ops-health runtime-source input guard
+- [x] 2026-05-03 02:02:47+0800: Current branch is `codex/pr29-clean-runtime-cut` at `0ec086e`, matching local `origin/codex/pr29-clean-runtime-cut` before this run.
+- [x] 2026-05-03 02:02:47+0800: `git fetch --prune origin` retried and failed (`Could not resolve host: github.com`, rc=128), so upstream freshness cannot be verified in this run.
+- [x] 2026-05-03 02:02:47+0800: `gh pr list --state all --limit 20` and `gh issue list --state all --limit 20` failed with `error connecting to api.github.com`, so PR #30 merge-state and issue triage cannot be refreshed.
+- [x] 2026-05-03 02:02:47+0800: `git rebase --fork-point origin/main` hit the known rolling-plan conflict while replaying old checkpoint commit `14bebae` and was aborted cleanly.
+- [x] 2026-05-03 02:02:47+0800: Advanced the roadmap Phase B readable-summary boundary by making ops-health fail closed when an explicitly provided runtime-source path is missing or not a JSON object.
+- [x] 2026-05-03 02:02:47+0800: Added regression coverage proving missing and malformed runtime-source payloads exit nonzero before a misleading blocking summary can be emitted.
+- [ ] Retry GitHub access, confirm PR #30 `CommitCheck` status, then merge or resume runtime work only after that gate clears.

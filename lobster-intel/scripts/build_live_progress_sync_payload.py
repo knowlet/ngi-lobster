@@ -55,6 +55,22 @@ def _require_mapping(payload: dict[str, Any], key: str) -> dict[str, Any]:
     return value
 
 
+def _is_positive_delivery(alert_disposition: dict[str, Any]) -> bool:
+    if alert_disposition.get("should_send") is True:
+        return True
+    decision = str(alert_disposition.get("decision") or "").strip().lower()
+    return decision in {"would_send", "sent", "delivered"}
+
+
+def _require_delivery_proof(alert_disposition: dict[str, Any]) -> dict[str, Any] | None:
+    proof = alert_disposition.get("delivery_proof")
+    if not _is_positive_delivery(alert_disposition):
+        return proof if isinstance(proof, dict) else None
+    if not isinstance(proof, dict):
+        raise RuntimeError("missing latest_ngi.alert_disposition.delivery_proof")
+    return proof
+
+
 def build_live_progress_sync_payload(state_path: Path, db_path: Path, latest_ngi_path: Path) -> dict[str, Any]:
     latest_ngi = json.loads(latest_ngi_path.read_text(encoding="utf-8"))
     for key in REQUIRED_TOP_LEVEL_KEYS:
@@ -64,8 +80,20 @@ def build_live_progress_sync_payload(state_path: Path, db_path: Path, latest_ngi
     market_target = _require_mapping(latest_ngi, "market_target")
     target_detail = _require_mapping(latest_ngi, "target_detail")
     alert_disposition = _require_mapping(latest_ngi, "alert_disposition")
+    delivery_proof = _require_delivery_proof(alert_disposition)
     ops_health = build_summary(state_path, db_path, latest_ngi_path)
     basis = _build_basis_lines(latest_ngi=latest_ngi, ops_health=ops_health)
+
+    alert_payload = {
+        "decision": alert_disposition.get("decision"),
+        "should_send": alert_disposition.get("should_send"),
+        "reason_code": alert_disposition.get("reason_code"),
+        "target_contract_match": alert_disposition.get("target_contract_match"),
+        "contract_version": alert_disposition.get("contract_version"),
+        "e2e_run_id": alert_disposition.get("e2e_run_id"),
+    }
+    if delivery_proof is not None:
+        alert_payload["delivery_proof"] = delivery_proof
 
     return {
         "sync_status": "blocking" if ops_health["status"] != "pass" else "ready",
@@ -76,14 +104,7 @@ def build_live_progress_sync_payload(state_path: Path, db_path: Path, latest_ngi
             "market_question": target_detail.get("market_question"),
             "probability_mode": ops_health["probability_mode"],
         },
-        "alert_disposition": {
-            "decision": alert_disposition.get("decision"),
-            "should_send": alert_disposition.get("should_send"),
-            "reason_code": alert_disposition.get("reason_code"),
-            "target_contract_match": alert_disposition.get("target_contract_match"),
-            "contract_version": alert_disposition.get("contract_version"),
-            "e2e_run_id": alert_disposition.get("e2e_run_id"),
-        },
+        "alert_disposition": alert_payload,
         "probabilities": {
             "p_ai": ops_health["first_principles_probability"],
             "market_yes_probability": ops_health["market_yes_probability"],

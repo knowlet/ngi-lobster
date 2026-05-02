@@ -59,6 +59,7 @@
   - 2026-05-02 13:04+08:00：已加固 `write_dispatcher_e2e_bundle` 的 alert artifact 載入邊界，若檔名要求的 run id 與 JSON 內 `run_id` 不一致會 fail closed，避免 standalone E2E bundle 重用 stale alert artifact。
   - 2026-05-02 14:03+08:00：已加固 `write_dispatcher_e2e_bundle` 的 delivery receipt 載入邊界，若檔名要求的 run id 與 receipt JSON 內 `run_id` 不一致會 fail closed，避免 delivery proof 被 stale receipt 汙染。
 - 分歧鏈路在 live path 未出示 machine-readable delivery proof。
+  - 2026-05-02 15:05+08:00：已加固 `build_live_progress_sync_payload.py` 的 positive delivery 邊界，`alert_disposition.should_send=true` 或 positive decision 沒有 `delivery_proof` 會 fail closed，且 live sync payload 會輸出 machine-readable proof。
 - active-target contract mismatch 與 outward reason 映射邊界。
   - 2026-05-02 12:04+08:00：已加固 `repair_latest_ngi_contract.py`，避免既有 `target_contract_match="false"` 被 Python truthiness 轉成 `True`，並以 regression test 覆蓋 outward reason mapping 仍保留 internal runtime reason。
 

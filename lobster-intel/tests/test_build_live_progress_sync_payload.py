@@ -26,7 +26,22 @@ def write_latest_ngi(
     timestamp_utc: str = "2099-01-01T00:00:00+00:00",
     first_principles_probability: float = 0.1099,
     market_yes_probability: float = 0.455,
+    include_delivery_proof: bool = True,
 ):
+    alert_disposition = {
+        "decision": "would_send",
+        "should_send": True,
+        "reason_code": "ngi_changed_major",
+        "target_contract_match": True,
+        "contract_version": "legacy-monitor-contract-v1",
+        "e2e_run_id": "legacy-monitor-20260501T002054.879803Z",
+    }
+    if include_delivery_proof:
+        alert_disposition["delivery_proof"] = {
+            "boundary": "openclaw_heartbeat",
+            "proof_id": "heartbeat:legacy-monitor-20260501T002054.879803Z",
+            "sink_message_id": "heartbeat:legacy-monitor-20260501T002054.879803Z",
+        }
     path.write_text(
         json.dumps(
             {
@@ -42,14 +57,7 @@ def write_latest_ngi(
                     "market_yes_probability": market_yes_probability,
                     "probability_mode": "yes_is_peace",
                 },
-                "alert_disposition": {
-                    "decision": "would_send",
-                    "should_send": True,
-                    "reason_code": "ngi_changed_major",
-                    "target_contract_match": True,
-                    "contract_version": "legacy-monitor-contract-v1",
-                    "e2e_run_id": "legacy-monitor-20260501T002054.879803Z",
-                },
+                "alert_disposition": alert_disposition,
                 "explain": {
                     "reasons": [
                         "ADS-B 顯示區域軍機活動偏高（40 架）",
@@ -104,6 +112,40 @@ def test_build_live_progress_sync_payload_keeps_target_divergence_and_blockers_t
     assert payload["basis_lines"]["logistics"] == "ADS-B 顯示區域軍機活動偏高（40 架）"
     assert payload["basis_lines"]["energy"] == "P_AI 10.99% vs market yes 45.50%"
     assert payload["basis_lines"]["key_statement"] == "ops-health blockers: divergence_pp=34.51"
+
+
+def test_build_live_progress_sync_payload_requires_delivery_proof_for_positive_delivery(tmp_path: Path):
+    state_path = tmp_path / "STATE.yaml"
+    state_path.write_text('dq_status: "pass"\n', encoding="utf-8")
+    db_path = tmp_path / "intelligence_store.sqlite"
+    write_db(db_path, "2099-01-01T00:00:00+00:00")
+    latest_ngi_path = tmp_path / "latest_ngi.json"
+    write_latest_ngi(latest_ngi_path, include_delivery_proof=False)
+
+    result = run_cli(state_path, db_path, latest_ngi_path)
+
+    assert result.returncode == 1
+    assert result.stdout == ""
+    assert result.stderr.strip() == "missing latest_ngi.alert_disposition.delivery_proof"
+
+
+def test_build_live_progress_sync_payload_exports_machine_readable_delivery_proof(tmp_path: Path):
+    state_path = tmp_path / "STATE.yaml"
+    state_path.write_text('dq_status: "pass"\n', encoding="utf-8")
+    db_path = tmp_path / "intelligence_store.sqlite"
+    write_db(db_path, "2099-01-01T00:00:00+00:00")
+    latest_ngi_path = tmp_path / "latest_ngi.json"
+    write_latest_ngi(latest_ngi_path)
+
+    result = run_cli(state_path, db_path, latest_ngi_path)
+
+    assert result.returncode == 0, result.stderr
+    sync_payload = json.loads(result.stdout)
+    assert sync_payload["alert_disposition"]["delivery_proof"] == {
+        "boundary": "openclaw_heartbeat",
+        "proof_id": "heartbeat:legacy-monitor-20260501T002054.879803Z",
+        "sink_message_id": "heartbeat:legacy-monitor-20260501T002054.879803Z",
+    }
 
 
 def test_build_live_progress_sync_payload_fails_closed_when_alert_disposition_missing(tmp_path: Path):

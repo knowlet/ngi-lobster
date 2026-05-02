@@ -622,3 +622,12 @@
 - [x] 2026-05-02 19:04:33+0800: Advanced the roadmap Phase B readable-summary slice by letting `build_live_progress_sync_payload.py` accept the polymarket runtime source evidence and pass it through ops-health.
 - [x] 2026-05-02 19:04:33+0800: Added regression coverage proving closed active targets now surface `active_target.reselection_required`, `next_contract_action`, and a machine-readable `rollover_candidate` in the live sync payload.
 - [ ] Retry GitHub access, confirm PR #30 `CommitCheck` status, then merge or resume runtime work only after that gate clears.
+
+### Task 72: 2026-05-02 20:04+08:00 live sync positive contract-match guard
+- [x] 2026-05-02 20:04:14+0800: Current branch is `codex/pr29-clean-runtime-cut` at `0364389`, ahead of stale local `origin/codex/pr29-clean-runtime-cut`.
+- [x] 2026-05-02 20:04:14+0800: `git fetch --prune origin` retried and failed (`Could not resolve host: github.com`, rc=128), so upstream freshness cannot be verified in this run.
+- [x] 2026-05-02 20:04:14+0800: `gh pr list --state all --limit 20` and `gh issue list --state all --limit 20` failed with `error connecting to api.github.com`, so PR #30 merge-state and issue triage cannot be refreshed.
+- [x] 2026-05-02 20:04:14+0800: `git rebase --fork-point origin/main` hit the known rolling-plan conflict while replaying old checkpoint commit `14bebae` and was aborted cleanly.
+- [x] 2026-05-02 20:04:14+0800: Advanced the roadmap Phase B/C delivery-routing boundary by making `build_live_progress_sync_payload.py` reject positive delivery when `alert_disposition.target_contract_match` is not true-equivalent.
+- [x] 2026-05-02 20:04:14+0800: Added regression coverage proving serialized `target_contract_match="false"` cannot pass live sync positive-delivery output even when machine-readable delivery proof is present.
+- [ ] Retry GitHub access, confirm PR #30 `CommitCheck` status, then merge or resume runtime work only after that gate clears.

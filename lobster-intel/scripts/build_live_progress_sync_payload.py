@@ -62,10 +62,26 @@ def _is_positive_delivery(alert_disposition: dict[str, Any]) -> bool:
     return decision in {"would_send", "sent", "delivered"}
 
 
+def _as_bool(value: Any) -> bool | None:
+    if value is None:
+        return None
+    if isinstance(value, bool):
+        return value
+    if isinstance(value, str):
+        normalized = value.strip().lower()
+        if normalized in {"true", "1", "yes", "y", "on"}:
+            return True
+        if normalized in {"false", "0", "no", "n", "off"}:
+            return False
+    return bool(value)
+
+
 def _require_delivery_proof(alert_disposition: dict[str, Any]) -> dict[str, Any] | None:
     proof = alert_disposition.get("delivery_proof")
     if not _is_positive_delivery(alert_disposition):
         return proof if isinstance(proof, dict) else None
+    if _as_bool(alert_disposition.get("target_contract_match")) is not True:
+        raise RuntimeError("positive latest_ngi.alert_disposition.target_contract_match must be true")
     if not isinstance(proof, dict):
         raise RuntimeError("missing latest_ngi.alert_disposition.delivery_proof")
     return proof

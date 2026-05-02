@@ -27,12 +27,13 @@ def write_latest_ngi(
     first_principles_probability: float = 0.1099,
     market_yes_probability: float = 0.455,
     include_delivery_proof: bool = True,
+    target_contract_match: object = True,
 ):
     alert_disposition = {
         "decision": "would_send",
         "should_send": True,
         "reason_code": "ngi_changed_major",
-        "target_contract_match": True,
+        "target_contract_match": target_contract_match,
         "contract_version": "legacy-monitor-contract-v1",
         "e2e_run_id": "legacy-monitor-20260501T002054.879803Z",
     }
@@ -145,6 +146,21 @@ def test_build_live_progress_sync_payload_requires_delivery_proof_for_positive_d
     assert result.returncode == 1
     assert result.stdout == ""
     assert result.stderr.strip() == "missing latest_ngi.alert_disposition.delivery_proof"
+
+
+def test_build_live_progress_sync_payload_rejects_positive_delivery_without_contract_match(tmp_path: Path):
+    state_path = tmp_path / "STATE.yaml"
+    state_path.write_text('dq_status: "pass"\n', encoding="utf-8")
+    db_path = tmp_path / "intelligence_store.sqlite"
+    write_db(db_path, "2099-01-01T00:00:00+00:00")
+    latest_ngi_path = tmp_path / "latest_ngi.json"
+    write_latest_ngi(latest_ngi_path, target_contract_match="false")
+
+    result = run_cli(state_path, db_path, latest_ngi_path)
+
+    assert result.returncode == 1
+    assert result.stdout == ""
+    assert result.stderr.strip() == "positive latest_ngi.alert_disposition.target_contract_match must be true"
 
 
 def test_build_live_progress_sync_payload_exports_machine_readable_delivery_proof(tmp_path: Path):

@@ -49,7 +49,7 @@ When PO needs the full current P0 explain-contract acceptance path on one operat
 npm run test:p0-cut
 ```
 
-That shortcut runs the dispatcher path gate first and then the shared E2E bundle gate, so PO can validate the suppressed legacy control and delivered positive control without manually reassembling the cut.
+That shortcut runs the dispatcher path verification gate first and then the shared E2E bundle verification gate. It confirms the current blocking acceptance contract, but it does not regenerate the real-path artifacts by itself.
 
 When PO needs one fast gate for the `latest_ngi.json` runtime contract, use:
 
@@ -130,4 +130,24 @@ The repo already contains:
 
 - Firehose local `events.jsonl` normalization now writes replayable source-run artifacts, but signal filtering still needs work
 - live NGI cron still needs to be rebuilt as a product-grade path
-- tracked git history, remote sync, and PR flow are still split from this writable workspace
+- the highest-priority blocker is still one fresh same-run real dispatcher-path evidence bundle that proves the suppressed legacy control and delivered positive control under the same `contract_version` and `e2e_run_id`, with machine-readable delivery proof
+
+## Current highest-priority cut
+
+Until that evidence bundle exists on the real dispatcher path, project status stays `explain-contract E2E still blocking`.
+
+PO's repeatable acceptance entrypoint is:
+
+```bash
+npm run test:p0-cut
+```
+
+That command must remain the smallest operator verification path for checking the current blocking cut before review or upstreaming. Real-path regeneration still follows the canonical recut lineage below.
+
+For the real-path recut, PO should keep one canonical lineage and reject stale artifact mixing:
+
+1. regenerate fresh runtime artifacts with `lobster-intel/scripts/run_thesis_runtime.py`
+2. audit each fresh run with `lobster-intel/scripts/verify_runtime_target_audit.py`
+3. materialize the shared dispatcher bundle with `lobster-intel/scripts/run_dispatcher_acceptance.py`
+4. immediately verify the emitted bundle with `lobster-intel/scripts/verify_alert_contract_bundle.py`
+5. re-check the live artifact surface with `lobster-intel/scripts/verify_latest_ngi_contract.py`

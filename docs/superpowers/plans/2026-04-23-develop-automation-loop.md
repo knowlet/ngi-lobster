@@ -604,3 +604,12 @@
 - [x] 2026-05-02 17:03:46+0800: Advanced the roadmap Phase A delivery/renderer hardening slice by making direct dispatcher artifact rendering validate the normalized runtime payload with `build_alert_contract_view` before any alert/receipt files are written.
 - [x] 2026-05-02 17:03:46+0800: Added regression coverage proving a direct writer consumer without a shared explain-contract `e2e_run_id` fails closed and leaves no alert artifact behind.
 - [ ] Retry GitHub access, confirm PR #30 `CommitCheck` status, then merge or resume runtime work only after that gate clears.
+
+### Task 70: 2026-05-02 18:04+08:00 dispatcher bundle runtime identity guard
+- [x] 2026-05-02 18:04:29+0800: Current branch is `codex/pr29-clean-runtime-cut` at `e46c71d`, matching local `origin/codex/pr29-clean-runtime-cut` before this run.
+- [x] 2026-05-02 18:04:29+0800: `git fetch --prune origin` retried and failed (`Could not resolve host: github.com`, rc=128), so upstream freshness cannot be verified in this run.
+- [x] 2026-05-02 18:04:29+0800: `gh pr list --state all --limit 20` and `gh issue list --state all --limit 20` failed with `error connecting to api.github.com`, so PR #30 merge-state and issue triage cannot be refreshed.
+- [x] 2026-05-02 18:04:29+0800: `git rebase --fork-point origin/main` hit the known rolling-plan conflict while replaying old checkpoint commit `14bebae` and was aborted cleanly.
+- [x] 2026-05-02 18:04:29+0800: Advanced the roadmap P0 stale-reuse boundary by making dispatcher E2E bundle projection reject stale runtime run artifacts when JSON `run_id` does not match the requested run id.
+- [x] 2026-05-02 18:04:29+0800: Added regression coverage proving stale runtime compare artifacts are also rejected before they can stamp target ids into the shared E2E bundle.
+- [ ] Retry GitHub access, confirm PR #30 `CommitCheck` status, then merge or resume runtime work only after that gate clears.

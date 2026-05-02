@@ -143,3 +143,11 @@ npm run test:p0-cut
 ```
 
 That command must remain the smallest operator path for regenerating and checking the current blocking cut before review or upstreaming.
+
+For the real-path recut, PO should keep one canonical lineage and reject stale artifact mixing:
+
+1. regenerate fresh runtime artifacts with `lobster-intel/scripts/run_thesis_runtime.py`
+2. audit each fresh run with `lobster-intel/scripts/verify_runtime_target_audit.py`
+3. materialize the shared dispatcher bundle with `lobster-intel/scripts/run_dispatcher_acceptance.py`
+4. immediately verify the emitted bundle with `lobster-intel/scripts/verify_alert_contract_bundle.py`
+5. re-check the live artifact surface with `lobster-intel/scripts/verify_latest_ngi_contract.py`

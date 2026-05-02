@@ -98,6 +98,14 @@ def _parse_runtime_source_payload(path: Path | None) -> dict[str, Any] | None:
             raise RuntimeError("runtime_source evidence must be a JSON object")
         if "items" in evidence and not isinstance(evidence["items"], list):
             raise RuntimeError("runtime_source evidence.items must be a list")
+        for index, item in enumerate(evidence.get("items") or []):
+            if not isinstance(item, dict):
+                raise RuntimeError(f"runtime_source evidence.items[{index}] must be a JSON object")
+            metadata = item.get("metadata")
+            if metadata is not None and not isinstance(metadata, dict):
+                raise RuntimeError(
+                    f"runtime_source evidence.items[{index}].metadata must be a JSON object"
+                )
     return payload
 
 

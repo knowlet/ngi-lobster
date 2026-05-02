@@ -694,3 +694,12 @@
 - [x] 2026-05-03 03:03:43+0800: Advanced the roadmap Phase B readable-summary boundary by making ops-health fail closed when an explicitly provided runtime-source payload has malformed `evidence.items`.
 - [x] 2026-05-03 03:03:43+0800: Added regression coverage proving `evidence.items` as a JSON object now exits nonzero instead of silently producing `rollover_candidate=null` with a passing summary.
 - [ ] Retry GitHub access, confirm PR #30 `CommitCheck` status, then merge or resume runtime work only after that gate clears.
+
+### Task 80: 2026-05-03 04:03+08:00 ops-health runtime-source item schema guard
+- [x] 2026-05-03 04:03:42+0800: Current branch is `codex/pr29-clean-runtime-cut` at `412f974`, matching local `origin/codex/pr29-clean-runtime-cut` before this run.
+- [x] 2026-05-03 04:03:42+0800: `git fetch --prune origin` retried and failed (`Could not resolve host: github.com`, rc=128), so upstream freshness cannot be verified in this run.
+- [x] 2026-05-03 04:03:42+0800: `gh pr list --state all --limit 20` and `gh issue list --state all --limit 20` failed with `error connecting to api.github.com`, so PR #30 merge-state and issue triage cannot be refreshed.
+- [x] 2026-05-03 04:03:42+0800: `git rebase --fork-point origin/main` hit the known rolling-plan conflict while replaying old checkpoint commit `14bebae` and was aborted cleanly.
+- [x] 2026-05-03 04:03:42+0800: Advanced the roadmap Phase B readable-summary boundary by making ops-health fail closed when runtime-source `evidence.items` contains non-object entries or non-object item `metadata`.
+- [x] 2026-05-03 04:03:42+0800: Added regression coverage proving malformed tracker items now exit nonzero with explicit schema errors instead of silently omitting rollover evidence or leaking an AttributeError.
+- [ ] Retry GitHub access, confirm PR #30 `CommitCheck` status, then merge or resume runtime work only after that gate clears.

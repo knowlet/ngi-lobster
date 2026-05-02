@@ -26,6 +26,12 @@ RELATIVE_PATHS = [
         "repo-dispatcher-artifacts",
         "standalone-dispatcher-artifacts",
     ),
+    (
+        Path("scripts/verify_runtime_ops_health.py"),
+        Path("lobster-intel/scripts/verify_runtime_ops_health.py"),
+        "repo-runtime-ops-health",
+        "standalone-runtime-ops-health",
+    ),
 ]
 
 
@@ -64,6 +70,7 @@ def test_sync_monitor_check_mode_reports_all_drifted_paths(tmp_path: Path):
     assert "runtime monitor" in result.stderr
     assert "runtime spine" in result.stderr
     assert "dispatcher artifacts" in result.stderr
+    assert "runtime ops health verifier" in result.stderr
 
 
 def test_sync_monitor_copies_repo_versions_into_override_standalone_root(tmp_path: Path):

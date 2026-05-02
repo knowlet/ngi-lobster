@@ -103,6 +103,8 @@ def build_live_progress_sync_payload(
     alert_disposition = _require_mapping(latest_ngi, "alert_disposition")
     delivery_proof = _require_delivery_proof(alert_disposition)
     ops_health = build_summary(state_path, db_path, latest_ngi_path, runtime_source_path)
+    if ops_health["latest_ngi_stale"]:
+        raise RuntimeError("latest_ngi.json is stale")
     basis = _build_basis_lines(latest_ngi=latest_ngi, ops_health=ops_health)
 
     alert_payload = {

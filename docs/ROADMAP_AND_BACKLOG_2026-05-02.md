@@ -41,6 +41,7 @@
 5. **Freshness + DQ 監控門檻固定化**
    - 明確把 `latest_ngi_age_hours > 4` 直接設為硬阻斷。
    - **Owner：姨太**
+   - 2026-05-02 21:02+08:00：已加固 live progress sync payload 的 freshness gate，`latest_ngi_age_hours > 4` 時會在輸出 user-facing progress payload 前 fail closed，避免 stale `latest_ngi.json` 被包成可同步摘要。
 
 6. **告警/交付分流策略對齊**
    - 分流策略（send/suppress）只依 contract 狀態，不靠臨時人工解讀。
@@ -69,6 +70,8 @@
   - 2026-05-02 20:04+08:00：已加固 `build_live_progress_sync_payload.py`，positive delivery 必須有 true-equivalent `alert_disposition.target_contract_match` 才能進入 sync payload；`"false"`/`0`/`no`/`off` 這類 serialized false 值會阻斷輸出。
 - active-target contract mismatch 與 outward reason 映射邊界。
   - 2026-05-02 12:04+08:00：已加固 `repair_latest_ngi_contract.py`，避免既有 `target_contract_match="false"` 被 Python truthiness 轉成 `True`，並以 regression test 覆蓋 outward reason mapping 仍保留 internal runtime reason。
+- live progress sync 不能輸出 stale `latest_ngi.json` 摘要。
+  - 2026-05-02 21:02+08:00：已加固 `build_live_progress_sync_payload.py`，當 ops-health 判定 `latest_ngi_stale=true` 時直接 fail closed，不再回傳 `sync_status=blocking` 的 user-facing payload。
 
 ### P1（下一階段）
 - plugin 接線標準與測試套件擴充。

@@ -631,3 +631,12 @@
 - [x] 2026-05-02 20:04:14+0800: Advanced the roadmap Phase B/C delivery-routing boundary by making `build_live_progress_sync_payload.py` reject positive delivery when `alert_disposition.target_contract_match` is not true-equivalent.
 - [x] 2026-05-02 20:04:14+0800: Added regression coverage proving serialized `target_contract_match="false"` cannot pass live sync positive-delivery output even when machine-readable delivery proof is present.
 - [ ] Retry GitHub access, confirm PR #30 `CommitCheck` status, then merge or resume runtime work only after that gate clears.
+
+### Task 73: 2026-05-02 21:02+08:00 live sync stale-latest gate
+- [x] 2026-05-02 21:02:47+0800: Current branch is `codex/pr29-clean-runtime-cut` at `ed44518`, ahead of stale local `origin/codex/pr29-clean-runtime-cut`.
+- [x] 2026-05-02 21:02:47+0800: `git fetch --prune origin` retried and failed (`Could not resolve host: github.com`, rc=128), so upstream freshness cannot be verified in this run.
+- [x] 2026-05-02 21:02:47+0800: `gh pr list --state all --limit 20` and `gh issue list --state all --limit 20` failed with `error connecting to api.github.com`, so PR #30 merge-state and issue triage cannot be refreshed.
+- [x] 2026-05-02 21:02:47+0800: `git rebase --fork-point origin/main` hit the known rolling-plan conflict while replaying old checkpoint commit `14bebae` and was aborted cleanly.
+- [x] 2026-05-02 21:02:47+0800: Advanced the roadmap Phase B freshness/DQ gate by making `build_live_progress_sync_payload.py` fail closed before emitting a user-facing payload when `latest_ngi.json` is stale.
+- [x] 2026-05-02 21:02:47+0800: Added regression coverage proving `latest_ngi_age_hours > 4` exits nonzero with no sync payload instead of returning `sync_status=blocking`.
+- [ ] Retry GitHub access, confirm PR #30 `CommitCheck` status, then merge or resume runtime work only after that gate clears.

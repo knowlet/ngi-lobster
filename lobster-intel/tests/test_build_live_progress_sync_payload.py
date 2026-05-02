@@ -163,6 +163,26 @@ def test_build_live_progress_sync_payload_rejects_positive_delivery_without_cont
     assert result.stderr.strip() == "positive latest_ngi.alert_disposition.target_contract_match must be true"
 
 
+def test_build_live_progress_sync_payload_rejects_stale_latest_ngi(tmp_path: Path):
+    state_path = tmp_path / "STATE.yaml"
+    state_path.write_text('dq_status: "pass"\n', encoding="utf-8")
+    db_path = tmp_path / "intelligence_store.sqlite"
+    write_db(db_path, "2099-01-01T00:00:00+00:00")
+    latest_ngi_path = tmp_path / "latest_ngi.json"
+    write_latest_ngi(
+        latest_ngi_path,
+        timestamp_utc="2026-04-20T00:00:00+00:00",
+        first_principles_probability=0.52,
+        market_yes_probability=0.60,
+    )
+
+    result = run_cli(state_path, db_path, latest_ngi_path)
+
+    assert result.returncode == 1
+    assert result.stdout == ""
+    assert result.stderr.strip() == "latest_ngi.json is stale"
+
+
 def test_build_live_progress_sync_payload_exports_machine_readable_delivery_proof(tmp_path: Path):
     state_path = tmp_path / "STATE.yaml"
     state_path.write_text('dq_status: "pass"\n', encoding="utf-8")

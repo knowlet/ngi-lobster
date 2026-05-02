@@ -115,6 +115,11 @@ def _parse_runtime_source_payload(path: Path | None) -> dict[str, Any] | None:
                 raise RuntimeError(
                     f"runtime_source evidence.items[{index}].metadata must be a JSON object"
                 )
+            source_config = (metadata or {}).get("source_config")
+            if source_config is not None and not isinstance(source_config, dict):
+                raise RuntimeError(
+                    f"runtime_source evidence.items[{index}].metadata.source_config must be a JSON object"
+                )
     return payload
 
 

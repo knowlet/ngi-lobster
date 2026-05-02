@@ -527,6 +527,52 @@ def test_verify_runtime_ops_health_fails_when_runtime_source_item_metadata_is_no
     assert result.stderr.strip() == "runtime_source evidence.items[0].metadata must be a JSON object"
 
 
+def test_verify_runtime_ops_health_fails_when_runtime_source_item_source_config_is_not_an_object(tmp_path: Path):
+    state_path = tmp_path / "STATE.yaml"
+    state_path.write_text('dq_status: "pass"\n', encoding="utf-8")
+    db_path = tmp_path / "intelligence_store.sqlite"
+    write_db(db_path, "2099-01-01T00:00:00+00:00")
+    latest_ngi_path = tmp_path / "latest_ngi.json"
+    write_latest_ngi(
+        latest_ngi_path,
+        first_principles_probability=0.52,
+        market_yes_probability=0.60,
+        market_closed=True,
+        market_accepting_orders=False,
+    )
+    runtime_source_path = tmp_path / "polymarket-runtime.json"
+    runtime_source_path.write_text(
+        json.dumps(
+            {
+                "schema_version": "v1",
+                "evidence": {
+                    "items": [
+                        {
+                            "external_id": "rollover-1518000",
+                            "title": "Open successor market",
+                            "metadata": {
+                                "market_id": "rollover-1518000",
+                                "closed": False,
+                                "accepting_orders": True,
+                                "source_config": "not-a-json-object",
+                            },
+                        }
+                    ]
+                },
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    result = run_cli(state_path, db_path, latest_ngi_path, runtime_source_path)
+
+    assert result.returncode == 1
+    assert result.stdout == ""
+    assert result.stderr.strip() == (
+        "runtime_source evidence.items[0].metadata.source_config must be a JSON object"
+    )
+
+
 def test_verify_runtime_ops_health_fails_closed_on_ambiguous_active_target_status(tmp_path: Path):
     state_path = tmp_path / "STATE.yaml"
     state_path.write_text('dq_status: "pass"\n', encoding="utf-8")

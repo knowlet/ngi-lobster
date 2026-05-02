@@ -84,6 +84,10 @@ def build_summary(state_path: Path, db_path: Path, latest_ngi_path: Path) -> dic
     stale_data = freshness_hours > FRESHNESS_THRESHOLD_HOURS
     latest_ngi_stale = latest_ngi_age_hours > FRESHNESS_THRESHOLD_HOURS
     divergence_blocking = divergence_pp > DIVERGENCE_THRESHOLD_PP
+    market_closed = bool(target_detail.get("market_closed"))
+    market_active = target_detail.get("market_active")
+    market_accepting_orders = target_detail.get("market_accepting_orders")
+    market_untradable = market_closed or market_active is False or market_accepting_orders is False
 
     status = "pass"
     blockers: list[str] = []
@@ -96,6 +100,14 @@ def build_summary(state_path: Path, db_path: Path, latest_ngi_path: Path) -> dic
     if latest_ngi_stale:
         status = "fail"
         blockers.append(f"latest_ngi_stale={latest_ngi_age_hours:.2f}h")
+    if market_untradable:
+        status = "fail"
+        blockers.append(
+            "market_untradable="
+            f"closed:{str(market_closed).lower()},"
+            f"active:{str(market_active).lower() if market_active is not None else 'unknown'},"
+            f"accepting_orders:{str(market_accepting_orders).lower() if market_accepting_orders is not None else 'unknown'}"
+        )
     if divergence_blocking:
         status = "fail"
         blockers.append(f"divergence_pp={divergence_pp:.2f}")
@@ -121,6 +133,10 @@ def build_summary(state_path: Path, db_path: Path, latest_ngi_path: Path) -> dic
         "probability_mode": target_detail.get("probability_mode") or latest_ngi.get("probability_mode") or "unknown",
         "market_target_id": market_target.get("market_id") or target_detail.get("market_id"),
         "market_target_name": market_target.get("market_name") or target_detail.get("market_question"),
+        "market_closed": market_closed,
+        "market_active": market_active,
+        "market_accepting_orders": market_accepting_orders,
+        "market_untradable": market_untradable,
         "blockers": blockers,
     }
 

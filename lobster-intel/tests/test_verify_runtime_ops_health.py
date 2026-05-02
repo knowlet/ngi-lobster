@@ -27,6 +27,9 @@ def write_latest_ngi(
     first_principles_probability: float = 0.17,
     market_yes_probability: float = 0.645,
     probability_mode: str = "yes_is_peace",
+    market_closed: bool = False,
+    market_active: bool = True,
+    market_accepting_orders: bool = True,
 ):
     path.write_text(
         json.dumps(
@@ -42,6 +45,9 @@ def write_latest_ngi(
                     "market_question": "Trump announces end of military operations against Iran by June 30th?",
                     "market_yes_probability": market_yes_probability,
                     "probability_mode": probability_mode,
+                    "market_closed": market_closed,
+                    "market_active": market_active,
+                    "market_accepting_orders": market_accepting_orders,
                 },
             }
         ),
@@ -75,6 +81,7 @@ def test_verify_runtime_ops_health_fails_on_dq_and_reports_divergence(tmp_path: 
     assert payload["dq_status"] == "fail"
     assert payload["stale_data"] is False
     assert payload["latest_ngi_stale"] is False
+    assert payload["market_untradable"] is False
     assert payload["divergence_pp"] == 47.5
     assert payload["divergence_threshold_pp"] == 15.0
     assert payload["divergence_blocking"] is True
@@ -190,6 +197,36 @@ def test_verify_runtime_ops_health_fails_on_divergence_threshold(tmp_path: Path)
     assert payload["blockers"] == ["divergence_pp=47.50"]
 
 
+def test_verify_runtime_ops_health_fails_on_untradable_market(tmp_path: Path):
+    state_path = tmp_path / "STATE.yaml"
+    state_path.write_text('dq_status: "pass"\n', encoding="utf-8")
+    db_path = tmp_path / "intelligence_store.sqlite"
+    write_db(db_path, "2099-01-01T00:00:00+00:00")
+    latest_ngi_path = tmp_path / "latest_ngi.json"
+    write_latest_ngi(
+        latest_ngi_path,
+        first_principles_probability=0.52,
+        market_yes_probability=0.56,
+        market_closed=True,
+        market_active=True,
+        market_accepting_orders=False,
+    )
+
+    result = run_cli(state_path, db_path, latest_ngi_path)
+
+    assert result.returncode == 1
+    payload = json.loads(result.stdout)
+    assert payload["status"] == "fail"
+    assert payload["divergence_blocking"] is False
+    assert payload["market_closed"] is True
+    assert payload["market_active"] is True
+    assert payload["market_accepting_orders"] is False
+    assert payload["market_untradable"] is True
+    assert payload["blockers"] == [
+        "market_untradable=closed:true,active:true,accepting_orders:false"
+    ]
+
+
 def test_verify_runtime_ops_health_passes_when_dq_freshness_and_divergence_are_in_contract(tmp_path: Path):
     state_path = tmp_path / "STATE.yaml"
     state_path.write_text('dq_status: "pass"\n', encoding="utf-8")
@@ -205,6 +242,7 @@ def test_verify_runtime_ops_health_passes_when_dq_freshness_and_divergence_are_i
     assert payload["status"] == "pass"
     assert payload["stale_data"] is False
     assert payload["latest_ngi_stale"] is False
+    assert payload["market_untradable"] is False
     assert payload["divergence_blocking"] is False
     assert payload["blockers"] == []
     assert payload["divergence_pp"] == 12.5

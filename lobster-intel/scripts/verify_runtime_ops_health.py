@@ -63,6 +63,20 @@ def compute_signed_divergence_direction(first_principles_minus_market_pp: float)
     return "aligned"
 
 
+def _as_bool(value: object) -> bool | None:
+    if value is None:
+        return None
+    if isinstance(value, bool):
+        return value
+    if isinstance(value, str):
+        normalized = value.strip().lower()
+        if normalized in {"true", "1", "yes", "y", "on"}:
+            return True
+        if normalized in {"false", "0", "no", "n", "off"}:
+            return False
+    return bool(value)
+
+
 def build_summary(state_path: Path, db_path: Path, latest_ngi_path: Path) -> dict[str, object]:
     dq_status = read_top_level_scalar(state_path, "dq_status")
     latest_snapshot_at_utc = load_latest_snapshot_at_utc(db_path)
@@ -84,6 +98,9 @@ def build_summary(state_path: Path, db_path: Path, latest_ngi_path: Path) -> dic
     stale_data = freshness_hours > FRESHNESS_THRESHOLD_HOURS
     latest_ngi_stale = latest_ngi_age_hours > FRESHNESS_THRESHOLD_HOURS
     divergence_blocking = divergence_pp > DIVERGENCE_THRESHOLD_PP
+    market_closed = _as_bool(target_detail.get("market_closed"))
+    market_accepting_orders = _as_bool(target_detail.get("market_accepting_orders"))
+    closed_target_blocking = market_closed is True or market_accepting_orders is False
 
     status = "pass"
     blockers: list[str] = []
@@ -96,6 +113,12 @@ def build_summary(state_path: Path, db_path: Path, latest_ngi_path: Path) -> dic
     if latest_ngi_stale:
         status = "fail"
         blockers.append(f"latest_ngi_stale={latest_ngi_age_hours:.2f}h")
+    if closed_target_blocking:
+        status = "fail"
+        if market_closed is True:
+            blockers.append("market_closed=true")
+        if market_accepting_orders is False:
+            blockers.append("market_accepting_orders=false")
     if divergence_blocking:
         status = "fail"
         blockers.append(f"divergence_pp={divergence_pp:.2f}")
@@ -121,6 +144,9 @@ def build_summary(state_path: Path, db_path: Path, latest_ngi_path: Path) -> dic
         "probability_mode": target_detail.get("probability_mode") or latest_ngi.get("probability_mode") or "unknown",
         "market_target_id": market_target.get("market_id") or target_detail.get("market_id"),
         "market_target_name": market_target.get("market_name") or target_detail.get("market_question"),
+        "market_closed": market_closed,
+        "market_accepting_orders": market_accepting_orders,
+        "closed_target_blocking": closed_target_blocking,
         "blockers": blockers,
     }
 

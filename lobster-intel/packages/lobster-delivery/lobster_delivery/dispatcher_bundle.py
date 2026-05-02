@@ -59,6 +59,15 @@ def _resolve_runtime_target_name(runtime_payload: dict[str, Any], compare_payloa
     )
 
 
+def _validate_alert_run_identity(alert_payload: dict[str, Any], *, run_id: str) -> None:
+    persisted_run_id = str(alert_payload.get("run_id") or "").strip()
+    if persisted_run_id and persisted_run_id != run_id:
+        raise ValueError(
+            "alert artifact run_id mismatch: "
+            f"expected {run_id!r}, got {persisted_run_id!r}"
+        )
+
+
 def _project_runtime_dispatcher_payload(
     *,
     workspace_dir: str | Path,
@@ -123,6 +132,7 @@ def load_dispatcher_payloads(
     payloads: list[dict[str, Any]] = []
     for run_id in run_ids:
         alert_payload = _load_json(alerts_root / f"{run_id}.json")
+        _validate_alert_run_identity(alert_payload, run_id=run_id)
         disposition = alert_payload.get("alert_disposition")
         if isinstance(disposition, dict) and disposition.get("e2e_run_id"):
             payloads.append(alert_payload)

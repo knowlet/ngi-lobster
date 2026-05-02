@@ -49,7 +49,7 @@ When PO needs the full current P0 explain-contract acceptance path on one operat
 npm run test:p0-cut
 ```
 
-That shortcut runs the dispatcher path gate first and then the shared E2E bundle gate, so PO can validate the suppressed legacy control and delivered positive control without manually reassembling the cut.
+That shortcut runs the dispatcher path verification gate first and then the shared E2E bundle verification gate. It confirms the current blocking acceptance contract, but it does not regenerate the real-path artifacts by itself.
 
 When PO needs one fast gate for the `latest_ngi.json` runtime contract, use:
 
@@ -142,7 +142,7 @@ PO's repeatable acceptance entrypoint is:
 npm run test:p0-cut
 ```
 
-That command must remain the smallest operator path for regenerating and checking the current blocking cut before review or upstreaming.
+That command must remain the smallest operator verification path for checking the current blocking cut before review or upstreaming. Real-path regeneration still follows the canonical recut lineage below.
 
 For the real-path recut, PO should keep one canonical lineage and reject stale artifact mixing:
 

@@ -218,6 +218,8 @@ def test_verify_runtime_ops_health_fails_closed_when_market_is_closed(tmp_path: 
     payload = json.loads(result.stdout)
     assert payload["status"] == "fail"
     assert payload["closed_target_blocking"] is True
+    assert payload["reselection_required"] is True
+    assert payload["next_contract_action"] == "reselect_active_target"
     assert payload["market_closed"] is True
     assert payload["market_accepting_orders"] is False
     assert payload["divergence_blocking"] is False
@@ -240,6 +242,8 @@ def test_verify_runtime_ops_health_passes_when_dq_freshness_and_divergence_are_i
     assert payload["stale_data"] is False
     assert payload["latest_ngi_stale"] is False
     assert payload["closed_target_blocking"] is False
+    assert payload["reselection_required"] is False
+    assert payload["next_contract_action"] == "keep_active_target"
     assert payload["divergence_blocking"] is False
     assert payload["blockers"] == []
     assert payload["divergence_pp"] == 12.5

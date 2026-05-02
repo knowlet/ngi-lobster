@@ -101,6 +101,7 @@ def build_summary(state_path: Path, db_path: Path, latest_ngi_path: Path) -> dic
     market_closed = _as_bool(target_detail.get("market_closed"))
     market_accepting_orders = _as_bool(target_detail.get("market_accepting_orders"))
     closed_target_blocking = market_closed is True or market_accepting_orders is False
+    reselection_required = closed_target_blocking
 
     status = "pass"
     blockers: list[str] = []
@@ -147,6 +148,8 @@ def build_summary(state_path: Path, db_path: Path, latest_ngi_path: Path) -> dic
         "market_closed": market_closed,
         "market_accepting_orders": market_accepting_orders,
         "closed_target_blocking": closed_target_blocking,
+        "reselection_required": reselection_required,
+        "next_contract_action": "reselect_active_target" if reselection_required else "keep_active_target",
         "blockers": blockers,
     }
 

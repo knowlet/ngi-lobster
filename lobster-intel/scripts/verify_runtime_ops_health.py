@@ -194,7 +194,16 @@ def build_summary(
     divergence_blocking = divergence_pp > DIVERGENCE_THRESHOLD_PP
     market_closed = _as_bool(target_detail.get("market_closed"))
     market_accepting_orders = _as_bool(target_detail.get("market_accepting_orders"))
-    closed_target_blocking = market_closed is True or market_accepting_orders is False
+    market_closed_unknown = "market_closed" in target_detail and market_closed is None
+    market_accepting_orders_unknown = (
+        "market_accepting_orders" in target_detail and market_accepting_orders is None
+    )
+    closed_target_blocking = (
+        market_closed is True
+        or market_accepting_orders is False
+        or market_closed_unknown
+        or market_accepting_orders_unknown
+    )
     reselection_required = closed_target_blocking
     runtime_source_payload = _parse_runtime_source_payload(runtime_source_path)
     rollover_candidate = _select_rollover_candidate(
@@ -219,6 +228,10 @@ def build_summary(
             blockers.append("market_closed=true")
         if market_accepting_orders is False:
             blockers.append("market_accepting_orders=false")
+        if market_closed_unknown:
+            blockers.append("market_closed=unknown")
+        if market_accepting_orders_unknown:
+            blockers.append("market_accepting_orders=unknown")
     if divergence_blocking:
         status = "fail"
         blockers.append(f"divergence_pp={divergence_pp:.2f}")

@@ -39,6 +39,7 @@
    - 2026-05-02 19:04+08:00：已讓 live progress sync payload 可選擇接入 polymarket runtime source，並在 `active_target` 區塊輸出 closed/accepting-orders/reselection/rollover-candidate 狀態，讓 operator 在同一份同步 payload 看到是否必須換 active target。
    - 2026-05-02 23:03+08:00：已加固 ops-health 的 runtime-source boolean parser，`accepting_orders="unknown"` 這類 ambiguous 字串不再被 Python truthiness 當成 true，也不能在 rollover candidate ranking 裡壓過明確 open successor。
    - 2026-05-03 00:04+08:00：已收緊 ops-health rollover candidate eligibility，只有 runtime source 明確回報 `closed=false` 且 `accepting_orders=true` 的 successor 才會輸出成 machine-readable candidate；只有 ambiguous successor 時會保留 blocked 狀態但不建議切換目標。
+   - 2026-05-03 01:03+08:00：已加固 ops-health active-target status guard；當 `target_detail.market_closed` 或 `market_accepting_orders` 明確存在但值為 ambiguous（例如 `"unknown"`）時會 fail closed，要求重新選 active target，不再輸出健康摘要。
 
 5. **Freshness + DQ 監控門檻固定化**
    - 明確把 `latest_ngi_age_hours > 4` 直接設為硬阻斷。
@@ -84,6 +85,7 @@
 - live progress sync 的 active-target rollover 欄位後續可接 Paperclip / Albert 顯示模板，避免 operator 另查 ops-health JSON。
 - tracker runtime source 的 boolean 欄位若非明確 true/false，ops-health 會以 unknown 處理；後續插件接線需維持同一 parser 契約。
 - rollover candidate 必須是明確 open 且 accepting-orders 的 tracker item，不能把 ambiguous successor 投影成可執行建議。
+- active target 自身若回報 ambiguous closed/accepting-orders 狀態，ops-health 必須視為需要 reselection，不能只因欄位存在就當成健康目標。
 
 ### P2（改善與擴充）
 - 進一步自動化資料源補全與 source 風險檢測。

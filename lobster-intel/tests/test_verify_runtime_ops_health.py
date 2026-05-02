@@ -394,6 +394,35 @@ def test_verify_runtime_ops_health_rejects_ambiguous_rollover_candidate(tmp_path
     assert payload["rollover_candidate"] is None
 
 
+def test_verify_runtime_ops_health_fails_closed_on_ambiguous_active_target_status(tmp_path: Path):
+    state_path = tmp_path / "STATE.yaml"
+    state_path.write_text('dq_status: "pass"\n', encoding="utf-8")
+    db_path = tmp_path / "intelligence_store.sqlite"
+    write_db(db_path, "2099-01-01T00:00:00+00:00")
+    latest_ngi_path = tmp_path / "latest_ngi.json"
+    write_latest_ngi(
+        latest_ngi_path,
+        first_principles_probability=0.52,
+        market_yes_probability=0.60,
+    )
+    latest_ngi = json.loads(latest_ngi_path.read_text(encoding="utf-8"))
+    latest_ngi["target_detail"]["market_closed"] = "unknown"
+    latest_ngi["target_detail"]["market_accepting_orders"] = "unknown"
+    latest_ngi_path.write_text(json.dumps(latest_ngi), encoding="utf-8")
+
+    result = run_cli(state_path, db_path, latest_ngi_path)
+
+    assert result.returncode == 1
+    payload = json.loads(result.stdout)
+    assert payload["status"] == "fail"
+    assert payload["market_closed"] is None
+    assert payload["market_accepting_orders"] is None
+    assert payload["closed_target_blocking"] is True
+    assert payload["reselection_required"] is True
+    assert payload["next_contract_action"] == "reselect_active_target"
+    assert payload["blockers"] == ["market_closed=unknown", "market_accepting_orders=unknown"]
+
+
 def test_verify_runtime_ops_health_passes_when_dq_freshness_and_divergence_are_in_contract(tmp_path: Path):
     state_path = tmp_path / "STATE.yaml"
     state_path.write_text('dq_status: "pass"\n', encoding="utf-8")

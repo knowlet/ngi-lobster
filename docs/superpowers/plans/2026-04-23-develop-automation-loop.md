@@ -667,3 +667,12 @@
 - [x] 2026-05-03 00:04:09+0800: Advanced the roadmap Phase B readable-summary boundary by requiring rollover candidates to be explicit open successors with `closed=false` and `accepting_orders=true`.
 - [x] 2026-05-03 00:04:09+0800: Added regression coverage proving an ambiguous-only successor set keeps `rollover_candidate=null` instead of suggesting a non-actionable target switch.
 - [ ] Retry GitHub access, confirm PR #30 `CommitCheck` status, then merge or resume runtime work only after that gate clears.
+
+### Task 77: 2026-05-03 01:03+08:00 ops-health active-target ambiguous status guard
+- [x] 2026-05-03 01:03:28+0800: Current branch is `codex/pr29-clean-runtime-cut` at `3c0264f`, matching local `origin/codex/pr29-clean-runtime-cut` before this run.
+- [x] 2026-05-03 01:03:28+0800: `git fetch --prune origin` retried and failed (`Could not resolve host: github.com`, rc=128), so upstream freshness cannot be verified in this run.
+- [x] 2026-05-03 01:03:28+0800: `gh pr list --state all --limit 20` and `gh issue list --state all --limit 20` failed with `error connecting to api.github.com`, so PR #30 merge-state and issue triage cannot be refreshed.
+- [x] 2026-05-03 01:03:28+0800: `git rebase --fork-point origin/main` hit the known rolling-plan conflict while replaying old checkpoint commit `14bebae` and was aborted cleanly.
+- [x] 2026-05-03 01:03:28+0800: Advanced the roadmap Phase B readable-summary boundary by making ops-health fail closed when active-target status booleans are explicitly present but ambiguous.
+- [x] 2026-05-03 01:03:28+0800: Added regression coverage proving `market_closed="unknown"` and `market_accepting_orders="unknown"` now produce `reselection_required=true` with explicit blockers instead of `status=pass`.
+- [ ] Retry GitHub access, confirm PR #30 `CommitCheck` status, then merge or resume runtime work only after that gate clears.

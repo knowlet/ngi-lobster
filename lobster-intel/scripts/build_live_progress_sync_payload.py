@@ -71,7 +71,12 @@ def _require_delivery_proof(alert_disposition: dict[str, Any]) -> dict[str, Any]
     return proof
 
 
-def build_live_progress_sync_payload(state_path: Path, db_path: Path, latest_ngi_path: Path) -> dict[str, Any]:
+def build_live_progress_sync_payload(
+    state_path: Path,
+    db_path: Path,
+    latest_ngi_path: Path,
+    runtime_source_path: Path | None = None,
+) -> dict[str, Any]:
     latest_ngi = json.loads(latest_ngi_path.read_text(encoding="utf-8"))
     for key in REQUIRED_TOP_LEVEL_KEYS:
         if key not in latest_ngi:
@@ -81,7 +86,7 @@ def build_live_progress_sync_payload(state_path: Path, db_path: Path, latest_ngi
     target_detail = _require_mapping(latest_ngi, "target_detail")
     alert_disposition = _require_mapping(latest_ngi, "alert_disposition")
     delivery_proof = _require_delivery_proof(alert_disposition)
-    ops_health = build_summary(state_path, db_path, latest_ngi_path)
+    ops_health = build_summary(state_path, db_path, latest_ngi_path, runtime_source_path)
     basis = _build_basis_lines(latest_ngi=latest_ngi, ops_health=ops_health)
 
     alert_payload = {
@@ -116,6 +121,14 @@ def build_live_progress_sync_payload(state_path: Path, db_path: Path, latest_ngi
             "threshold_pp": ops_health["divergence_threshold_pp"],
             "blocking": ops_health["divergence_blocking"],
         },
+        "active_target": {
+            "market_closed": ops_health["market_closed"],
+            "market_accepting_orders": ops_health["market_accepting_orders"],
+            "closed_target_blocking": ops_health["closed_target_blocking"],
+            "reselection_required": ops_health["reselection_required"],
+            "next_contract_action": ops_health["next_contract_action"],
+            "rollover_candidate": ops_health["rollover_candidate"],
+        },
         "freshness": {
             "dq_status": ops_health["dq_status"],
             "latest_snapshot_at_utc": ops_health["latest_snapshot_at_utc"],
@@ -133,9 +146,9 @@ def build_live_progress_sync_payload(state_path: Path, db_path: Path, latest_ngi
 
 
 def main(argv: list[str]) -> int:
-    if len(argv) != 4:
+    if len(argv) not in {4, 5}:
         print(
-            "usage: build_live_progress_sync_payload.py <state.yaml> <intelligence_store.sqlite> <latest_ngi.json>",
+            "usage: build_live_progress_sync_payload.py <state.yaml> <intelligence_store.sqlite> <latest_ngi.json> [runtime_source_polymarket.json]",
             file=sys.stderr,
         )
         return 2
@@ -143,9 +156,10 @@ def main(argv: list[str]) -> int:
     state_path = Path(argv[1])
     db_path = Path(argv[2])
     latest_ngi_path = Path(argv[3])
+    runtime_source_path = Path(argv[4]) if len(argv) == 5 else None
 
     try:
-        payload = build_live_progress_sync_payload(state_path, db_path, latest_ngi_path)
+        payload = build_live_progress_sync_payload(state_path, db_path, latest_ngi_path, runtime_source_path)
     except Exception as exc:
         print(str(exc), file=sys.stderr)
         return 1

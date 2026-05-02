@@ -36,6 +36,7 @@
 4. **每日/每次 run 的可讀摘要體系**
    - 讓 operator 一眼看出：最新 runtime timestamp、freshness、divergence、blocker 狀態。
    - **Owner：大餅**（內容與欄位定義）+ **姨太**（實作）
+   - 2026-05-02 19:04+08:00：已讓 live progress sync payload 可選擇接入 polymarket runtime source，並在 `active_target` 區塊輸出 closed/accepting-orders/reselection/rollover-candidate 狀態，讓 operator 在同一份同步 payload 看到是否必須換 active target。
 
 5. **Freshness + DQ 監控門檻固定化**
    - 明確把 `latest_ngi_age_hours > 4` 直接設為硬阻斷。
@@ -70,6 +71,7 @@
 - plugin 接線標準與測試套件擴充。
 - 產品化交付文檔（安裝→run→驗收）一體化。
 - 主要告警文案模板以 explain-contract 欄位為唯一真值。
+- live progress sync 的 active-target rollover 欄位後續可接 Paperclip / Albert 顯示模板，避免 operator 另查 ops-health JSON。
 
 ### P2（改善與擴充）
 - 進一步自動化資料源補全與 source 風險檢測。

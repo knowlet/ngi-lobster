@@ -1,0 +1,37 @@
+{
+  "schema_version": "v1",
+  "artifact_id": "compare:gooaye:20260421T090408Z",
+  "run_id": "20260421T090408Z",
+  "thesis_id": "gooaye",
+  "created_at_utc": "2026-04-21T09:04:08.129015+00:00",
+  "provenance": {
+    "source_ids": [],
+    "source_paths": [],
+    "source_urls": [],
+    "parent_record_id": "fusion:gooaye:20260421T090408Z",
+    "run_id": "20260421T090408Z",
+    "checksum": "2504206fa047e5a55d3bd8f273d7a71913544642c3dac5cea2521ec8b02cab21"
+  },
+  "contract_version": "ngi_runtime_spine.v1",
+  "runtime_target_id": "1517836",
+  "market_target_id": "1517836",
+  "semantic_alignment_status": "aligned",
+  "numeric_alignment_status": "aligned",
+  "compare_mode": "full_compare",
+  "alignment_confidence": 1.0,
+  "fallback_reason_codes": [],
+  "operator_actionable_notes": [
+    "Runtime target and market candidate are fully aligned."
+  ],
+  "market_candidate": {
+    "market_id": "1517836",
+    "market_slug": "trump-announces-end-of-military-operations-against-iran-by-june-30th-566-326-653-781-167-426-752-225",
+    "market_question": "Trump announces end of military operations against Iran by June 30th?",
+    "semantic_frame": "military_operations_end_by_deadline",
+    "probability_direction": "yes_is_peace",
+    "market_yes_probability": null,
+    "active": true,
+    "closed": false,
+    "source_observation_id": "observation:gooaye:polymarket-tracker:1517836"
+  }
+}

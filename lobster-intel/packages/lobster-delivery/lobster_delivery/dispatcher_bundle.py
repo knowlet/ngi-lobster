@@ -68,6 +68,15 @@ def _validate_alert_run_identity(alert_payload: dict[str, Any], *, run_id: str) 
         )
 
 
+def _validate_receipt_run_identity(receipt_payload: dict[str, Any], *, run_id: str) -> None:
+    persisted_run_id = str(receipt_payload.get("run_id") or "").strip()
+    if persisted_run_id and persisted_run_id != run_id:
+        raise ValueError(
+            "delivery receipt run_id mismatch: "
+            f"expected {run_id!r}, got {persisted_run_id!r}"
+        )
+
+
 def _project_runtime_dispatcher_payload(
     *,
     workspace_dir: str | Path,
@@ -83,6 +92,8 @@ def _project_runtime_dispatcher_payload(
     runtime_payload = _load_optional_json(runtime_root / "runs" / f"{run_id}.json") or {}
     compare_payload = _load_optional_json(runtime_root / "compare" / f"{run_id}.json") or {}
     receipt_payload = _load_optional_json(delivery_root / "receipts" / f"{run_id}.json") or {}
+    if receipt_payload:
+        _validate_receipt_run_identity(receipt_payload, run_id=run_id)
 
     active_target = runtime_payload.get("active_target") or {}
     runtime_target_id = _resolve_runtime_target_id(

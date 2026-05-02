@@ -658,3 +658,12 @@
 - [x] 2026-05-02 23:03:13+0800: Advanced the roadmap Phase B readable-summary boundary by making ops-health treat ambiguous runtime-source boolean strings as unknown instead of truthy.
 - [x] 2026-05-02 23:03:13+0800: Added regression coverage proving `accepting_orders="unknown"` cannot outrank an explicit open rollover candidate in runtime-source candidate ranking.
 - [ ] Retry GitHub access, confirm PR #30 `CommitCheck` status, then merge or resume runtime work only after that gate clears.
+
+### Task 76: 2026-05-03 00:04+08:00 ops-health actionable rollover candidate guard
+- [x] 2026-05-03 00:04:09+0800: Current branch is `codex/pr29-clean-runtime-cut` at `84f6b31`, matching local `origin/codex/pr29-clean-runtime-cut` before this run.
+- [x] 2026-05-03 00:04:09+0800: `git fetch --prune origin` retried and failed (`Could not resolve host: github.com`, rc=128), so upstream freshness cannot be verified in this run.
+- [x] 2026-05-03 00:04:09+0800: `gh pr list --state all --limit 20` and `gh issue list --state all --limit 20` failed with `error connecting to api.github.com`, so PR #30 merge-state and issue triage cannot be refreshed.
+- [x] 2026-05-03 00:04:09+0800: `git rebase --fork-point origin/main` hit the known rolling-plan conflict while replaying old checkpoint commit `14bebae` and was aborted cleanly.
+- [x] 2026-05-03 00:04:09+0800: Advanced the roadmap Phase B readable-summary boundary by requiring rollover candidates to be explicit open successors with `closed=false` and `accepting_orders=true`.
+- [x] 2026-05-03 00:04:09+0800: Added regression coverage proving an ambiguous-only successor set keeps `rollover_candidate=null` instead of suggesting a non-actionable target switch.
+- [ ] Retry GitHub access, confirm PR #30 `CommitCheck` status, then merge or resume runtime work only after that gate clears.

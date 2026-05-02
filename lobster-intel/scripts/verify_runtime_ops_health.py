@@ -140,6 +140,10 @@ def _select_rollover_candidate(
         market_id = metadata.get("market_id") or item.get("external_id")
         if current_market_id and str(market_id) == str(current_market_id):
             continue
+        if _as_bool(metadata.get("closed")) is not False:
+            continue
+        if _as_bool(metadata.get("accepting_orders")) is not True:
+            continue
         eligible.append(item)
 
     if not eligible:

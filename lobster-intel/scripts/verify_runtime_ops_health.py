@@ -92,6 +92,12 @@ def _parse_runtime_source_payload(path: Path | None) -> dict[str, Any] | None:
     payload = json.loads(path.read_text(encoding="utf-8"))
     if not isinstance(payload, dict):
         raise RuntimeError("runtime_source payload must be a JSON object")
+    evidence = payload.get("evidence")
+    if evidence is not None:
+        if not isinstance(evidence, dict):
+            raise RuntimeError("runtime_source evidence must be a JSON object")
+        if "items" in evidence and not isinstance(evidence["items"], list):
+            raise RuntimeError("runtime_source evidence.items must be a list")
     return payload
 
 

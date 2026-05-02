@@ -47,6 +47,7 @@
    - 分流策略（send/suppress）只依 contract 狀態，不靠臨時人工解讀。
    - **Owner：姨太**（核心）
    - 2026-05-02 20:04+08:00：已加固 live progress sync 的 positive-delivery 分流邊界，`should_send=true` 或 positive decision 只有在 `target_contract_match` 明確為 true 時才接受 delivery proof；serialized `"false"` 會被視為 contract mismatch 並 fail closed。
+   - 2026-05-02 22:04+08:00：已收緊 live progress sync 的 contract-match parser，positive delivery 只接受明確 true/false 等價值；`target_contract_match="unknown"` 這類 ambiguous truthy 字串會 fail closed。
 
 ### Phase C｜可擴展性與回歸（第 3–4 週）
 7. **tracker 插件接線規格化**
@@ -68,6 +69,7 @@
   - 2026-05-02 15:05+08:00：已加固 `build_live_progress_sync_payload.py` 的 positive delivery 邊界，`alert_disposition.should_send=true` 或 positive decision 沒有 `delivery_proof` 會 fail closed，且 live sync payload 會輸出 machine-readable proof。
 - positive delivery 不能繞過 active-target contract match。
   - 2026-05-02 20:04+08:00：已加固 `build_live_progress_sync_payload.py`，positive delivery 必須有 true-equivalent `alert_disposition.target_contract_match` 才能進入 sync payload；`"false"`/`0`/`no`/`off` 這類 serialized false 值會阻斷輸出。
+  - 2026-05-02 22:04+08:00：已補上 ambiguous contract-match 邊界，`"unknown"` 或其他非明確 true/false 的值不再被 Python truthiness 接受為 positive delivery contract match。
 - active-target contract mismatch 與 outward reason 映射邊界。
   - 2026-05-02 12:04+08:00：已加固 `repair_latest_ngi_contract.py`，避免既有 `target_contract_match="false"` 被 Python truthiness 轉成 `True`，並以 regression test 覆蓋 outward reason mapping 仍保留 internal runtime reason。
 - live progress sync 不能輸出 stale `latest_ngi.json` 摘要。

@@ -73,7 +73,13 @@ def _as_bool(value: Any) -> bool | None:
             return True
         if normalized in {"false", "0", "no", "n", "off"}:
             return False
-    return bool(value)
+        return None
+    if isinstance(value, (int, float)):
+        if value == 1:
+            return True
+        if value == 0:
+            return False
+    return None
 
 
 def _require_delivery_proof(alert_disposition: dict[str, Any]) -> dict[str, Any] | None:

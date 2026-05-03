@@ -744,6 +744,52 @@ def test_verify_runtime_ops_health_fails_when_rollover_candidate_probability_is_
         )
 
 
+def test_verify_runtime_ops_health_fails_when_runtime_source_item_timestamp_is_malformed(
+    tmp_path: Path,
+):
+    for key in ("collected_at_utc", "published_at_utc"):
+        case_dir = tmp_path / key
+        case_dir.mkdir()
+        state_path = case_dir / "STATE.yaml"
+        state_path.write_text('dq_status: "pass"\n', encoding="utf-8")
+        db_path = case_dir / "intelligence_store.sqlite"
+        write_db(db_path, "2099-01-01T00:00:00+00:00")
+        latest_ngi_path = case_dir / "latest_ngi.json"
+        write_latest_ngi(
+            latest_ngi_path,
+            first_principles_probability=0.52,
+            market_yes_probability=0.60,
+            market_closed=True,
+            market_accepting_orders=False,
+        )
+        runtime_source_path = case_dir / "polymarket-runtime.json"
+        item = {
+            "external_id": "rollover-1518000",
+            "title": "Open successor market",
+            "url": "open-successor",
+            "metadata": {
+                "market_id": "rollover-1518000",
+                "slug": "open-successor",
+                "yes_probability": 0.42,
+                "active": True,
+                "closed": False,
+                "accepting_orders": True,
+                "source_config": {"label": "Open successor market"},
+            },
+        }
+        item[key] = "not-a-timestamp"
+        write_runtime_source(runtime_source_path, items=[item])
+
+        result = run_cli(state_path, db_path, latest_ngi_path, runtime_source_path)
+
+        assert result.returncode == 1
+        assert result.stdout == ""
+        assert (
+            result.stderr.strip()
+            == f"runtime_source evidence.items[0].{key} must be an ISO-8601 timestamp"
+        )
+
+
 def test_verify_runtime_ops_health_fails_when_latest_ngi_target_detail_is_not_an_object(
     tmp_path: Path,
 ):

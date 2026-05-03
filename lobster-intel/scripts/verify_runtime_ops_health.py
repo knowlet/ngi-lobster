@@ -55,6 +55,13 @@ def validate_probability(value: object, key: str, *, context: str) -> float:
     return probability
 
 
+def validate_optional_timestamp(value: object, key: str, *, context: str) -> None:
+    if value is None or value == "":
+        return
+    if not isinstance(value, str) or _parse_ts(value) is None:
+        raise RuntimeError(f"{context}.{key} must be an ISO-8601 timestamp")
+
+
 def read_optional_object(payload: dict[str, object], key: str, *, context: str) -> dict[str, object]:
     value = payload.get(key)
     if value is None:
@@ -119,6 +126,9 @@ def _parse_runtime_source_payload(path: Path | None) -> dict[str, Any] | None:
         for index, item in enumerate(evidence.get("items") or []):
             if not isinstance(item, dict):
                 raise RuntimeError(f"runtime_source evidence.items[{index}] must be a JSON object")
+            context = f"runtime_source evidence.items[{index}]"
+            validate_optional_timestamp(item.get("collected_at_utc"), "collected_at_utc", context=context)
+            validate_optional_timestamp(item.get("published_at_utc"), "published_at_utc", context=context)
             metadata = item.get("metadata")
             if metadata is not None and not isinstance(metadata, dict):
                 raise RuntimeError(

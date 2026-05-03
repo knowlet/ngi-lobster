@@ -30,6 +30,9 @@ def write_latest_ngi(
     market_closed: bool = False,
     market_active: bool = True,
     market_accepting_orders: bool = True,
+    next_contract_action: str | None = None,
+    rollover_candidate: str | None = None,
+    rollover_candidate_blocker: str | None = None,
 ):
     path.write_text(
         json.dumps(
@@ -48,6 +51,9 @@ def write_latest_ngi(
                     "market_closed": market_closed,
                     "market_active": market_active,
                     "market_accepting_orders": market_accepting_orders,
+                    "next_contract_action": next_contract_action,
+                    "rollover_candidate": rollover_candidate,
+                    "rollover_candidate_blocker": rollover_candidate_blocker,
                 },
             }
         ),
@@ -82,6 +88,10 @@ def test_verify_runtime_ops_health_fails_on_dq_and_reports_divergence(tmp_path: 
     assert payload["stale_data"] is False
     assert payload["latest_ngi_stale"] is False
     assert payload["market_untradable"] is False
+    assert payload["reselection_required"] is False
+    assert payload["next_contract_action"] is None
+    assert payload["rollover_candidate"] is None
+    assert payload["rollover_candidate_blocker"] is None
     assert payload["divergence_pp"] == 47.5
     assert payload["divergence_threshold_pp"] == 15.0
     assert payload["divergence_blocking"] is True
@@ -222,6 +232,10 @@ def test_verify_runtime_ops_health_fails_on_untradable_market(tmp_path: Path):
     assert payload["market_active"] is True
     assert payload["market_accepting_orders"] is False
     assert payload["market_untradable"] is True
+    assert payload["reselection_required"] is True
+    assert payload["next_contract_action"] == "reselect_active_target"
+    assert payload["rollover_candidate"] is None
+    assert payload["rollover_candidate_blocker"] == "no_successor_market"
     assert payload["blockers"] == [
         "market_untradable=closed:true,active:true,accepting_orders:false"
     ]
@@ -243,6 +257,10 @@ def test_verify_runtime_ops_health_passes_when_dq_freshness_and_divergence_are_i
     assert payload["stale_data"] is False
     assert payload["latest_ngi_stale"] is False
     assert payload["market_untradable"] is False
+    assert payload["reselection_required"] is False
+    assert payload["next_contract_action"] is None
+    assert payload["rollover_candidate"] is None
+    assert payload["rollover_candidate_blocker"] is None
     assert payload["divergence_blocking"] is False
     assert payload["blockers"] == []
     assert payload["divergence_pp"] == 12.5

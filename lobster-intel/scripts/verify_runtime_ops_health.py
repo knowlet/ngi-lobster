@@ -88,6 +88,24 @@ def build_summary(state_path: Path, db_path: Path, latest_ngi_path: Path) -> dic
     market_active = target_detail.get("market_active")
     market_accepting_orders = target_detail.get("market_accepting_orders")
     market_untradable = market_closed or market_active is False or market_accepting_orders is False
+    reselection_required = market_untradable
+    next_contract_action = (
+        target_detail.get("next_contract_action")
+        or market_target.get("next_contract_action")
+        or latest_ngi.get("next_contract_action")
+        or ("reselect_active_target" if reselection_required else None)
+    )
+    rollover_candidate = (
+        target_detail.get("rollover_candidate")
+        or market_target.get("rollover_candidate")
+        or latest_ngi.get("rollover_candidate")
+    )
+    rollover_candidate_blocker = (
+        target_detail.get("rollover_candidate_blocker")
+        or market_target.get("rollover_candidate_blocker")
+        or latest_ngi.get("rollover_candidate_blocker")
+        or ("no_successor_market" if reselection_required and not rollover_candidate else None)
+    )
 
     status = "pass"
     blockers: list[str] = []
@@ -137,6 +155,10 @@ def build_summary(state_path: Path, db_path: Path, latest_ngi_path: Path) -> dic
         "market_active": market_active,
         "market_accepting_orders": market_accepting_orders,
         "market_untradable": market_untradable,
+        "reselection_required": reselection_required,
+        "next_contract_action": next_contract_action,
+        "rollover_candidate": rollover_candidate,
+        "rollover_candidate_blocker": rollover_candidate_blocker,
         "blockers": blockers,
     }
 

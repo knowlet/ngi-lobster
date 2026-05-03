@@ -865,3 +865,12 @@
 - [x] 2026-05-03 23:03:55+0800: Advanced the roadmap Phase B schema boundary by requiring SQLite `market_snapshots.snapshot_at_utc` freshness timestamps to be ISO-8601 timestamps.
 - [x] 2026-05-03 23:03:55+0800: Added a red-green regression proving malformed store freshness timestamps now exit nonzero with an explicit schema error instead of leaking the lower-level timestamp parser error.
 - [ ] Retry GitHub access, confirm PR #30 `CommitCheck` status, then merge or resume runtime work only after that gate clears.
+
+### Task 99: 2026-05-04 00:02+08:00 live-sync contract envelope schema guard
+- [x] 2026-05-04 00:02:50+0800: Current branch is `codex/pr29-clean-runtime-cut` at `743f572`, matching local `origin/codex/pr29-clean-runtime-cut` before this run.
+- [x] 2026-05-04 00:02:50+0800: `git fetch --prune origin` retried and failed (`Could not resolve host: github.com`, rc=128), so upstream freshness cannot be verified in this run.
+- [x] 2026-05-04 00:02:50+0800: `gh pr list --state all --limit 20` and `gh issue list --state all --limit 20` failed with `error connecting to api.github.com`, so PR #30 merge-state and issue triage cannot be refreshed.
+- [x] 2026-05-04 00:02:50+0800: `git rebase --fork-point origin/main` hit the known rolling-plan conflict while replaying old checkpoint commit `14bebae` and was aborted cleanly.
+- [x] 2026-05-04 00:02:50+0800: Advanced the roadmap Phase B delivery contract boundary by requiring live-sync `alert_disposition.reason_code`, `contract_version`, and `e2e_run_id` to be non-empty strings before they enter the operator-facing sync payload.
+- [x] 2026-05-04 00:02:50+0800: Added a red-green regression proving malformed alert contract envelope fields now exit nonzero with explicit schema errors instead of being projected into live progress sync output.
+- [ ] Retry GitHub access, confirm PR #30 `CommitCheck` status, then merge or resume runtime work only after that gate clears.

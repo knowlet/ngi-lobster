@@ -100,6 +100,13 @@ def _read_non_empty_string(payload: dict[str, Any], key: str) -> str | None:
     return value
 
 
+def _require_non_empty_string(payload: dict[str, Any], key: str, *, context: str) -> str:
+    value = payload.get(key)
+    if not isinstance(value, str) or not value.strip():
+        raise RuntimeError(f"{context}.{key} must be a non-empty string")
+    return value
+
+
 def _validate_delivery_proof_fields(proof: dict[str, Any]) -> None:
     boundary = proof.get("boundary")
     if boundary is not None and boundary != "":
@@ -155,6 +162,15 @@ def build_live_progress_sync_payload(
     target_detail = _require_mapping(latest_ngi, "target_detail")
     alert_disposition = _require_mapping(latest_ngi, "alert_disposition")
     delivery_proof = _require_delivery_proof(alert_disposition)
+    reason_code = _require_non_empty_string(
+        alert_disposition, "reason_code", context="latest_ngi.alert_disposition"
+    )
+    contract_version = _require_non_empty_string(
+        alert_disposition, "contract_version", context="latest_ngi.alert_disposition"
+    )
+    e2e_run_id = _require_non_empty_string(
+        alert_disposition, "e2e_run_id", context="latest_ngi.alert_disposition"
+    )
     ops_health = build_summary(state_path, db_path, latest_ngi_path, runtime_source_path)
     if ops_health["latest_ngi_stale"]:
         raise RuntimeError("latest_ngi.json is stale")
@@ -163,10 +179,10 @@ def build_live_progress_sync_payload(
     alert_payload = {
         "decision": alert_disposition.get("decision"),
         "should_send": alert_disposition.get("should_send"),
-        "reason_code": alert_disposition.get("reason_code"),
+        "reason_code": reason_code,
         "target_contract_match": alert_disposition.get("target_contract_match"),
-        "contract_version": alert_disposition.get("contract_version"),
-        "e2e_run_id": alert_disposition.get("e2e_run_id"),
+        "contract_version": contract_version,
+        "e2e_run_id": e2e_run_id,
     }
     if delivery_proof is not None:
         alert_payload["delivery_proof"] = delivery_proof

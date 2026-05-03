@@ -225,6 +225,7 @@ def build_live_progress_sync_payload(
             "rollover_candidate_blocker": ops_health["rollover_candidate_blocker"],
             "rollover_candidate": ops_health["rollover_candidate"],
         },
+        "active_target_reselection": ops_health["active_target_reselection"],
         "freshness": {
             "dq_status": ops_health["dq_status"],
             "latest_snapshot_at_utc": ops_health["latest_snapshot_at_utc"],

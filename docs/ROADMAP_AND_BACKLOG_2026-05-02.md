@@ -60,6 +60,7 @@
    - 2026-05-04 03:02+08:00：已加固 ops-health latest NGI probability-mode schema guard；`target_detail.probability_mode` 與 top-level `latest_ngi.probability_mode` 若存在就必須是 non-empty string，避免 malformed mode 欄位被投影成 operator-facing 摘要。
    - 2026-05-04 04:03+08:00：已加固 ops-health latest NGI active-target identity schema guard；`market_target.market_id`、`market_target.market_name`、`target_detail.market_id` 與 `target_detail.market_question` 若存在就必須是 non-empty string，避免 malformed target identity/display 欄位被投影進 operator 摘要。
    - 2026-05-04 05:03+08:00：已補齊 ops-health 的 active-target reselection acceptance 摘要；即使 `latest_ngi_stale=true` 且當前 target 已 closed/not accepting orders，blocking JSON 仍會 machine-readable 輸出 `active_target_reselection.runtime_target_id` / `market_question` / `next_contract_action` / `rollover_candidate`，供 P0 reselect cut 驗收。
+   - 2026-05-04 06:03+08:00：已把同一份 `active_target_reselection` acceptance object 投影到 live progress sync payload，讓 Paperclip / Albert 顯示模板不必從 `blocking_summary` 與 `active_target` 重新拼接 reselection evidence。
 
 5. **Freshness + DQ 監控門檻固定化**
    - 明確把 `latest_ngi_age_hours > 4` 直接設為硬阻斷。
@@ -114,7 +115,7 @@
 - plugin 接線標準與測試套件擴充。
 - 產品化交付文檔（安裝→run→驗收）一體化。
 - 主要告警文案模板以 explain-contract 欄位為唯一真值。
-- live progress sync 的 active-target rollover 欄位後續可接 Paperclip / Albert 顯示模板，避免 operator 另查 ops-health JSON。
+- live progress sync 已輸出 dedicated `active_target_reselection` object，後續 Paperclip / Albert 顯示模板可直接接這份 machine-readable reselection evidence，避免 operator 另查 ops-health JSON。
 - tracker runtime source 的 boolean 欄位若非明確 true/false，ops-health 會以 unknown 處理；後續插件接線需維持同一 parser 契約。
 - rollover candidate 必須是明確 open 且 accepting-orders 的 tracker item，不能把 ambiguous successor 投影成可執行建議。
 - active target 自身若回報 ambiguous closed/accepting-orders 狀態，ops-health 必須視為需要 reselection，不能只因欄位存在就當成健康目標。

@@ -56,8 +56,14 @@ def _require_mapping(payload: dict[str, Any], key: str) -> dict[str, Any]:
 
 
 def _is_positive_delivery(alert_disposition: dict[str, Any]) -> bool:
-    if _as_bool(alert_disposition.get("should_send")) is True:
-        return True
+    if "should_send" in alert_disposition:
+        should_send = _as_bool(alert_disposition.get("should_send"))
+        if should_send is None:
+            raise RuntimeError(
+                "latest_ngi.alert_disposition.should_send must be a boolean-equivalent value"
+            )
+        if should_send is True:
+            return True
     decision = str(alert_disposition.get("decision") or "").strip().lower()
     return decision in {"would_send", "sent", "delivered"}
 

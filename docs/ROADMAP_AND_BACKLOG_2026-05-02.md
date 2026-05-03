@@ -63,6 +63,7 @@
    - 2026-05-02 22:04+08:00：已收緊 live progress sync 的 contract-match parser，positive delivery 只接受明確 true/false 等價值；`target_contract_match="unknown"` 這類 ambiguous truthy 字串會 fail closed。
    - 2026-05-03 14:03+08:00：已收緊 live progress sync 的 positive-delivery 偵測；`should_send="true"` 這類 serialized true 值會被視為 positive delivery，必須同時通過 delivery proof 與 active-target contract match gates。
    - 2026-05-03 15:03+08:00：已修正 live progress sync delivery proof identifier fallback；當 `proof_id` 是空白但同份 proof 帶有效 `sink_message_id` 時，仍接受 `sink_message_id` 作為 machine-readable proof id，不再誤擋有效交付證明。
+   - 2026-05-03 16:02+08:00：已收緊 live progress sync 的 `should_send` parser；欄位存在但不是明確 true/false 等價值（例如 `"unknown"`）時會 fail closed，不再被當成 non-positive summary 輸出。
 
 ### Phase C｜可擴展性與回歸（第 3–4 週）
 7. **tracker 插件接線規格化**
@@ -105,6 +106,7 @@
 - active-target reselection 摘要若 `rollover_candidate=null`，必須同時提供 `rollover_candidate_blocker`，避免 operator 只看到空 candidate 而不知道是缺 runtime source、沒有 successor，或 successor 不符合明確 open/accepting-orders 條件。
 - live progress sync 的 positive-delivery 偵測必須接受 explicit serialized booleans；`should_send="true"` 不能被當成 suppressed/non-positive 而繞過 delivery proof 或 contract-match gates。
 - live progress sync 的 delivery proof identifier 需支援 `proof_id` 或 `sink_message_id` 任一有效值；空白 `proof_id` 不能遮蔽同份 proof 裡可審計的 `sink_message_id`。
+- live progress sync 若收到 `alert_disposition.should_send`，該值必須是明確 boolean-equivalent；ambiguous send flag 不能被當成 suppressed/non-positive payload。
 
 ### P2（改善與擴充）
 - 進一步自動化資料源補全與 source 風險檢測。

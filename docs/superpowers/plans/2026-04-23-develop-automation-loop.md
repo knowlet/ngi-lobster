@@ -775,3 +775,12 @@
 - [x] 2026-05-03 12:02:46+0800: Advanced the roadmap Phase B delivery-proof boundary by requiring positive live-sync `delivery_proof` to include a machine-readable `boundary` and proof identifier (`proof_id` or `sink_message_id`).
 - [x] 2026-05-03 12:02:46+0800: Added regression coverage proving positive delivery exits nonzero with explicit missing-field errors when the proof lacks `boundary` or any proof id.
 - [ ] Retry GitHub access, confirm PR #30 `CommitCheck` status, then merge or resume runtime work only after that gate clears.
+
+### Task 89: 2026-05-03 13:03+08:00 live-sync delivery proof type guard
+- [x] 2026-05-03 13:02:56+0800: Current branch is `codex/pr29-clean-runtime-cut` at `e433af7`, matching local `origin/codex/pr29-clean-runtime-cut` before this run.
+- [x] 2026-05-03 13:02:56+0800: `git fetch --prune origin` retried and failed (`Could not resolve host: github.com`, rc=128), so upstream freshness cannot be verified in this run.
+- [x] 2026-05-03 13:02:56+0800: `gh pr list --state all --limit 20` and `gh issue list --state all --limit 20` failed with `error connecting to api.github.com`, so PR #30 merge-state and issue triage cannot be refreshed.
+- [x] 2026-05-03 13:02:56+0800: `git rebase --fork-point origin/main` hit the known rolling-plan conflict while replaying old checkpoint commit `14bebae` and was aborted cleanly.
+- [x] 2026-05-03 13:02:56+0800: Advanced the roadmap Phase B delivery-proof boundary by requiring positive live-sync `delivery_proof.boundary` and proof id fields to be actual non-empty strings, not values that only become non-empty after stringification.
+- [x] 2026-05-03 13:02:56+0800: Added a red-green regression proving numeric `boundary` and list-valued `proof_id` now exit nonzero with explicit schema errors instead of emitting a sync payload.
+- [ ] Retry GitHub access, confirm PR #30 `CommitCheck` status, then merge or resume runtime work only after that gate clears.

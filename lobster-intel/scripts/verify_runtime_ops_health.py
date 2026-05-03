@@ -380,6 +380,15 @@ def build_summary(
         status = "fail"
         blockers.append(f"divergence_pp={divergence_pp:.2f}")
 
+    active_target_reselection = {
+        "runtime_target_id": market_target.get("market_id") or target_detail.get("market_id"),
+        "market_question": target_detail.get("market_question"),
+        "reselection_required": reselection_required,
+        "next_contract_action": "reselect_active_target" if reselection_required else "keep_active_target",
+        "rollover_candidate_blocker": rollover_candidate_blocker,
+        "rollover_candidate": rollover_candidate,
+    }
+
     return {
         "status": status,
         "dq_status": dq_status,
@@ -408,6 +417,7 @@ def build_summary(
         "next_contract_action": "reselect_active_target" if reselection_required else "keep_active_target",
         "rollover_candidate": rollover_candidate,
         "rollover_candidate_blocker": rollover_candidate_blocker,
+        "active_target_reselection": active_target_reselection,
         "blockers": blockers,
     }
 

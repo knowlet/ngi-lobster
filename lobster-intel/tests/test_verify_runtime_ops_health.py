@@ -197,6 +197,87 @@ def test_verify_runtime_ops_health_fails_when_latest_ngi_is_stale_and_divergence
     ]
 
 
+def test_verify_runtime_ops_health_exports_reselection_acceptance_when_stale_target_is_closed(
+    tmp_path: Path,
+):
+    state_path = tmp_path / "STATE.yaml"
+    state_path.write_text('dq_status: "pass"\n', encoding="utf-8")
+    db_path = tmp_path / "intelligence_store.sqlite"
+    write_db(db_path, "2099-01-01T00:00:00+00:00")
+    latest_ngi_path = tmp_path / "latest_ngi.json"
+    write_latest_ngi(
+        latest_ngi_path,
+        timestamp_utc="2026-04-20T00:00:00+00:00",
+        first_principles_probability=0.12,
+        market_yes_probability=0.54,
+        market_closed=True,
+        market_accepting_orders=False,
+    )
+    runtime_source_path = tmp_path / "polymarket-runtime.json"
+    write_runtime_source(
+        runtime_source_path,
+        items=[
+            {
+                "external_id": "1517836",
+                "title": "Closed target",
+                "url": "closed-target",
+                "collected_at_utc": "2099-01-01T00:00:00+00:00",
+                "metadata": {
+                    "market_id": "1517836",
+                    "slug": "closed-target",
+                    "yes_probability": 1.0,
+                    "active": True,
+                    "closed": True,
+                    "accepting_orders": False,
+                    "source_config": {"label": "Closed target"},
+                },
+            },
+            {
+                "external_id": "rollover-1518000",
+                "title": "Open successor market",
+                "url": "open-successor",
+                "collected_at_utc": "2099-01-01T00:05:00+00:00",
+                "metadata": {
+                    "market_id": "rollover-1518000",
+                    "slug": "open-successor",
+                    "yes_probability": 0.42,
+                    "active": True,
+                    "closed": False,
+                    "accepting_orders": True,
+                    "source_config": {"label": "Open successor market"},
+                },
+            },
+        ],
+    )
+
+    result = run_cli(state_path, db_path, latest_ngi_path, runtime_source_path)
+
+    assert result.returncode == 1
+    payload = json.loads(result.stdout)
+    assert payload["latest_ngi_stale"] is True
+    assert payload["closed_target_blocking"] is True
+    assert payload["divergence_blocking"] is True
+    assert payload["active_target_reselection"] == {
+        "runtime_target_id": "1517836",
+        "market_question": "Trump announces end of military operations against Iran by June 30th?",
+        "reselection_required": True,
+        "next_contract_action": "reselect_active_target",
+        "rollover_candidate_blocker": None,
+        "rollover_candidate": {
+            "market_id": "rollover-1518000",
+            "market_slug": "open-successor",
+            "market_name": "Open successor market",
+            "market_question": "Open successor market",
+            "market_yes_probability": 0.42,
+            "market_closed": False,
+            "market_active": True,
+            "market_accepting_orders": True,
+            "collected_at_utc": "2099-01-01T00:05:00+00:00",
+            "published_at_utc": None,
+        },
+    }
+
+
 def test_verify_runtime_ops_health_fails_on_divergence_threshold(tmp_path: Path):
     state_path = tmp_path / "STATE.yaml"
     state_path.write_text('dq_status: "pass"\n', encoding="utf-8")

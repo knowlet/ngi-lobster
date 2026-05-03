@@ -910,3 +910,12 @@
 - [x] 2026-05-04 04:03:25+0800: Advanced the roadmap Phase B schema boundary by requiring latest NGI active-target identity/display fields to be non-empty strings before projection into ops-health summaries.
 - [x] 2026-05-04 04:03:25+0800: Added a red-green regression proving malformed `market_target.market_id`, `market_target.market_name`, `target_detail.market_id`, and `target_detail.market_question` now exit nonzero with explicit schema errors instead of leaking into operator-facing output.
 - [ ] Retry GitHub access, confirm PR #30 `CommitCheck` status, then merge or resume runtime work only after that gate clears.
+
+### Task 104: 2026-05-04 05:03+08:00 ops-health active-target reselection acceptance summary
+- [x] 2026-05-04 05:03:46+0800: Current branch is `codex/pr29-clean-runtime-cut` at `1978749`, matching local `origin/codex/pr29-clean-runtime-cut` before this run.
+- [x] 2026-05-04 05:03:46+0800: `git fetch --prune origin` retried and failed (`Could not resolve host: github.com`, rc=128), so upstream freshness cannot be verified in this run.
+- [x] 2026-05-04 05:03:46+0800: `gh pr list --state all --limit 20` and `gh issue list --state all --limit 20` failed with `error connecting to api.github.com`, so PR #30 merge-state and issue triage cannot be refreshed.
+- [x] 2026-05-04 05:03:46+0800: `git rebase --fork-point origin/main` hit the known rolling-plan conflict while replaying old checkpoint commit `14bebae` and was aborted cleanly.
+- [x] 2026-05-04 05:03:46+0800: Advanced the active-target P0 by adding an `active_target_reselection` acceptance object to ops-health blocking output, carrying `runtime_target_id`, `market_question`, `next_contract_action`, `rollover_candidate`, and `rollover_candidate_blocker` even when stale/latest NGI and divergence keep the summary failing closed.
+- [x] 2026-05-04 05:03:46+0800: Added a red-green regression proving stale + closed/not-accepting active targets with high divergence and one explicit open successor now emit the dedicated reselection acceptance shape.
+- [ ] Retry GitHub access, confirm PR #30 `CommitCheck` status, then merge or resume runtime work only after that gate clears.

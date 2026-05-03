@@ -59,6 +59,7 @@
    - 2026-05-04 02:03+08:00：已加固 ops-health runtime-source run timestamp schema guard；tracker payload 的 top-level `ran_at_utc` 若存在就必須是 ISO-8601 timestamp，避免 malformed source run timestamp 被接受進 operator 摘要。
    - 2026-05-04 03:02+08:00：已加固 ops-health latest NGI probability-mode schema guard；`target_detail.probability_mode` 與 top-level `latest_ngi.probability_mode` 若存在就必須是 non-empty string，避免 malformed mode 欄位被投影成 operator-facing 摘要。
    - 2026-05-04 04:03+08:00：已加固 ops-health latest NGI active-target identity schema guard；`market_target.market_id`、`market_target.market_name`、`target_detail.market_id` 與 `target_detail.market_question` 若存在就必須是 non-empty string，避免 malformed target identity/display 欄位被投影進 operator 摘要。
+   - 2026-05-04 05:03+08:00：已補齊 ops-health 的 active-target reselection acceptance 摘要；即使 `latest_ngi_stale=true` 且當前 target 已 closed/not accepting orders，blocking JSON 仍會 machine-readable 輸出 `active_target_reselection.runtime_target_id` / `market_question` / `next_contract_action` / `rollover_candidate`，供 P0 reselect cut 驗收。
 
 5. **Freshness + DQ 監控門檻固定化**
    - 明確把 `latest_ngi_age_hours > 4` 直接設為硬阻斷。
@@ -94,6 +95,7 @@
   - Expected evidence：同一輪 real-path blocking 摘要必須 machine-readable 輸出 `runtime_target_id` / `market_question`、`next_contract_action=reselect_active_target`，以及唯一 `rollover_candidate`；若無 successor，必須輸出 `rollover_candidate=null` 與明確 `rollover_candidate_blocker`。
   - Deadline：2026-05-04 end of day（GMT+8）
   - 2026-05-04 04:48+08:00：PO 正式將此刀升為唯一 P0 next cut；在 closed target、`market_accepting_orders=false`、`latest_ngi_stale=true` 且 divergence 仍高於 15pp 的情況下，後續 heartbeat / review / upstream 都以這份 reselection acceptance evidence 是否齊備作為唯一先決條件。
+  - 2026-05-04 05:03+08:00：ops-health blocking output 已新增 `active_target_reselection` acceptance object，讓 stale/closed/divergent real-path 摘要仍保留可審核的 target id、market question、reselection action 與唯一 rollover candidate。
 - 同次證據包重放腳本仍有 stale reuse 風險。
   - 2026-05-02 13:04+08:00：已加固 `write_dispatcher_e2e_bundle` 的 alert artifact 載入邊界，若檔名要求的 run id 與 JSON 內 `run_id` 不一致會 fail closed，避免 standalone E2E bundle 重用 stale alert artifact。
   - 2026-05-02 14:03+08:00：已加固 `write_dispatcher_e2e_bundle` 的 delivery receipt 載入邊界，若檔名要求的 run id 與 receipt JSON 內 `run_id` 不一致會 fail closed，避免 delivery proof 被 stale receipt 汙染。
@@ -134,6 +136,7 @@
 - ops-health runtime-source payload 的 top-level `ran_at_utc` 若存在，也必須維持 ISO-8601 timestamp schema，不能把 malformed tracker run timestamp 帶進 operator 摘要。
 - ops-health latest NGI 的 `probability_mode` 若存在，也必須維持 non-empty string schema，不能把 malformed mode 欄位投影到 operator-facing 摘要。
 - ops-health latest NGI 的 active-target identity/display 欄位若存在，也必須維持 non-empty string schema，不能把 malformed `market_target` / `target_detail` target id、name 或 question 投影到 operator-facing 摘要。
+- ops-health blocking output 必須提供 dedicated `active_target_reselection` object，讓 stale/closed/divergent target 狀態也能直接供 heartbeat / review / upstream 驗收，不必由 operator 重新拼接零散欄位。
 - ops-health 的 latest NGI timestamp 欄位若存在，也必須維持 ISO-8601 schema，不能把 malformed timestamp 洩漏成底層 parser error。
 - ops-health 的 SQLite freshness timestamp `market_snapshots.snapshot_at_utc` 也必須維持 ISO-8601 schema，不能把 malformed store timestamp 洩漏成底層 parser error。
 

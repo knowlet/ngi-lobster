@@ -75,6 +75,12 @@ def validate_optional_non_empty_string(value: object, key: str, *, context: str)
         raise RuntimeError(f"{context}.{key} must be a non-empty string")
 
 
+def require_non_empty_string(value: object, key: str, *, context: str) -> str:
+    if not isinstance(value, str) or not value.strip():
+        raise RuntimeError(f"{context}.{key} must be a non-empty string")
+    return value
+
+
 def read_optional_object(payload: dict[str, object], key: str, *, context: str) -> dict[str, object]:
     value = payload.get(key)
     if value is None:
@@ -380,9 +386,23 @@ def build_summary(
         status = "fail"
         blockers.append(f"divergence_pp={divergence_pp:.2f}")
 
+    runtime_target_id = market_target.get("market_id") or target_detail.get("market_id")
+    market_question = target_detail.get("market_question")
+    if reselection_required:
+        runtime_target_id = require_non_empty_string(
+            runtime_target_id,
+            "runtime_target_id",
+            context="active_target_reselection",
+        )
+        market_question = require_non_empty_string(
+            market_question,
+            "market_question",
+            context="active_target_reselection",
+        )
+
     active_target_reselection = {
-        "runtime_target_id": market_target.get("market_id") or target_detail.get("market_id"),
-        "market_question": target_detail.get("market_question"),
+        "runtime_target_id": runtime_target_id,
+        "market_question": market_question,
         "reselection_required": reselection_required,
         "next_contract_action": "reselect_active_target" if reselection_required else "keep_active_target",
         "rollover_candidate_blocker": rollover_candidate_blocker,

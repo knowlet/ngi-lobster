@@ -36,7 +36,13 @@ def load_latest_snapshot_at_utc(db_path: Path) -> str:
         conn.close()
     if not row or not row[0]:
         raise RuntimeError("missing market_snapshots row")
-    return str(row[0])
+    snapshot_at_utc = str(row[0])
+    validate_optional_timestamp(
+        snapshot_at_utc,
+        "snapshot_at_utc",
+        context="market_snapshots",
+    )
+    return snapshot_at_utc
 
 
 def read_probability(payload: dict[str, object], key: str, *, context: str) -> float:

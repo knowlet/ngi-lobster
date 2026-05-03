@@ -113,6 +113,14 @@ def test_build_live_progress_sync_payload_keeps_target_divergence_and_blockers_t
     payload = json.loads(result.stdout)
     assert payload["sync_status"] == "blocking"
     assert payload["sync_blocked"] is True
+    assert payload["blocking_summary"] == {
+        "runtime_target_id": "1517836",
+        "market_question": "Trump announces end of military operations against Iran by June 30th?",
+        "reselection_required": False,
+        "next_contract_action": "keep_active_target",
+        "rollover_candidate_blocker": None,
+        "rollover_candidate": None,
+    }
     assert payload["market_target"] == {
         "market_id": "1517836",
         "market_name": "Trump announces end of military operations against Iran by June 30th",
@@ -367,6 +375,25 @@ def test_build_live_progress_sync_payload_exports_rollover_candidate_when_target
     assert result.returncode == 0, result.stderr
     payload = json.loads(result.stdout)
     assert payload["sync_status"] == "blocking"
+    assert payload["blocking_summary"] == {
+        "runtime_target_id": "1517836",
+        "market_question": "Trump announces end of military operations against Iran by June 30th?",
+        "reselection_required": True,
+        "next_contract_action": "reselect_active_target",
+        "rollover_candidate_blocker": None,
+        "rollover_candidate": {
+            "market_id": "rollover-1518000",
+            "market_slug": "open-successor",
+            "market_name": "Open successor market",
+            "market_question": "Open successor market",
+            "market_yes_probability": 0.42,
+            "market_closed": False,
+            "market_active": True,
+            "market_accepting_orders": True,
+            "collected_at_utc": "2099-01-01T00:05:00+00:00",
+            "published_at_utc": None,
+        },
+    }
     assert payload["active_target"] == {
         "market_closed": True,
         "market_accepting_orders": False,
@@ -427,6 +454,14 @@ def test_build_live_progress_sync_payload_explains_missing_rollover_candidate(tm
 
     assert result.returncode == 0, result.stderr
     payload = json.loads(result.stdout)
+    assert payload["blocking_summary"] == {
+        "runtime_target_id": "1517836",
+        "market_question": "Trump announces end of military operations against Iran by June 30th?",
+        "reselection_required": True,
+        "next_contract_action": "reselect_active_target",
+        "rollover_candidate_blocker": "no_explicit_open_accepting_successor",
+        "rollover_candidate": None,
+    }
     assert payload["active_target"]["reselection_required"] is True
     assert payload["active_target"]["rollover_candidate"] is None
     assert (

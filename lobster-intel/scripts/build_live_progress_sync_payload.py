@@ -135,6 +135,14 @@ def build_live_progress_sync_payload(
     return {
         "sync_status": "blocking" if ops_health["status"] != "pass" else "ready",
         "sync_blocked": ops_health["status"] != "pass",
+        "blocking_summary": {
+            "runtime_target_id": ops_health["market_target_id"],
+            "market_question": target_detail.get("market_question"),
+            "reselection_required": ops_health["reselection_required"],
+            "next_contract_action": ops_health["next_contract_action"],
+            "rollover_candidate_blocker": ops_health["rollover_candidate_blocker"],
+            "rollover_candidate": ops_health["rollover_candidate"],
+        },
         "market_target": {
             "market_id": ops_health["market_target_id"],
             "market_name": ops_health["market_target_name"],

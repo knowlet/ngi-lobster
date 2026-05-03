@@ -901,3 +901,12 @@
 - [x] 2026-05-04 03:02:30+0800: Advanced the roadmap Phase B schema boundary by requiring latest NGI `probability_mode` fields, when present, to be non-empty strings before projection into ops-health summaries.
 - [x] 2026-05-04 03:02:30+0800: Added a red-green regression proving malformed `target_detail.probability_mode` and top-level `latest_ngi.probability_mode` now exit nonzero with explicit schema errors instead of leaking into operator-facing output.
 - [ ] Retry GitHub access, confirm PR #30 `CommitCheck` status, then merge or resume runtime work only after that gate clears.
+
+### Task 103: 2026-05-04 04:03+08:00 ops-health active-target identity schema guard
+- [x] 2026-05-04 04:03:25+0800: Current branch is `codex/pr29-clean-runtime-cut` at `ee72a22`, matching local `origin/codex/pr29-clean-runtime-cut` before this run.
+- [x] 2026-05-04 04:03:25+0800: `git fetch --prune origin` retried and failed (`Could not resolve host: github.com`, rc=128), so upstream freshness cannot be verified in this run.
+- [x] 2026-05-04 04:03:25+0800: `gh pr list --state all --limit 20` and `gh issue list --state all --limit 20` failed with `error connecting to api.github.com`, so PR #30 merge-state and issue triage cannot be refreshed.
+- [x] 2026-05-04 04:03:25+0800: `git rebase --fork-point origin/main` hit the known rolling-plan conflict while replaying old checkpoint commit `14bebae` and was aborted cleanly.
+- [x] 2026-05-04 04:03:25+0800: Advanced the roadmap Phase B schema boundary by requiring latest NGI active-target identity/display fields to be non-empty strings before projection into ops-health summaries.
+- [x] 2026-05-04 04:03:25+0800: Added a red-green regression proving malformed `market_target.market_id`, `market_target.market_name`, `target_detail.market_id`, and `target_detail.market_question` now exit nonzero with explicit schema errors instead of leaking into operator-facing output.
+- [ ] Retry GitHub access, confirm PR #30 `CommitCheck` status, then merge or resume runtime work only after that gate clears.

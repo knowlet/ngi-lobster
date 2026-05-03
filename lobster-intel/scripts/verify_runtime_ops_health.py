@@ -295,6 +295,20 @@ def build_summary(
     latest_ngi_age_hours = compute_freshness_hours(latest_ngi_timestamp_utc)
     market_target = read_optional_object(latest_ngi, "market_target", context="latest_ngi")
     target_detail = read_optional_object(latest_ngi, "target_detail", context="latest_ngi")
+    validate_optional_non_empty_string(
+        market_target.get("market_id"), "market_id", context="latest_ngi.market_target"
+    )
+    validate_optional_non_empty_string(
+        market_target.get("market_name"), "market_name", context="latest_ngi.market_target"
+    )
+    validate_optional_non_empty_string(
+        target_detail.get("market_id"), "market_id", context="latest_ngi.target_detail"
+    )
+    validate_optional_non_empty_string(
+        target_detail.get("market_question"),
+        "market_question",
+        context="latest_ngi.target_detail",
+    )
     first_principles_probability = read_probability(
         latest_ngi, "first_principles_probability", context="latest_ngi"
     )

@@ -812,6 +812,36 @@ def test_verify_runtime_ops_health_rejects_malformed_probability_mode(tmp_path: 
         assert result.stderr.strip() == f"{context}.probability_mode must be a non-empty string"
 
 
+def test_verify_runtime_ops_health_rejects_malformed_active_target_identity(tmp_path: Path):
+    for context, key, replacement in (
+        ("market_target", "market_id", ["1517836"]),
+        ("market_target", "market_name", 1517836),
+        ("target_detail", "market_id", ""),
+        ("target_detail", "market_question", ["question"]),
+    ):
+        case_dir = tmp_path / f"{context}-{key}"
+        case_dir.mkdir()
+        state_path = case_dir / "STATE.yaml"
+        state_path.write_text('dq_status: "pass"\n', encoding="utf-8")
+        db_path = case_dir / "intelligence_store.sqlite"
+        write_db(db_path, "2099-01-01T00:00:00+00:00")
+        latest_ngi_path = case_dir / "latest_ngi.json"
+        write_latest_ngi(
+            latest_ngi_path,
+            first_principles_probability=0.52,
+            market_yes_probability=0.60,
+        )
+        latest_ngi = json.loads(latest_ngi_path.read_text(encoding="utf-8"))
+        latest_ngi[context][key] = replacement
+        latest_ngi_path.write_text(json.dumps(latest_ngi), encoding="utf-8")
+
+        result = run_cli(state_path, db_path, latest_ngi_path)
+
+        assert result.returncode == 1
+        assert result.stdout == ""
+        assert result.stderr.strip() == f"latest_ngi.{context}.{key} must be a non-empty string"
+
+
 def test_verify_runtime_ops_health_fails_when_rollover_candidate_probability_is_malformed(
     tmp_path: Path,
 ):

@@ -100,10 +100,23 @@ def _read_non_empty_string(payload: dict[str, Any], key: str) -> str | None:
     return value
 
 
+def _validate_delivery_proof_fields(proof: dict[str, Any]) -> None:
+    boundary = proof.get("boundary")
+    if boundary is not None and boundary != "":
+        if not isinstance(boundary, str) or not boundary.strip():
+            raise RuntimeError(
+                "latest_ngi.alert_disposition.delivery_proof.boundary must be a non-empty string"
+            )
+    _read_non_empty_string(proof, "proof_id")
+    _read_non_empty_string(proof, "sink_message_id")
+
+
 def _require_delivery_proof(alert_disposition: dict[str, Any]) -> dict[str, Any] | None:
     proof = alert_disposition.get("delivery_proof")
     if proof is not None and not isinstance(proof, dict):
         raise RuntimeError("latest_ngi.alert_disposition.delivery_proof must be a JSON object")
+    if proof is not None:
+        _validate_delivery_proof_fields(proof)
     if not _is_positive_delivery(alert_disposition):
         return proof
     if _as_bool(alert_disposition.get("target_contract_match")) is not True:

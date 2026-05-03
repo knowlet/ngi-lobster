@@ -65,6 +65,7 @@
    - 2026-05-03 15:03+08:00：已修正 live progress sync delivery proof identifier fallback；當 `proof_id` 是空白但同份 proof 帶有效 `sink_message_id` 時，仍接受 `sink_message_id` 作為 machine-readable proof id，不再誤擋有效交付證明。
    - 2026-05-03 16:02+08:00：已收緊 live progress sync 的 `should_send` parser；欄位存在但不是明確 true/false 等價值（例如 `"unknown"`）時會 fail closed，不再被當成 non-positive summary 輸出。
    - 2026-05-03 17:02+08:00：已讓 live progress sync 以明確 `should_send=false` 作為 non-positive 分流依據；舊的 positive `decision` 不再覆蓋 machine-readable send flag，也不會誤要求 delivery proof。
+   - 2026-05-03 18:03+08:00：已收緊 non-positive live sync delivery proof 欄位驗證；只要 payload 攜帶 `delivery_proof`，其中 `boundary`、`proof_id` 或 `sink_message_id` 若型別 malformed 就會 fail closed，不再把壞 proof 原樣同步出去。
 
 ### Phase C｜可擴展性與回歸（第 3–4 週）
 7. **tracker 插件接線規格化**
@@ -109,6 +110,7 @@
 - live progress sync 的 delivery proof identifier 需支援 `proof_id` 或 `sink_message_id` 任一有效值；空白 `proof_id` 不能遮蔽同份 proof 裡可審計的 `sink_message_id`。
 - live progress sync 若收到 `alert_disposition.should_send`，該值必須是明確 boolean-equivalent；ambiguous send flag 不能被當成 suppressed/non-positive payload。
 - live progress sync 若收到明確 `alert_disposition.should_send=false`，該 machine-readable send flag 必須優先於舊的 positive `decision`，避免 suppressed/non-positive payload 被誤判成 positive delivery。
+- live progress sync 即使是 non-positive payload，只要收到 `delivery_proof`，proof 內 machine-readable 欄位也必須維持字串 schema；malformed proof field 不能被投影到 operator-facing sync payload。
 
 ### P2（改善與擴充）
 - 進一步自動化資料源補全與 source 風險檢測。

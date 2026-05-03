@@ -1,4 +1,5 @@
 import json
+import os
 import subprocess
 import sys
 from pathlib import Path
@@ -61,13 +62,17 @@ def write_latest_ngi(
     )
 
 
-def run_cli(state_path: Path, db_path: Path, latest_ngi_path: Path):
+def run_cli(state_path: Path, db_path: Path, latest_ngi_path: Path, *, env: dict[str, str] | None = None):
+    effective_env = os.environ.copy()
+    if env:
+        effective_env.update(env)
     return subprocess.run(
         [sys.executable, str(SCRIPT), str(state_path), str(db_path), str(latest_ngi_path)],
         cwd=REPO,
         text=True,
         capture_output=True,
         check=False,
+        env=effective_env,
     )
 
 
@@ -205,6 +210,71 @@ def test_verify_runtime_ops_health_fails_on_divergence_threshold(tmp_path: Path)
     assert payload["latest_ngi_stale"] is False
     assert payload["divergence_blocking"] is True
     assert payload["blockers"] == ["divergence_pp=47.50"]
+
+
+def test_verify_runtime_ops_health_uses_state_config_fallback_for_live_reselection_cut(tmp_path: Path):
+    state_path = tmp_path / "STATE.yaml"
+    state_path.write_text('dq_status: "pass"\n', encoding="utf-8")
+    db_path = tmp_path / "intelligence_store.sqlite"
+    write_db(db_path, "2099-01-01T00:00:00+00:00")
+    latest_ngi_path = tmp_path / "latest_ngi.json"
+    write_latest_ngi(
+        latest_ngi_path,
+        first_principles_probability=0.52,
+        market_yes_probability=0.56,
+        market_closed=True,
+        market_active=True,
+        market_accepting_orders=False,
+    )
+    state_config_path = tmp_path / "state_config.json"
+    state_config_path.write_text(
+        json.dumps(
+            {
+                "current_state": "ACTIVE_TRUCE",
+                "states": {
+                    "ACTIVE_TRUCE": {
+                        "fallback_target": {
+                            "market_id": "1517835",
+                            "market_slug": "fallback-market",
+                            "market_name": "Fallback target",
+                            "probability_mode": "yes_is_peace",
+                        }
+                    }
+                },
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    result = run_cli(
+        state_path,
+        db_path,
+        latest_ngi_path,
+        env={"LOBSTER_STATE_CONFIG_PATH": str(state_config_path)},
+    )
+
+    assert result.returncode == 1
+    payload = json.loads(result.stdout)
+    assert payload["status"] == "fail"
+    assert payload["divergence_blocking"] is False
+    assert payload["market_closed"] is True
+    assert payload["market_active"] is True
+    assert payload["market_accepting_orders"] is False
+    assert payload["market_untradable"] is True
+    assert payload["reselection_required"] is True
+    assert payload["next_contract_action"] == "reselect_active_target"
+    assert payload["rollover_candidate"] == {
+        "market_id": "1517835",
+        "market_slug": "fallback-market",
+        "market_name": "Fallback target",
+        "probability_mode": "yes_is_peace",
+        "source": "state_config_fallback",
+        "state": "ACTIVE_TRUCE",
+    }
+    assert payload["rollover_candidate_blocker"] == "configured_successor_pending_validation"
+    assert payload["blockers"] == [
+        "market_untradable=closed:true,active:true,accepting_orders:false"
+    ]
 
 
 def test_verify_runtime_ops_health_fails_on_untradable_market(tmp_path: Path):

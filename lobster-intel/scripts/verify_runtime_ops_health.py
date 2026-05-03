@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import os
 import sqlite3
 import sys
 from datetime import datetime, timezone
@@ -11,6 +12,10 @@ from read_state_field import read_top_level_scalar
 
 FRESHNESS_THRESHOLD_HOURS = 4.0
 DIVERGENCE_THRESHOLD_PP = 15.0
+REPO_ROOT = Path(__file__).resolve().parents[2]
+WORKSPACE_ROOT = Path(__file__).resolve().parents[3]
+DEFAULT_STATE_CONFIG_PATH = REPO_ROOT / "legacy" / "intelligence-model" / "state_config.json"
+DEFAULT_LIVE_LATEST_NGI_PATH = WORKSPACE_ROOT / "shared-projects" / "intelligence-model" / "latest_ngi.json"
 
 
 def parse_utc_timestamp(raw: str) -> datetime:
@@ -63,6 +68,45 @@ def compute_signed_divergence_direction(first_principles_minus_market_pp: float)
     return "aligned"
 
 
+def _load_rollover_candidate_from_state_config(latest_ngi_path: Path) -> dict[str, object] | None:
+    configured_path = os.environ.get("LOBSTER_STATE_CONFIG_PATH")
+    if configured_path:
+        state_config_path = Path(configured_path)
+    else:
+        try:
+            if latest_ngi_path.resolve() != DEFAULT_LIVE_LATEST_NGI_PATH.resolve():
+                return None
+        except FileNotFoundError:
+            return None
+        state_config_path = DEFAULT_STATE_CONFIG_PATH
+
+    if not state_config_path.exists():
+        return None
+
+    payload = json.loads(state_config_path.read_text(encoding="utf-8"))
+    states = payload.get("states") or {}
+    current_state = payload.get("current_state") or "PRE_AGREEMENT"
+    bundle = states.get(current_state) or {}
+    fallback = bundle.get("fallback_target") or {}
+    if not isinstance(fallback, dict):
+        return None
+
+    market_id = fallback.get("market_id")
+    market_slug = fallback.get("market_slug")
+    market_name = fallback.get("market_name")
+    if not any((market_id, market_slug, market_name)):
+        return None
+
+    return {
+        "market_id": market_id,
+        "market_slug": market_slug,
+        "market_name": market_name,
+        "probability_mode": fallback.get("probability_mode"),
+        "source": "state_config_fallback",
+        "state": current_state,
+    }
+
+
 def build_summary(state_path: Path, db_path: Path, latest_ngi_path: Path) -> dict[str, object]:
     dq_status = read_top_level_scalar(state_path, "dq_status")
     latest_snapshot_at_utc = load_latest_snapshot_at_utc(db_path)
@@ -104,8 +148,14 @@ def build_summary(state_path: Path, db_path: Path, latest_ngi_path: Path) -> dic
         target_detail.get("rollover_candidate_blocker")
         or market_target.get("rollover_candidate_blocker")
         or latest_ngi.get("rollover_candidate_blocker")
-        or ("no_successor_market" if reselection_required and not rollover_candidate else None)
     )
+    if reselection_required and not rollover_candidate:
+        configured_rollover_candidate = _load_rollover_candidate_from_state_config(latest_ngi_path)
+        if configured_rollover_candidate:
+            rollover_candidate = configured_rollover_candidate
+            rollover_candidate_blocker = rollover_candidate_blocker or "configured_successor_pending_validation"
+        else:
+            rollover_candidate_blocker = rollover_candidate_blocker or "no_successor_market"
 
     status = "pass"
     blockers: list[str] = []

@@ -53,6 +53,7 @@
    - 2026-05-03 19:04+08:00：已加固 ops-health 的 probability schema guard；`first_principles_probability` 與 `target_detail.market_yes_probability` 必須是 0..1 的 JSON number，boolean、字串或超界值會 fail closed，不再被轉型成健康摘要。
    - 2026-05-03 20:03+08:00：已加固 ops-health runtime-source rollover candidate probability schema guard；successor tracker item 若帶 `metadata.yes_probability`，該值必須是 0..1 的 JSON number，避免 malformed candidate probability 被投影給 operator。
    - 2026-05-03 21:04+08:00：已加固 ops-health runtime-source timestamp schema guard；successor tracker item 若帶 `collected_at_utc` 或 `published_at_utc`，該值必須是 ISO-8601 timestamp，避免 malformed timestamp 被投影進 operator rollover guidance。
+   - 2026-05-03 22:04+08:00：已加固 ops-health latest NGI timestamp schema guard；`latest_ngi` 的 timestamp 欄位若存在就必須是 ISO-8601 timestamp，避免 malformed timestamp 以底層 parser error 中斷 operator 摘要。
 
 5. **Freshness + DQ 監控門檻固定化**
    - 明確把 `latest_ngi_age_hours > 4` 直接設為硬阻斷。
@@ -117,6 +118,7 @@
 - ops-health 的 probability 欄位必須維持 JSON number schema 且落在 0..1；boolean、字串數字或超界值不能被 Python 轉型後繼續輸出健康摘要。
 - ops-health runtime-source rollover candidate 的 `metadata.yes_probability` 若存在，也必須維持 0..1 JSON number schema，不能把字串、boolean 或超界值投影到 machine-readable successor 建議。
 - ops-health runtime-source rollover candidate 的 `collected_at_utc` / `published_at_utc` 若存在，也必須維持 ISO-8601 timestamp schema，不能把 malformed timestamp 投影到 operator-facing rollover guidance。
+- ops-health 的 latest NGI timestamp 欄位若存在，也必須維持 ISO-8601 schema，不能把 malformed timestamp 洩漏成底層 parser error。
 
 ### P2（改善與擴充）
 - 進一步自動化資料源補全與 source 風險檢測。

@@ -847,3 +847,12 @@
 - [x] 2026-05-03 21:04:16+0800: Advanced the roadmap Phase B schema boundary by requiring runtime-source rollover candidate `collected_at_utc` and `published_at_utc`, when present, to be ISO-8601 timestamps.
 - [x] 2026-05-03 21:04:16+0800: Added a red-green regression proving malformed candidate timestamps now exit nonzero with explicit schema errors instead of being projected into operator-facing rollover guidance.
 - [ ] Retry GitHub access, confirm PR #30 `CommitCheck` status, then merge or resume runtime work only after that gate clears.
+
+### Task 97: 2026-05-03 22:04+08:00 ops-health latest NGI timestamp schema guard
+- [x] 2026-05-03 22:04:23+0800: Current branch is `codex/pr29-clean-runtime-cut` at `dfe67f4`, ahead 3 from local `origin/codex/pr29-clean-runtime-cut` before this run.
+- [x] 2026-05-03 22:04:23+0800: `git fetch --prune origin` retried and failed (`Could not resolve host: github.com`, rc=128), so upstream freshness cannot be verified in this run.
+- [x] 2026-05-03 22:04:23+0800: `gh pr list --state all --limit 20` and `gh issue list --state all --limit 20` failed with `error connecting to api.github.com`, so PR #30 merge-state and issue triage cannot be refreshed.
+- [x] 2026-05-03 22:04:23+0800: `git rebase --fork-point origin/main` hit the known rolling-plan conflict while replaying old checkpoint commit `14bebae` and was aborted cleanly.
+- [x] 2026-05-03 22:04:23+0800: Advanced the roadmap Phase B schema boundary by requiring latest NGI timestamp fields, when present, to be ISO-8601 timestamps.
+- [x] 2026-05-03 22:04:23+0800: Added a red-green regression proving malformed `latest_ngi.timestamp_utc` now exits nonzero with an explicit schema error instead of leaking the lower-level timestamp parser error.
+- [ ] Retry GitHub access, confirm PR #30 `CommitCheck` status, then merge or resume runtime work only after that gate clears.

@@ -883,3 +883,29 @@ def test_verify_runtime_ops_health_reports_missing_latest_ngi_timestamp(tmp_path
     assert result.stderr.strip() == (
         "missing latest_ngi timestamp (expected one of: timestamp_utc, generated_at_utc, created_at_utc, updated_at_utc, snapshot_at_utc)"
     )
+
+
+def test_verify_runtime_ops_health_fails_when_latest_ngi_timestamp_is_malformed(
+    tmp_path: Path,
+):
+    state_path = tmp_path / "STATE.yaml"
+    state_path.write_text('dq_status: "pass"\n', encoding="utf-8")
+    db_path = tmp_path / "intelligence_store.sqlite"
+    write_db(db_path, "2099-01-01T00:00:00+00:00")
+    latest_ngi_path = tmp_path / "latest_ngi.json"
+    latest_ngi_path.write_text(
+        json.dumps(
+            {
+                "timestamp_utc": "not-a-timestamp",
+                "first_principles_probability": 0.52,
+                "target_detail": {"market_yes_probability": 0.645},
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    result = run_cli(state_path, db_path, latest_ngi_path)
+
+    assert result.returncode == 1
+    assert result.stdout == ""
+    assert result.stderr.strip() == "latest_ngi.timestamp_utc must be an ISO-8601 timestamp"

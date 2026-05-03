@@ -301,6 +301,15 @@ def build_summary(
     market_yes_probability = read_probability(
         target_detail, "market_yes_probability", context="target_detail"
     )
+    validate_optional_non_empty_string(
+        target_detail.get("probability_mode"), "probability_mode", context="target_detail"
+    )
+    validate_optional_non_empty_string(
+        latest_ngi.get("probability_mode"), "probability_mode", context="latest_ngi"
+    )
+    probability_mode = (
+        target_detail.get("probability_mode") or latest_ngi.get("probability_mode") or "unknown"
+    )
     divergence_pp = abs(first_principles_probability - market_yes_probability) * 100.0
     first_principles_minus_market_pp = (first_principles_probability - market_yes_probability) * 100.0
     stale_data = freshness_hours > FRESHNESS_THRESHOLD_HOURS
@@ -375,7 +384,7 @@ def build_summary(
         "market_yes_probability": market_yes_probability,
         "first_principles_minus_market_pp": round(first_principles_minus_market_pp, 4),
         "direction": compute_signed_divergence_direction(first_principles_minus_market_pp),
-        "probability_mode": target_detail.get("probability_mode") or latest_ngi.get("probability_mode") or "unknown",
+        "probability_mode": probability_mode,
         "market_target_id": market_target.get("market_id") or target_detail.get("market_id"),
         "market_target_name": market_target.get("market_name") or target_detail.get("market_question"),
         "market_closed": market_closed,

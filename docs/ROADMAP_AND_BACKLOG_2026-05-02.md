@@ -57,6 +57,7 @@
    - 2026-05-03 23:03+08:00：已加固 ops-health SQLite freshness timestamp schema guard；`market_snapshots.snapshot_at_utc` 必須是 ISO-8601 timestamp，避免 malformed store freshness timestamp 以底層 parser error 中斷 operator 摘要。
    - 2026-05-04 01:03+08:00：已加固 ops-health runtime-source rollover candidate identity schema guard；successor tracker item 的 `external_id`、`title`、`url`、`metadata.market_id`、`metadata.slug` 與 `metadata.source_config.label` 若存在就必須是 non-empty string，避免 malformed identity/display 欄位被投影成 operator-facing rollover guidance。
    - 2026-05-04 02:03+08:00：已加固 ops-health runtime-source run timestamp schema guard；tracker payload 的 top-level `ran_at_utc` 若存在就必須是 ISO-8601 timestamp，避免 malformed source run timestamp 被接受進 operator 摘要。
+   - 2026-05-04 03:02+08:00：已加固 ops-health latest NGI probability-mode schema guard；`target_detail.probability_mode` 與 top-level `latest_ngi.probability_mode` 若存在就必須是 non-empty string，避免 malformed mode 欄位被投影成 operator-facing 摘要。
 
 5. **Freshness + DQ 監控門檻固定化**
    - 明確把 `latest_ngi_age_hours > 4` 直接設為硬阻斷。
@@ -125,6 +126,7 @@
 - ops-health runtime-source rollover candidate 的 `collected_at_utc` / `published_at_utc` 若存在，也必須維持 ISO-8601 timestamp schema，不能把 malformed timestamp 投影到 operator-facing rollover guidance。
 - ops-health runtime-source rollover candidate 的 identity/display 欄位若存在，也必須維持 non-empty string schema，不能把 malformed target id、slug、title、url 或 label 投影到 operator-facing rollover guidance。
 - ops-health runtime-source payload 的 top-level `ran_at_utc` 若存在，也必須維持 ISO-8601 timestamp schema，不能把 malformed tracker run timestamp 帶進 operator 摘要。
+- ops-health latest NGI 的 `probability_mode` 若存在，也必須維持 non-empty string schema，不能把 malformed mode 欄位投影到 operator-facing 摘要。
 - ops-health 的 latest NGI timestamp 欄位若存在，也必須維持 ISO-8601 schema，不能把 malformed timestamp 洩漏成底層 parser error。
 - ops-health 的 SQLite freshness timestamp `market_snapshots.snapshot_at_utc` 也必須維持 ISO-8601 schema，不能把 malformed store timestamp 洩漏成底層 parser error。
 

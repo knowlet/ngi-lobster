@@ -892,3 +892,12 @@
 - [x] 2026-05-04 02:03:44+0800: Advanced the roadmap Phase B schema boundary by requiring runtime-source top-level `ran_at_utc`, when present, to be an ISO-8601 timestamp.
 - [x] 2026-05-04 02:03:44+0800: Added a red-green regression proving malformed tracker run timestamps now exit nonzero with an explicit schema error instead of being accepted into an operator-facing ops-health summary.
 - [ ] Retry GitHub access, confirm PR #30 `CommitCheck` status, then merge or resume runtime work only after that gate clears.
+
+### Task 102: 2026-05-04 03:02+08:00 ops-health probability-mode schema guard
+- [x] 2026-05-04 03:02:30+0800: Current branch is `codex/pr29-clean-runtime-cut` at `f2c4c26`, matching local `origin/codex/pr29-clean-runtime-cut` before this run.
+- [x] 2026-05-04 03:02:30+0800: `git fetch --prune origin` retried and failed (`Could not resolve host: github.com`, rc=128), so upstream freshness cannot be verified in this run.
+- [x] 2026-05-04 03:02:30+0800: `gh pr list --state all --limit 20` and `gh issue list --state all --limit 20` failed with `error connecting to api.github.com`, so PR #30 merge-state and issue triage cannot be refreshed.
+- [x] 2026-05-04 03:02:30+0800: `git rebase --fork-point origin/main` hit the known rolling-plan conflict while replaying old checkpoint commit `14bebae` and was aborted cleanly.
+- [x] 2026-05-04 03:02:30+0800: Advanced the roadmap Phase B schema boundary by requiring latest NGI `probability_mode` fields, when present, to be non-empty strings before projection into ops-health summaries.
+- [x] 2026-05-04 03:02:30+0800: Added a red-green regression proving malformed `target_detail.probability_mode` and top-level `latest_ngi.probability_mode` now exit nonzero with explicit schema errors instead of leaking into operator-facing output.
+- [ ] Retry GitHub access, confirm PR #30 `CommitCheck` status, then merge or resume runtime work only after that gate clears.

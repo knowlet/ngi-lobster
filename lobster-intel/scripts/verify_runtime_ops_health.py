@@ -68,6 +68,13 @@ def validate_optional_timestamp(value: object, key: str, *, context: str) -> Non
         raise RuntimeError(f"{context}.{key} must be an ISO-8601 timestamp")
 
 
+def validate_optional_non_empty_string(value: object, key: str, *, context: str) -> None:
+    if value is None:
+        return
+    if not isinstance(value, str) or not value.strip():
+        raise RuntimeError(f"{context}.{key} must be a non-empty string")
+
+
 def read_optional_object(payload: dict[str, object], key: str, *, context: str) -> dict[str, object]:
     value = payload.get(key)
     if value is None:
@@ -134,6 +141,9 @@ def _parse_runtime_source_payload(path: Path | None) -> dict[str, Any] | None:
             if not isinstance(item, dict):
                 raise RuntimeError(f"runtime_source evidence.items[{index}] must be a JSON object")
             context = f"runtime_source evidence.items[{index}]"
+            validate_optional_non_empty_string(item.get("external_id"), "external_id", context=context)
+            validate_optional_non_empty_string(item.get("title"), "title", context=context)
+            validate_optional_non_empty_string(item.get("url"), "url", context=context)
             validate_optional_timestamp(item.get("collected_at_utc"), "collected_at_utc", context=context)
             validate_optional_timestamp(item.get("published_at_utc"), "published_at_utc", context=context)
             metadata = item.get("metadata")
@@ -145,6 +155,18 @@ def _parse_runtime_source_payload(path: Path | None) -> dict[str, Any] | None:
             if source_config is not None and not isinstance(source_config, dict):
                 raise RuntimeError(
                     f"runtime_source evidence.items[{index}].metadata.source_config must be a JSON object"
+                )
+            if metadata is not None:
+                metadata_context = f"runtime_source evidence.items[{index}].metadata"
+                validate_optional_non_empty_string(
+                    metadata.get("market_id"), "market_id", context=metadata_context
+                )
+                validate_optional_non_empty_string(metadata.get("slug"), "slug", context=metadata_context)
+            if source_config is not None:
+                validate_optional_non_empty_string(
+                    source_config.get("label"),
+                    "label",
+                    context=f"runtime_source evidence.items[{index}].metadata.source_config",
                 )
             yes_probability = (metadata or {}).get("yes_probability")
             if yes_probability is not None:

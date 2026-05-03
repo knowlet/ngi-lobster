@@ -92,6 +92,10 @@ def _require_delivery_proof(alert_disposition: dict[str, Any]) -> dict[str, Any]
         raise RuntimeError("positive latest_ngi.alert_disposition.target_contract_match must be true")
     if proof is None:
         raise RuntimeError("missing latest_ngi.alert_disposition.delivery_proof")
+    if not str(proof.get("boundary") or "").strip():
+        raise RuntimeError("missing latest_ngi.alert_disposition.delivery_proof.boundary")
+    if not str(proof.get("proof_id") or proof.get("sink_message_id") or "").strip():
+        raise RuntimeError("missing latest_ngi.alert_disposition.delivery_proof.proof_id")
     return proof
 
 

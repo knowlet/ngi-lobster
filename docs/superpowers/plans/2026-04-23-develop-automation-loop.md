@@ -766,3 +766,12 @@
 - [x] 2026-05-03 11:03:28+0800: Advanced the roadmap Phase B readable-summary boundary by making live progress sync fail closed when `alert_disposition.delivery_proof` is present but not a JSON object, even for non-positive delivery payloads.
 - [x] 2026-05-03 11:03:28+0800: Added regression coverage proving malformed delivery proof no longer gets silently omitted from the sync payload.
 - [ ] Retry GitHub access, confirm PR #30 `CommitCheck` status, then merge or resume runtime work only after that gate clears.
+
+### Task 88: 2026-05-03 12:02+08:00 live-sync delivery proof field guard
+- [x] 2026-05-03 12:02:46+0800: Current branch is `codex/pr29-clean-runtime-cut` at `2b386b0`, matching local `origin/codex/pr29-clean-runtime-cut` before this run.
+- [x] 2026-05-03 12:02:46+0800: `git fetch --prune origin` retried and failed (`Could not resolve host: github.com`, rc=128), so upstream freshness cannot be verified in this run.
+- [x] 2026-05-03 12:02:46+0800: `gh pr list --state all --limit 20` and `gh issue list --state all --limit 20` failed with `error connecting to api.github.com`, so PR #30 merge-state and issue triage cannot be refreshed.
+- [x] 2026-05-03 12:02:46+0800: `git rebase --fork-point origin/main` hit the known rolling-plan conflict while replaying old checkpoint commit `14bebae` and was aborted cleanly.
+- [x] 2026-05-03 12:02:46+0800: Advanced the roadmap Phase B delivery-proof boundary by requiring positive live-sync `delivery_proof` to include a machine-readable `boundary` and proof identifier (`proof_id` or `sink_message_id`).
+- [x] 2026-05-03 12:02:46+0800: Added regression coverage proving positive delivery exits nonzero with explicit missing-field errors when the proof lacks `boundary` or any proof id.
+- [ ] Retry GitHub access, confirm PR #30 `CommitCheck` status, then merge or resume runtime work only after that gate clears.

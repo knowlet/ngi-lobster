@@ -168,6 +168,29 @@ def test_build_live_progress_sync_payload_rejects_malformed_delivery_proof(tmp_p
     assert result.stderr.strip() == "latest_ngi.alert_disposition.delivery_proof must be a JSON object"
 
 
+def test_build_live_progress_sync_payload_requires_machine_readable_positive_delivery_proof(tmp_path: Path):
+    for missing_key in ("boundary", "proof_id"):
+        case_dir = tmp_path / missing_key
+        case_dir.mkdir()
+        state_path = case_dir / "STATE.yaml"
+        state_path.write_text('dq_status: "pass"\n', encoding="utf-8")
+        db_path = case_dir / "intelligence_store.sqlite"
+        write_db(db_path, "2099-01-01T00:00:00+00:00")
+        latest_ngi_path = case_dir / "latest_ngi.json"
+        write_latest_ngi(latest_ngi_path)
+        latest_ngi = json.loads(latest_ngi_path.read_text(encoding="utf-8"))
+        latest_ngi["alert_disposition"]["delivery_proof"].pop(missing_key)
+        if missing_key == "proof_id":
+            latest_ngi["alert_disposition"]["delivery_proof"].pop("sink_message_id")
+        latest_ngi_path.write_text(json.dumps(latest_ngi), encoding="utf-8")
+
+        result = run_cli(state_path, db_path, latest_ngi_path)
+
+        assert result.returncode == 1
+        assert result.stdout == ""
+        assert result.stderr.strip() == f"missing latest_ngi.alert_disposition.delivery_proof.{missing_key}"
+
+
 def test_build_live_progress_sync_payload_rejects_positive_delivery_without_contract_match(tmp_path: Path):
     state_path = tmp_path / "STATE.yaml"
     state_path.write_text('dq_status: "pass"\n', encoding="utf-8")

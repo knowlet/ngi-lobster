@@ -61,6 +61,7 @@
    - **Owner：姨太**（核心）
    - 2026-05-02 20:04+08:00：已加固 live progress sync 的 positive-delivery 分流邊界，`should_send=true` 或 positive decision 只有在 `target_contract_match` 明確為 true 時才接受 delivery proof；serialized `"false"` 會被視為 contract mismatch 並 fail closed。
    - 2026-05-02 22:04+08:00：已收緊 live progress sync 的 contract-match parser，positive delivery 只接受明確 true/false 等價值；`target_contract_match="unknown"` 這類 ambiguous truthy 字串會 fail closed。
+   - 2026-05-03 14:03+08:00：已收緊 live progress sync 的 positive-delivery 偵測；`should_send="true"` 這類 serialized true 值會被視為 positive delivery，必須同時通過 delivery proof 與 active-target contract match gates。
 
 ### Phase C｜可擴展性與回歸（第 3–4 週）
 7. **tracker 插件接線規格化**
@@ -101,6 +102,7 @@
 - live progress sync 也必須沿用 same latest NGI object schema；top-level 或 nested object malformed payload 不能被 required-key fallback 誤報成缺欄位。
 - live progress sync 若收到 `alert_disposition.delivery_proof`，該欄位必須是 JSON object；malformed proof 不能被靜默省略，即使該 alert 不是 positive delivery。
 - active-target reselection 摘要若 `rollover_candidate=null`，必須同時提供 `rollover_candidate_blocker`，避免 operator 只看到空 candidate 而不知道是缺 runtime source、沒有 successor，或 successor 不符合明確 open/accepting-orders 條件。
+- live progress sync 的 positive-delivery 偵測必須接受 explicit serialized booleans；`should_send="true"` 不能被當成 suppressed/non-positive 而繞過 delivery proof 或 contract-match gates。
 
 ### P2（改善與擴充）
 - 進一步自動化資料源補全與 source 風險檢測。

@@ -56,7 +56,7 @@ def _require_mapping(payload: dict[str, Any], key: str) -> dict[str, Any]:
 
 
 def _is_positive_delivery(alert_disposition: dict[str, Any]) -> bool:
-    if alert_disposition.get("should_send") is True:
+    if _as_bool(alert_disposition.get("should_send")) is True:
         return True
     decision = str(alert_disposition.get("decision") or "").strip().lower()
     return decision in {"would_send", "sent", "delivered"}

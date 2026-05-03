@@ -739,3 +739,12 @@
 - [x] 2026-05-03 08:04:05+0800: Advanced the roadmap Phase B readable-summary boundary by adding machine-readable `rollover_candidate_blocker` output when active-target reselection is required but no actionable rollover candidate can be emitted.
 - [x] 2026-05-03 08:04:05+0800: Added regression coverage proving ambiguous-only successor evidence now yields `rollover_candidate=null` plus `rollover_candidate_blocker=no_explicit_open_accepting_successor` in both ops-health and live progress sync payloads.
 - [ ] Retry GitHub access, confirm PR #30 `CommitCheck` status, then merge or resume runtime work only after that gate clears.
+
+### Task 85: 2026-05-03 09:03+08:00 live-sync latest NGI payload schema guard
+- [x] 2026-05-03 09:03:35+0800: Current branch is `codex/pr29-clean-runtime-cut` at `bb92255`, ahead of local `origin/codex/pr29-clean-runtime-cut` before this run.
+- [x] 2026-05-03 09:03:35+0800: `git fetch --prune origin` retried and failed (`Could not resolve host: github.com`, rc=128), so upstream freshness cannot be verified in this run.
+- [x] 2026-05-03 09:03:35+0800: `gh pr list --state all --limit 20` and `gh issue list --state all --limit 20` failed with `error connecting to api.github.com`, so PR #30 merge-state and issue triage cannot be refreshed.
+- [x] 2026-05-03 09:03:35+0800: `git rebase --fork-point origin/main` hit the known rolling-plan conflict while replaying old checkpoint commit `14bebae` and was aborted cleanly.
+- [x] 2026-05-03 09:03:35+0800: Advanced the roadmap Phase B readable-summary boundary by making live progress sync fail closed when `latest_ngi.json` top-level payload is not a JSON object.
+- [x] 2026-05-03 09:03:35+0800: Added regression coverage proving malformed latest NGI payloads now emit `latest_ngi payload must be a JSON object` instead of a misleading required-key error.
+- [ ] Retry GitHub access, confirm PR #30 `CommitCheck` status, then merge or resume runtime work only after that gate clears.

@@ -829,3 +829,12 @@
 - [x] 2026-05-03 19:04:43+0800: Advanced the roadmap Phase B schema boundary by requiring `latest_ngi.first_principles_probability` and `target_detail.market_yes_probability` to be JSON numbers in the 0..1 range.
 - [x] 2026-05-03 19:04:43+0800: Added a red-green regression proving boolean, string, and out-of-range probability values now exit nonzero with explicit schema errors instead of being coerced into an ops-health summary.
 - [ ] Retry GitHub access, confirm PR #30 `CommitCheck` status, then merge or resume runtime work only after that gate clears.
+
+### Task 95: 2026-05-03 20:03+08:00 ops-health rollover candidate probability schema guard
+- [x] 2026-05-03 20:03:03+0800: Current branch is `codex/pr29-clean-runtime-cut` at `9732941`, ahead 1 from local `origin/codex/pr29-clean-runtime-cut` before this run.
+- [x] 2026-05-03 20:03:03+0800: `git fetch --prune origin` retried and failed (`Could not resolve host: github.com`, rc=128), so upstream freshness cannot be verified in this run.
+- [x] 2026-05-03 20:03:03+0800: `gh pr list --state all --limit 20` and `gh issue list --state all --limit 20` failed with `error connecting to api.github.com`, so PR #30 merge-state and issue triage cannot be refreshed.
+- [x] 2026-05-03 20:03:03+0800: `git rebase --fork-point origin/main` hit the known rolling-plan conflict while replaying old checkpoint commit `14bebae` and was aborted cleanly.
+- [x] 2026-05-03 20:03:03+0800: Advanced the roadmap Phase B schema boundary by requiring runtime-source rollover candidate `metadata.yes_probability`, when present, to be a JSON number in the 0..1 range.
+- [x] 2026-05-03 20:03:03+0800: Added a red-green regression proving string, boolean, and out-of-range candidate probability values now exit nonzero with explicit schema errors instead of being projected into an operator-facing rollover candidate.
+- [ ] Retry GitHub access, confirm PR #30 `CommitCheck` status, then merge or resume runtime work only after that gate clears.

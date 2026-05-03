@@ -51,6 +51,7 @@
    - 2026-05-03 10:02+08:00：已補齊 live progress sync 的 latest NGI nested object schema guard；`market_target`、`target_detail`、`alert_disposition` 若存在但不是 JSON object，會 fail closed 並輸出明確 schema error，而不是誤報 missing 欄位。
    - 2026-05-03 11:03+08:00：已補齊 live progress sync 的 delivery proof schema guard；即使不是 positive delivery，只要 `delivery_proof` 欄位存在就必須是 JSON object，避免 malformed proof 被靜默丟掉。
    - 2026-05-03 19:04+08:00：已加固 ops-health 的 probability schema guard；`first_principles_probability` 與 `target_detail.market_yes_probability` 必須是 0..1 的 JSON number，boolean、字串或超界值會 fail closed，不再被轉型成健康摘要。
+   - 2026-05-03 20:03+08:00：已加固 ops-health runtime-source rollover candidate probability schema guard；successor tracker item 若帶 `metadata.yes_probability`，該值必須是 0..1 的 JSON number，避免 malformed candidate probability 被投影給 operator。
 
 5. **Freshness + DQ 監控門檻固定化**
    - 明確把 `latest_ngi_age_hours > 4` 直接設為硬阻斷。
@@ -113,6 +114,7 @@
 - live progress sync 若收到明確 `alert_disposition.should_send=false`，該 machine-readable send flag 必須優先於舊的 positive `decision`，避免 suppressed/non-positive payload 被誤判成 positive delivery。
 - live progress sync 即使是 non-positive payload，只要收到 `delivery_proof`，proof 內 machine-readable 欄位也必須維持字串 schema；malformed proof field 不能被投影到 operator-facing sync payload。
 - ops-health 的 probability 欄位必須維持 JSON number schema 且落在 0..1；boolean、字串數字或超界值不能被 Python 轉型後繼續輸出健康摘要。
+- ops-health runtime-source rollover candidate 的 `metadata.yes_probability` 若存在，也必須維持 0..1 JSON number schema，不能把字串、boolean 或超界值投影到 machine-readable successor 建議。
 
 ### P2（改善與擴充）
 - 進一步自動化資料源補全與 source 風險檢測。

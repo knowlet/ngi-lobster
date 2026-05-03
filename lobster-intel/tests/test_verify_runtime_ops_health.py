@@ -694,6 +694,56 @@ def test_verify_runtime_ops_health_fails_when_probability_fields_are_malformed(
         assert result.stderr.strip() == f"{context}.{key} must be a JSON number between 0 and 1"
 
 
+def test_verify_runtime_ops_health_fails_when_rollover_candidate_probability_is_malformed(
+    tmp_path: Path,
+):
+    for replacement in ("0.42", True, 1.2):
+        case_dir = tmp_path / f"runtime-source-yes-probability-{str(replacement).lower()}"
+        case_dir.mkdir()
+        state_path = case_dir / "STATE.yaml"
+        state_path.write_text('dq_status: "pass"\n', encoding="utf-8")
+        db_path = case_dir / "intelligence_store.sqlite"
+        write_db(db_path, "2099-01-01T00:00:00+00:00")
+        latest_ngi_path = case_dir / "latest_ngi.json"
+        write_latest_ngi(
+            latest_ngi_path,
+            first_principles_probability=0.52,
+            market_yes_probability=0.60,
+            market_closed=True,
+            market_accepting_orders=False,
+        )
+        runtime_source_path = case_dir / "polymarket-runtime.json"
+        write_runtime_source(
+            runtime_source_path,
+            items=[
+                {
+                    "external_id": "rollover-1518000",
+                    "title": "Open successor market",
+                    "url": "open-successor",
+                    "collected_at_utc": "2099-01-01T00:05:00+00:00",
+                    "metadata": {
+                        "market_id": "rollover-1518000",
+                        "slug": "open-successor",
+                        "yes_probability": replacement,
+                        "active": True,
+                        "closed": False,
+                        "accepting_orders": True,
+                        "source_config": {"label": "Open successor market"},
+                    },
+                }
+            ],
+        )
+
+        result = run_cli(state_path, db_path, latest_ngi_path, runtime_source_path)
+
+        assert result.returncode == 1
+        assert result.stdout == ""
+        assert (
+            result.stderr.strip()
+            == "runtime_source evidence.items[0].metadata.yes_probability must be a JSON number between 0 and 1"
+        )
+
+
 def test_verify_runtime_ops_health_fails_when_latest_ngi_target_detail_is_not_an_object(
     tmp_path: Path,
 ):

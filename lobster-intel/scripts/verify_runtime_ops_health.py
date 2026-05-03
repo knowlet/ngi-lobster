@@ -43,6 +43,10 @@ def read_probability(payload: dict[str, object], key: str, *, context: str) -> f
     value = payload.get(key)
     if value is None:
         raise RuntimeError(f"missing {context}.{key}")
+    return validate_probability(value, key, context=context)
+
+
+def validate_probability(value: object, key: str, *, context: str) -> float:
     if isinstance(value, bool) or not isinstance(value, (int, float)):
         raise RuntimeError(f"{context}.{key} must be a JSON number between 0 and 1")
     probability = float(value)
@@ -124,6 +128,13 @@ def _parse_runtime_source_payload(path: Path | None) -> dict[str, Any] | None:
             if source_config is not None and not isinstance(source_config, dict):
                 raise RuntimeError(
                     f"runtime_source evidence.items[{index}].metadata.source_config must be a JSON object"
+                )
+            yes_probability = (metadata or {}).get("yes_probability")
+            if yes_probability is not None:
+                validate_probability(
+                    yes_probability,
+                    "yes_probability",
+                    context=f"runtime_source evidence.items[{index}].metadata",
                 )
     return payload
 

@@ -84,11 +84,13 @@ def _as_bool(value: Any) -> bool | None:
 
 def _require_delivery_proof(alert_disposition: dict[str, Any]) -> dict[str, Any] | None:
     proof = alert_disposition.get("delivery_proof")
+    if proof is not None and not isinstance(proof, dict):
+        raise RuntimeError("latest_ngi.alert_disposition.delivery_proof must be a JSON object")
     if not _is_positive_delivery(alert_disposition):
-        return proof if isinstance(proof, dict) else None
+        return proof
     if _as_bool(alert_disposition.get("target_contract_match")) is not True:
         raise RuntimeError("positive latest_ngi.alert_disposition.target_contract_match must be true")
-    if not isinstance(proof, dict):
+    if proof is None:
         raise RuntimeError("missing latest_ngi.alert_disposition.delivery_proof")
     return proof
 

@@ -82,6 +82,19 @@ def _as_bool(value: Any) -> bool | None:
     return None
 
 
+def _read_non_empty_string(payload: dict[str, Any], key: str) -> str | None:
+    value = payload.get(key)
+    if value is None or value == "":
+        return None
+    if not isinstance(value, str):
+        raise RuntimeError(
+            f"latest_ngi.alert_disposition.delivery_proof.{key} must be a non-empty string"
+        )
+    if not value.strip():
+        return None
+    return value
+
+
 def _require_delivery_proof(alert_disposition: dict[str, Any]) -> dict[str, Any] | None:
     proof = alert_disposition.get("delivery_proof")
     if proof is not None and not isinstance(proof, dict):
@@ -93,19 +106,17 @@ def _require_delivery_proof(alert_disposition: dict[str, Any]) -> dict[str, Any]
     if proof is None:
         raise RuntimeError("missing latest_ngi.alert_disposition.delivery_proof")
     boundary = proof.get("boundary")
-    proof_id = proof.get("proof_id") or proof.get("sink_message_id")
     if boundary is None or boundary == "":
         raise RuntimeError("missing latest_ngi.alert_disposition.delivery_proof.boundary")
     if not isinstance(boundary, str) or not boundary.strip():
         raise RuntimeError(
             "latest_ngi.alert_disposition.delivery_proof.boundary must be a non-empty string"
         )
-    if proof_id is None or proof_id == "":
+    proof_id = _read_non_empty_string(proof, "proof_id") or _read_non_empty_string(
+        proof, "sink_message_id"
+    )
+    if proof_id is None:
         raise RuntimeError("missing latest_ngi.alert_disposition.delivery_proof.proof_id")
-    if not isinstance(proof_id, str) or not proof_id.strip():
-        raise RuntimeError(
-            "latest_ngi.alert_disposition.delivery_proof.proof_id must be a non-empty string"
-        )
     return proof
 
 

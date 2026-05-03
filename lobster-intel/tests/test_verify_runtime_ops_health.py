@@ -660,6 +660,40 @@ def test_verify_runtime_ops_health_reports_missing_probability_fields(tmp_path: 
     assert result.stderr.strip() == "missing latest_ngi.first_principles_probability"
 
 
+def test_verify_runtime_ops_health_fails_when_probability_fields_are_malformed(
+    tmp_path: Path,
+):
+    for context, key, replacement in (
+        ("latest_ngi", "first_principles_probability", True),
+        ("target_detail", "market_yes_probability", "0.62"),
+        ("target_detail", "market_yes_probability", 1.2),
+    ):
+        case_dir = tmp_path / f"{context}-{key}-{str(replacement).lower()}"
+        case_dir.mkdir()
+        state_path = case_dir / "STATE.yaml"
+        state_path.write_text('dq_status: "pass"\n', encoding="utf-8")
+        db_path = case_dir / "intelligence_store.sqlite"
+        write_db(db_path, "2099-01-01T00:00:00+00:00")
+        latest_ngi_path = case_dir / "latest_ngi.json"
+        write_latest_ngi(
+            latest_ngi_path,
+            first_principles_probability=0.52,
+            market_yes_probability=0.62,
+        )
+        latest_ngi = json.loads(latest_ngi_path.read_text(encoding="utf-8"))
+        if context == "latest_ngi":
+            latest_ngi[key] = replacement
+        else:
+            latest_ngi["target_detail"][key] = replacement
+        latest_ngi_path.write_text(json.dumps(latest_ngi), encoding="utf-8")
+
+        result = run_cli(state_path, db_path, latest_ngi_path)
+
+        assert result.returncode == 1
+        assert result.stdout == ""
+        assert result.stderr.strip() == f"{context}.{key} must be a JSON number between 0 and 1"
+
+
 def test_verify_runtime_ops_health_fails_when_latest_ngi_target_detail_is_not_an_object(
     tmp_path: Path,
 ):

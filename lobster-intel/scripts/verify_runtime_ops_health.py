@@ -43,7 +43,12 @@ def read_probability(payload: dict[str, object], key: str, *, context: str) -> f
     value = payload.get(key)
     if value is None:
         raise RuntimeError(f"missing {context}.{key}")
-    return float(value)
+    if isinstance(value, bool) or not isinstance(value, (int, float)):
+        raise RuntimeError(f"{context}.{key} must be a JSON number between 0 and 1")
+    probability = float(value)
+    if probability < 0 or probability > 1:
+        raise RuntimeError(f"{context}.{key} must be a JSON number between 0 and 1")
+    return probability
 
 
 def read_optional_object(payload: dict[str, object], key: str, *, context: str) -> dict[str, object]:

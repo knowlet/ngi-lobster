@@ -48,6 +48,7 @@
    - 2026-05-03 07:03+08:00：已加固 ops-health runtime-source nested schema 邊界；tracker item 的 `metadata.source_config` 若存在就必須是 JSON object，避免 rollover candidate projection 以 `.get()` AttributeError 中斷。
    - 2026-05-03 08:04+08:00：已讓 ops-health 與 live progress sync 在 `rollover_candidate=null` 時輸出 machine-readable `rollover_candidate_blocker`，讓 active-target reselection 摘要能明確說明沒有可執行 successor 的原因。
    - 2026-05-03 09:03+08:00：已補齊 live progress sync 的 latest NGI top-level schema guard；`latest_ngi.json` 本身不是 JSON object 時會 fail closed 並輸出明確 schema error，而不是誤報缺少第一個 required key。
+   - 2026-05-03 10:02+08:00：已補齊 live progress sync 的 latest NGI nested object schema guard；`market_target`、`target_detail`、`alert_disposition` 若存在但不是 JSON object，會 fail closed 並輸出明確 schema error，而不是誤報 missing 欄位。
 
 5. **Freshness + DQ 監控門檻固定化**
    - 明確把 `latest_ngi_age_hours > 4` 直接設為硬阻斷。
@@ -96,7 +97,7 @@
 - active target 自身若回報 ambiguous closed/accepting-orders 狀態，ops-health 必須視為需要 reselection，不能只因欄位存在就當成健康目標。
 - ops-health 若明確收到 runtime-source path，該 payload 必須存在且為 JSON object；缺檔、malformed top-level payload、非 list 的 `evidence.items`、非 object item、非 object `metadata`，或非 object `metadata.source_config` 不能靜默省略 rollover evidence。
 - latest NGI 的 payload 必須維持 object schema；top-level、`market_target` 或 `target_detail` 不是 JSON object 時，ops-health 必須 fail closed 並回報明確 schema error。
-- live progress sync 也必須沿用 same latest NGI object schema；top-level malformed payload 不能被 required-key fallback 誤報成缺欄位。
+- live progress sync 也必須沿用 same latest NGI object schema；top-level 或 nested object malformed payload 不能被 required-key fallback 誤報成缺欄位。
 - active-target reselection 摘要若 `rollover_candidate=null`，必須同時提供 `rollover_candidate_blocker`，避免 operator 只看到空 candidate 而不知道是缺 runtime source、沒有 successor，或 successor 不符合明確 open/accepting-orders 條件。
 
 ### P2（改善與擴充）

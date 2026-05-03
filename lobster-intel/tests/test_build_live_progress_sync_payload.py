@@ -250,6 +250,27 @@ def test_build_live_progress_sync_payload_fails_when_latest_ngi_is_not_an_object
     assert result.stderr.strip() == "latest_ngi payload must be a JSON object"
 
 
+def test_build_live_progress_sync_payload_fails_when_latest_ngi_objects_are_malformed(tmp_path: Path):
+    for key in ("market_target", "target_detail", "alert_disposition"):
+        case_dir = tmp_path / key
+        case_dir.mkdir()
+        state_path = case_dir / "STATE.yaml"
+        state_path.write_text('dq_status: "pass"\n', encoding="utf-8")
+        db_path = case_dir / "intelligence_store.sqlite"
+        write_db(db_path, "2099-01-01T00:00:00+00:00")
+        latest_ngi_path = case_dir / "latest_ngi.json"
+        write_latest_ngi(latest_ngi_path)
+        latest_ngi = json.loads(latest_ngi_path.read_text(encoding="utf-8"))
+        latest_ngi[key] = ["not-a-json-object"]
+        latest_ngi_path.write_text(json.dumps(latest_ngi), encoding="utf-8")
+
+        result = run_cli(state_path, db_path, latest_ngi_path)
+
+        assert result.returncode == 1
+        assert result.stdout == ""
+        assert result.stderr.strip() == f"latest_ngi.{key} must be a JSON object"
+
+
 def test_build_live_progress_sync_payload_exports_rollover_candidate_when_target_is_closed(tmp_path: Path):
     state_path = tmp_path / "STATE.yaml"
     state_path.write_text('dq_status: "pass"\n', encoding="utf-8")

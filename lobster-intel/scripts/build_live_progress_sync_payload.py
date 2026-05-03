@@ -51,7 +51,7 @@ def _build_basis_lines(*, latest_ngi: dict[str, Any], ops_health: dict[str, Any]
 def _require_mapping(payload: dict[str, Any], key: str) -> dict[str, Any]:
     value = payload.get(key)
     if not isinstance(value, dict):
-        raise RuntimeError(f"missing {key}")
+        raise RuntimeError(f"latest_ngi.{key} must be a JSON object")
     return value
 
 

@@ -131,6 +131,7 @@ def _parse_runtime_source_payload(path: Path | None) -> dict[str, Any] | None:
     payload = json.loads(path.read_text(encoding="utf-8"))
     if not isinstance(payload, dict):
         raise RuntimeError("runtime_source payload must be a JSON object")
+    validate_optional_timestamp(payload.get("ran_at_utc"), "ran_at_utc", context="runtime_source")
     evidence = payload.get("evidence")
     if evidence is not None:
         if not isinstance(evidence, dict):

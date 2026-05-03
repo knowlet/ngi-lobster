@@ -883,3 +883,12 @@
 - [x] 2026-05-04 01:03:25+0800: Advanced the roadmap Phase B schema boundary by requiring runtime-source rollover candidate identity/display fields to be non-empty strings before projection.
 - [x] 2026-05-04 01:03:25+0800: Added a red-green regression proving malformed candidate `metadata.market_id` now exits nonzero with an explicit schema error instead of leaking into operator-facing rollover guidance.
 - [ ] Retry GitHub access, confirm PR #30 `CommitCheck` status, then merge or resume runtime work only after that gate clears.
+
+### Task 101: 2026-05-04 02:03+08:00 ops-health runtime-source run timestamp schema guard
+- [x] 2026-05-04 02:03:44+0800: Current branch is `codex/pr29-clean-runtime-cut` at `6bf4cad`, ahead 1 from local `origin/codex/pr29-clean-runtime-cut` before this run.
+- [x] 2026-05-04 02:03:44+0800: `git fetch --prune origin` retried and failed (`Could not resolve host: github.com`, rc=128), so upstream freshness cannot be verified in this run.
+- [x] 2026-05-04 02:03:44+0800: `gh pr list --state all --limit 20` and `gh issue list --state all --limit 20` failed with `error connecting to api.github.com`, so PR #30 merge-state and issue triage cannot be refreshed.
+- [x] 2026-05-04 02:03:44+0800: `git rebase --fork-point origin/main` hit the known rolling-plan conflict while replaying old checkpoint commit `14bebae` and was aborted cleanly.
+- [x] 2026-05-04 02:03:44+0800: Advanced the roadmap Phase B schema boundary by requiring runtime-source top-level `ran_at_utc`, when present, to be an ISO-8601 timestamp.
+- [x] 2026-05-04 02:03:44+0800: Added a red-green regression proving malformed tracker run timestamps now exit nonzero with an explicit schema error instead of being accepted into an operator-facing ops-health summary.
+- [ ] Retry GitHub access, confirm PR #30 `CommitCheck` status, then merge or resume runtime work only after that gate clears.

@@ -802,3 +802,12 @@
 - [x] 2026-05-03 16:02:48+0800: Advanced the roadmap Phase B delivery-routing boundary by making live progress sync fail closed when `alert_disposition.should_send` is present but not an explicit boolean-equivalent value.
 - [x] 2026-05-03 16:02:48+0800: Added a red-green regression proving `should_send="unknown"` now exits nonzero with an explicit parser error instead of emitting a non-positive sync payload.
 - [ ] Retry GitHub access, confirm PR #30 `CommitCheck` status, then merge or resume runtime work only after that gate clears.
+
+### Task 92: 2026-05-03 17:02+08:00 live-sync explicit suppress guard
+- [x] 2026-05-03 17:02:40+0800: Current branch is `codex/pr29-clean-runtime-cut` at `3f0b26b`, matching local `origin/codex/pr29-clean-runtime-cut` before this run.
+- [x] 2026-05-03 17:02:40+0800: `git fetch --prune origin` retried and failed (`Could not resolve host: github.com`, rc=128), so upstream freshness cannot be verified in this run.
+- [x] 2026-05-03 17:02:40+0800: `gh pr list --state all --limit 20` and `gh issue list --state all --limit 20` failed with `error connecting to api.github.com`, so PR #30 merge-state and issue triage cannot be refreshed.
+- [x] 2026-05-03 17:02:40+0800: `git rebase --fork-point origin/main` hit the known rolling-plan conflict while replaying old checkpoint commit `14bebae` and was aborted cleanly.
+- [x] 2026-05-03 17:02:40+0800: Advanced the roadmap Phase B delivery-routing boundary by making explicit `alert_disposition.should_send=false` override legacy positive `decision` text as a non-positive live-sync payload.
+- [x] 2026-05-03 17:02:40+0800: Added a red-green regression proving `should_send=false` no longer requires positive delivery proof even when `decision` still says `would_send`.
+- [ ] Retry GitHub access, confirm PR #30 `CommitCheck` status, then merge or resume runtime work only after that gate clears.

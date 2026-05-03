@@ -62,8 +62,7 @@ def _is_positive_delivery(alert_disposition: dict[str, Any]) -> bool:
             raise RuntimeError(
                 "latest_ngi.alert_disposition.should_send must be a boolean-equivalent value"
             )
-        if should_send is True:
-            return True
+        return should_send
     decision = str(alert_disposition.get("decision") or "").strip().lower()
     return decision in {"would_send", "sent", "delivered"}
 

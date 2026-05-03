@@ -89,6 +89,11 @@
 ## 四、Backlog（未來排程）
 
 ### P0（不解掉不往前）
+- active-target reselection + rollover candidate 已升為當前唯一 P0 blocker。
+  - Owner：大餅（blocking 摘要欄位與 acceptance 定義）＋姨太（ops-health / live sync 實作與驗收）
+  - Expected evidence：同一輪 real-path blocking 摘要必須 machine-readable 輸出 `runtime_target_id` / `market_question`、`next_contract_action=reselect_active_target`，以及唯一 `rollover_candidate`；若無 successor，必須輸出 `rollover_candidate=null` 與明確 `rollover_candidate_blocker`。
+  - Deadline：2026-05-04 end of day（GMT+8）
+  - 2026-05-04 04:48+08:00：PO 正式將此刀升為唯一 P0 next cut；在 closed target、`market_accepting_orders=false`、`latest_ngi_stale=true` 且 divergence 仍高於 15pp 的情況下，後續 heartbeat / review / upstream 都以這份 reselection acceptance evidence 是否齊備作為唯一先決條件。
 - 同次證據包重放腳本仍有 stale reuse 風險。
   - 2026-05-02 13:04+08:00：已加固 `write_dispatcher_e2e_bundle` 的 alert artifact 載入邊界，若檔名要求的 run id 與 JSON 內 `run_id` 不一致會 fail closed，避免 standalone E2E bundle 重用 stale alert artifact。
   - 2026-05-02 14:03+08:00：已加固 `write_dispatcher_e2e_bundle` 的 delivery receipt 載入邊界，若檔名要求的 run id 與 receipt JSON 內 `run_id` 不一致會 fail closed，避免 delivery proof 被 stale receipt 汙染。

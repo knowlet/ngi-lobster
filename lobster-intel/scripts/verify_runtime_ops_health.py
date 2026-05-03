@@ -196,6 +196,32 @@ def _select_rollover_candidate(
     }
 
 
+def _describe_rollover_candidate_blocker(
+    runtime_source_payload: dict[str, Any] | None,
+    *,
+    current_market_id: str | None,
+    rollover_candidate: dict[str, Any] | None,
+) -> str | None:
+    if rollover_candidate is not None:
+        return None
+    if runtime_source_payload is None:
+        return "runtime_source_not_provided"
+
+    evidence = runtime_source_payload.get("evidence") or {}
+    items = evidence.get("items") or []
+    successor_seen = False
+    for item in items:
+        metadata = item.get("metadata") or {}
+        market_id = metadata.get("market_id") or item.get("external_id")
+        if current_market_id and str(market_id) == str(current_market_id):
+            continue
+        successor_seen = True
+
+    if not successor_seen:
+        return "no_successor_market"
+    return "no_explicit_open_accepting_successor"
+
+
 def build_summary(
     state_path: Path,
     db_path: Path,
@@ -242,6 +268,13 @@ def build_summary(
         runtime_source_payload,
         current_market_id=str(market_target.get("market_id") or target_detail.get("market_id") or "") or None,
     )
+    rollover_candidate_blocker = None
+    if reselection_required:
+        rollover_candidate_blocker = _describe_rollover_candidate_blocker(
+            runtime_source_payload,
+            current_market_id=str(market_target.get("market_id") or target_detail.get("market_id") or "") or None,
+            rollover_candidate=rollover_candidate,
+        )
 
     status = "pass"
     blockers: list[str] = []
@@ -295,6 +328,7 @@ def build_summary(
         "reselection_required": reselection_required,
         "next_contract_action": "reselect_active_target" if reselection_required else "keep_active_target",
         "rollover_candidate": rollover_candidate,
+        "rollover_candidate_blocker": rollover_candidate_blocker,
         "blockers": blockers,
     }
 

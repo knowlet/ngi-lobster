@@ -151,6 +151,7 @@ def build_live_progress_sync_payload(
             "closed_target_blocking": ops_health["closed_target_blocking"],
             "reselection_required": ops_health["reselection_required"],
             "next_contract_action": ops_health["next_contract_action"],
+            "rollover_candidate_blocker": ops_health["rollover_candidate_blocker"],
             "rollover_candidate": ops_health["rollover_candidate"],
         },
         "freshness": {

@@ -392,6 +392,7 @@ def test_verify_runtime_ops_health_rejects_ambiguous_rollover_candidate(tmp_path
     payload = json.loads(result.stdout)
     assert payload["closed_target_blocking"] is True
     assert payload["rollover_candidate"] is None
+    assert payload["rollover_candidate_blocker"] == "no_explicit_open_accepting_successor"
 
 
 def test_verify_runtime_ops_health_fails_when_runtime_source_path_is_missing(tmp_path: Path):

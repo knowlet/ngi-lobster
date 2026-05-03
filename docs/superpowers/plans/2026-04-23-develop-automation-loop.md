@@ -730,3 +730,12 @@
 - [x] 2026-05-03 07:02:42+0800: Advanced the roadmap Phase B readable-summary boundary by making ops-health fail closed when runtime-source item `metadata.source_config` is present but not a JSON object.
 - [x] 2026-05-03 07:02:42+0800: Added regression coverage proving malformed runtime-source `metadata.source_config` exits nonzero with an explicit schema error instead of leaking Python AttributeError output.
 - [ ] Retry GitHub access, confirm PR #30 `CommitCheck` status, then merge or resume runtime work only after that gate clears.
+
+### Task 84: 2026-05-03 08:04+08:00 rollover candidate blocker reason
+- [x] 2026-05-03 08:04:05+0800: Current branch is `codex/pr29-clean-runtime-cut` at `30daf1e`, matching local `origin/codex/pr29-clean-runtime-cut` before this run.
+- [x] 2026-05-03 08:04:05+0800: `git fetch --prune origin` retried and failed (`Could not resolve host: github.com`, rc=128), so upstream freshness cannot be verified in this run.
+- [x] 2026-05-03 08:04:05+0800: `gh pr list --state all --limit 20` and `gh issue list --state all --limit 20` failed with `error connecting to api.github.com`, so PR #30 merge-state and issue triage cannot be refreshed.
+- [x] 2026-05-03 08:04:05+0800: `git rebase --fork-point origin/main` hit the known rolling-plan conflict while replaying old checkpoint commit `14bebae` and was aborted cleanly.
+- [x] 2026-05-03 08:04:05+0800: Advanced the roadmap Phase B readable-summary boundary by adding machine-readable `rollover_candidate_blocker` output when active-target reselection is required but no actionable rollover candidate can be emitted.
+- [x] 2026-05-03 08:04:05+0800: Added regression coverage proving ambiguous-only successor evidence now yields `rollover_candidate=null` plus `rollover_candidate_blocker=no_explicit_open_accepting_successor` in both ops-health and live progress sync payloads.
+- [ ] Retry GitHub access, confirm PR #30 `CommitCheck` status, then merge or resume runtime work only after that gate clears.

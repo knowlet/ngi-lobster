@@ -6,7 +6,7 @@
 
 **Tech Stack:** Git, GitHub remote workflow, project plan docs.
 
-**Status:** In progress on local branch `codex/state-config-schema-guard` after local `origin/main` advanced to PR #34 merge commit `ff63fd2`; remote confirmation/push remains blocked by GitHub DNS/API access.
+**Status:** In progress on local branch `codex/state-config-schema-followup` after local `origin/main` advanced to PR #35 merge commit `13476d7`; remote confirmation/push remains blocked by GitHub DNS/API access.
 
 > **PR29 checkpoint note:** This document is a clean PR29/PR30 docs-only handoff cut. Historical references to `codex/pr21-recut-dispatcher-receipt-guard` below are preserved as execution context from the original runtime branch, not as the active review branch for this replacement PR.
 
@@ -1055,3 +1055,12 @@
 - [x] 2026-05-04 20:02:27+0800: Advanced the ops-health fallback config projection boundary by canonicalizing `state_config.fallback_target.market_id`, `market_slug`, and `market_name` after validation before emitting rollover candidate evidence.
 - [x] 2026-05-04 20:02:27+0800: Added a red-green ops-health regression proving whitespace-padded fallback identity/display fields now emit stripped values in both `rollover_candidate` and `active_target_reselection.rollover_candidate`.
 - [ ] Retry GitHub access, publish `codex/state-config-schema-guard`, open PR to `main`, and continue post-PR34 runtime work only after remote state is confirmed.
+
+### Task 120: 2026-05-04 21:03+08:00 ops-health state-config market-question canonicalization
+- [x] 2026-05-04 21:03:52+0800: Current branch is `codex/state-config-schema-followup` at `5d1668b`, matching local `origin/codex/state-config-schema-followup` before this run.
+- [x] 2026-05-04 21:03:52+0800: `git fetch --prune origin` retried and failed (`Could not resolve host: github.com`, rc=128), so upstream freshness cannot be verified beyond existing local refs.
+- [x] 2026-05-04 21:03:52+0800: `gh pr list --state all --limit 20` and `gh issue list --state all --limit 20` failed with `error connecting to api.github.com`, so PR/issue/comment queues cannot be refreshed.
+- [x] 2026-05-04 21:03:52+0800: `git rebase --fork-point origin/main` completed as a local-only sanity check and reported the branch up to date with local `origin/main` at `13476d7`.
+- [x] 2026-05-04 21:03:52+0800: Advanced the ops-health fallback config projection boundary by canonicalizing optional `state_config.fallback_target.market_question` after validation before emitting rollover candidate evidence.
+- [x] 2026-05-04 21:03:52+0800: Added a red-green ops-health regression proving whitespace-padded fallback `market_question` now emits a stripped value in both `rollover_candidate` and `active_target_reselection.rollover_candidate`.
+- [ ] Retry GitHub access, publish `codex/state-config-schema-followup`, open PR to `main`, and continue post-PR35 runtime work only after remote state is confirmed.

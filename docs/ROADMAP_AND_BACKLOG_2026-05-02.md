@@ -97,6 +97,7 @@
    - 2026-05-04 11:03+08:00：已收緊 non-positive live sync 的 contract-match schema guard；suppressed payload 若仍攜帶 `target_contract_match`，該值必須是明確 boolean-equivalent，避免 ambiguous contract evidence 被投影給 operator。
    - 2026-05-05 01:02+08:00：已補齊 live progress sync 的 operator target display canonicalization；`target_detail.market_question` 通過 non-empty schema 後會以 stripped string 投影到 `blocking_summary` / `market_target`，避免 operator-facing 摘要帶前後空白。
    - 2026-05-05 02:02+08:00：已補齊 live progress sync 的 delivery proof canonicalization；`boundary`、`proof_id` 與 `sink_message_id` 通過 schema 後會以 stripped string 投影，避免 operator-facing machine-readable proof 帶前後空白。
+   - 2026-05-05 03:03+08:00：已補齊 live progress sync 的 alert boolean canonicalization；`should_send` 與 `target_contract_match` 先通過 boolean-equivalent parser，再以 JSON boolean 投影到 operator-facing payload，避免字串旗標流出。
 
 ### Phase C｜可擴展性與回歸（第 3–4 週）
 7. **tracker 插件接線規格化**
@@ -150,6 +151,7 @@
 - live progress sync 若收到 `alert_disposition.should_send`，該值必須是明確 boolean-equivalent；ambiguous send flag 不能被當成 suppressed/non-positive payload。
 - live progress sync 若收到明確 `alert_disposition.should_send=false`，該 machine-readable send flag 必須優先於舊的 positive `decision`，避免 suppressed/non-positive payload 被誤判成 positive delivery。
 - live progress sync 即使是 non-positive payload，只要收到 `delivery_proof`，proof 內 machine-readable 欄位也必須維持字串 schema；malformed proof field 不能被投影到 operator-facing sync payload。
+- live progress sync 的 alert boolean flags 必須維持 JSON boolean projection；`should_send` / `target_contract_match` 可接受明確 serialized boolean input，但 operator-facing payload 不能再輸出 padded/raw 字串旗標。
 - live progress sync 的 alert contract envelope 必須維持 string schema；`decision`、`reason_code`、`contract_version`、`e2e_run_id` 不能用 malformed JSON 型別進入 operator-facing sync payload。
 - live progress sync 若收到 `alert_disposition.target_contract_match`，即使 payload 是 suppressed/non-positive，也必須是明確 boolean-equivalent；ambiguous contract evidence 不能被投影進 operator-facing sync payload。
 - live progress sync 的 operator target display 欄位必須維持 string schema；`target_detail.market_question` 不能缺失或空白，避免 `blocking_summary` / `market_target` 輸出不可審核的空 question。

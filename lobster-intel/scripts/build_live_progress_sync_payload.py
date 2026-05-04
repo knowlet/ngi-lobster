@@ -206,12 +206,22 @@ def build_live_progress_sync_payload(
     if ops_health["latest_ngi_stale"]:
         raise RuntimeError("latest_ngi.json is stale")
     basis = _build_basis_lines(latest_ngi=latest_ngi, ops_health=ops_health)
+    should_send = (
+        _as_bool(alert_disposition.get("should_send"))
+        if "should_send" in alert_disposition
+        else None
+    )
+    target_contract_match = (
+        _as_bool(alert_disposition.get("target_contract_match"))
+        if "target_contract_match" in alert_disposition
+        else None
+    )
 
     alert_payload = {
         "decision": decision,
-        "should_send": alert_disposition.get("should_send"),
+        "should_send": should_send,
         "reason_code": reason_code,
-        "target_contract_match": alert_disposition.get("target_contract_match"),
+        "target_contract_match": target_contract_match,
         "contract_version": contract_version,
         "e2e_run_id": e2e_run_id,
     }

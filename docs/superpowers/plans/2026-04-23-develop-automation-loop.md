@@ -1109,3 +1109,12 @@
 - [x] 2026-05-05 02:02:56+0800: Advanced the live-sync delivery proof boundary by canonicalizing `boundary`, `proof_id`, and `sink_message_id` after validation before emitting operator-facing machine-readable proof.
 - [x] 2026-05-05 02:02:56+0800: Added a red-green live-sync regression proving whitespace-padded delivery proof fields now emit stripped values in `alert_disposition.delivery_proof`.
 - [ ] Retry GitHub access, publish `codex/live-sync-schema-followup-2`, open PR to `main`, and continue post-PR41 runtime work only after remote state is confirmed.
+
+### Task 126: 2026-05-05 03:03+08:00 live-sync alert boolean canonicalization
+- [x] 2026-05-05 03:03:30+0800: Current branch started on `codex/live-sync-schema-followup-2` at `13bcc7e`, but its upstream tracking ref was gone and local `origin/main` had advanced to `ea367b1` from PR #42.
+- [x] 2026-05-05 03:03:30+0800: `git fetch --prune origin` retried and failed (`Could not resolve host: github.com`, rc=128), so upstream freshness cannot be verified beyond existing local refs.
+- [x] 2026-05-05 03:03:30+0800: `gh pr list --state all --limit 20` and `gh issue list --state all --limit 20` failed with `error connecting to api.github.com`, so PR/issue/comment queues cannot be refreshed.
+- [x] 2026-05-05 03:03:30+0800: Created fresh branch `codex/live-sync-schema-followup-3` from local `origin/main` at `ea367b1` to avoid continuing on a gone PR branch whose patch was already absorbed.
+- [x] 2026-05-05 03:03:30+0800: Advanced the live-sync alert disposition boundary by canonicalizing parsed `should_send` and `target_contract_match` values before projecting them into operator-facing sync payloads.
+- [x] 2026-05-05 03:03:30+0800: Added a red-green live-sync regression proving padded serialized boolean fields now emit JSON booleans instead of raw strings.
+- [ ] Retry GitHub access, publish `codex/live-sync-schema-followup-3`, open PR to `main`, and continue post-PR42 runtime work only after remote state is confirmed.

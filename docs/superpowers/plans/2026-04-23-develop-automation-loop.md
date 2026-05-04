@@ -955,3 +955,12 @@
 - [x] 2026-05-04 09:03:15+0800: Advanced the live-sync operator-facing schema boundary by requiring `latest_ngi.target_detail.market_question` to be a non-empty string before projection into `blocking_summary` and `market_target`.
 - [x] 2026-05-04 09:03:15+0800: Added a red-green live-sync regression proving a missing operator market question exits nonzero with `latest_ngi.target_detail.market_question must be a non-empty string` instead of emitting `market_question=null`.
 - [ ] Retry GitHub access, confirm PR #30 `CommitCheck` status, then merge or resume runtime work only after that gate clears.
+
+### Task 109: 2026-05-04 10:04+08:00 live-sync alert decision schema guard
+- [x] 2026-05-04 10:04:07+0800: Current branch is `codex/pr29-clean-runtime-cut` at `bbc08c7`, matching local `origin/codex/pr29-clean-runtime-cut` before this run.
+- [x] 2026-05-04 10:04:07+0800: `git fetch --prune origin` retried and failed (`Could not resolve host: github.com`, rc=128), so upstream freshness cannot be verified in this run.
+- [x] 2026-05-04 10:04:07+0800: `gh pr list --state all --limit 20` and `gh issue list --state all --limit 20` failed with `error connecting to api.github.com`, so PR #30 merge-state and issue triage cannot be refreshed.
+- [x] 2026-05-04 10:04:07+0800: `git rebase --fork-point origin/main` hit the known rolling-plan conflict while replaying old checkpoint commit `14bebae` and was aborted cleanly.
+- [x] 2026-05-04 10:04:07+0800: Advanced the live-sync alert contract envelope by requiring `latest_ngi.alert_disposition.decision` to be a non-empty string before projection into the operator payload.
+- [x] 2026-05-04 10:04:07+0800: Added a red-green live-sync regression proving malformed `decision` JSON now exits nonzero with `latest_ngi.alert_disposition.decision must be a non-empty string` instead of leaking into `alert_disposition.decision`.
+- [ ] Retry GitHub access, confirm PR #30 `CommitCheck` status, then merge or resume runtime work only after that gate clears.

@@ -161,6 +161,9 @@ def build_live_progress_sync_payload(
     market_target = _require_mapping(latest_ngi, "market_target")
     target_detail = _require_mapping(latest_ngi, "target_detail")
     alert_disposition = _require_mapping(latest_ngi, "alert_disposition")
+    decision = _require_non_empty_string(
+        alert_disposition, "decision", context="latest_ngi.alert_disposition"
+    )
     delivery_proof = _require_delivery_proof(alert_disposition)
     reason_code = _require_non_empty_string(
         alert_disposition, "reason_code", context="latest_ngi.alert_disposition"
@@ -180,7 +183,7 @@ def build_live_progress_sync_payload(
     basis = _build_basis_lines(latest_ngi=latest_ngi, ops_health=ops_health)
 
     alert_payload = {
-        "decision": alert_disposition.get("decision"),
+        "decision": decision,
         "should_send": alert_disposition.get("should_send"),
         "reason_code": reason_code,
         "target_contract_match": alert_disposition.get("target_contract_match"),

@@ -377,6 +377,7 @@ def test_build_live_progress_sync_payload_rejects_malformed_contract_envelope_fi
     tmp_path: Path,
 ):
     for field, replacement in (
+        ("decision", ["suppressed"]),
         ("reason_code", ["not-a-string"]),
         ("contract_version", 123),
         ("e2e_run_id", " "),

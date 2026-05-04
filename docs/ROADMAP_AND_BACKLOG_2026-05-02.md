@@ -80,6 +80,7 @@
    - 2026-05-03 18:03+08:00：已收緊 non-positive live sync delivery proof 欄位驗證；只要 payload 攜帶 `delivery_proof`，其中 `boundary`、`proof_id` 或 `sink_message_id` 若型別 malformed 就會 fail closed，不再把壞 proof 原樣同步出去。
    - 2026-05-04 00:02+08:00：已收緊 live progress sync 的 alert contract envelope；`reason_code`、`contract_version`、`e2e_run_id` 必須是 non-empty string，避免 malformed contract metadata 被投影進 operator sync payload。
    - 2026-05-04 09:03+08:00：已收緊 live progress sync 的 operator target display contract；`target_detail.market_question` 必須是 non-empty string，避免 ready/blocking payload 把 `market_question=null` 投影到 Paperclip / Albert operator-facing 摘要。
+   - 2026-05-04 10:04+08:00：已補齊 live progress sync 的 alert decision schema guard；`alert_disposition.decision` 必須是 non-empty string，避免 malformed decision JSON 被投影進 operator sync payload。
 
 ### Phase C｜可擴展性與回歸（第 3–4 週）
 7. **tracker 插件接線規格化**
@@ -132,7 +133,7 @@
 - live progress sync 若收到 `alert_disposition.should_send`，該值必須是明確 boolean-equivalent；ambiguous send flag 不能被當成 suppressed/non-positive payload。
 - live progress sync 若收到明確 `alert_disposition.should_send=false`，該 machine-readable send flag 必須優先於舊的 positive `decision`，避免 suppressed/non-positive payload 被誤判成 positive delivery。
 - live progress sync 即使是 non-positive payload，只要收到 `delivery_proof`，proof 內 machine-readable 欄位也必須維持字串 schema；malformed proof field 不能被投影到 operator-facing sync payload。
-- live progress sync 的 alert contract envelope 必須維持 string schema；`reason_code`、`contract_version`、`e2e_run_id` 不能用 malformed JSON 型別進入 operator-facing sync payload。
+- live progress sync 的 alert contract envelope 必須維持 string schema；`decision`、`reason_code`、`contract_version`、`e2e_run_id` 不能用 malformed JSON 型別進入 operator-facing sync payload。
 - live progress sync 的 operator target display 欄位必須維持 string schema；`target_detail.market_question` 不能缺失或空白，避免 `blocking_summary` / `market_target` 輸出不可審核的空 question。
 - ops-health 的 probability 欄位必須維持 JSON number schema 且落在 0..1；boolean、字串數字或超界值不能被 Python 轉型後繼續輸出健康摘要。
 - ops-health runtime-source rollover candidate 的 `metadata.yes_probability` 若存在，也必須維持 0..1 JSON number schema，不能把字串、boolean 或超界值投影到 machine-readable successor 建議。

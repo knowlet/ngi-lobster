@@ -463,6 +463,29 @@ def test_build_live_progress_sync_payload_strips_contract_envelope_basis_fields(
     assert sync_payload["alert_disposition"]["e2e_run_id"] == "legacy-monitor-20260501T002054.879803Z"
 
 
+def test_build_basis_lines_falls_back_to_unknown_for_blank_contract_fields():
+    import importlib.util
+
+    sys.path.insert(0, str(SCRIPT.parent))
+    spec = importlib.util.spec_from_file_location("build_live_progress_sync_payload", SCRIPT)
+    assert spec is not None and spec.loader is not None
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+
+    latest_ngi = {
+        "alert_disposition": {"decision": "   ", "reason_code": "	"},
+    }
+    ops_health = {
+        "first_principles_probability": 0.25,
+        "market_yes_probability": 0.75,
+        "blockers": [],
+    }
+
+    basis = module._build_basis_lines(latest_ngi=latest_ngi, ops_health=ops_health)
+
+    assert basis["logistics"] == "live alert disposition unknown / unknown"
+
+
 def test_build_live_progress_sync_payload_requires_machine_readable_positive_delivery_proof(tmp_path: Path):
     for missing_key in ("boundary", "proof_id"):
         case_dir = tmp_path / missing_key

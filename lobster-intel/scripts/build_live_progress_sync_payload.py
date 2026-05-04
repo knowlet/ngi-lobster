@@ -28,10 +28,17 @@ def _first_reason(payload: dict[str, Any]) -> str | None:
     return None
 
 
+def _canonical_contract_fallback(value: Any) -> str:
+    if value is None:
+        return "unknown"
+    canonical = str(value).strip()
+    return canonical or "unknown"
+
+
 def _build_basis_lines(*, latest_ngi: dict[str, Any], ops_health: dict[str, Any]) -> dict[str, str]:
     alert_disposition = latest_ngi.get("alert_disposition") or {}
-    decision = str(alert_disposition.get("decision") or "unknown").strip()
-    reason_code = str(alert_disposition.get("reason_code") or "unknown").strip()
+    decision = _canonical_contract_fallback(alert_disposition.get("decision"))
+    reason_code = _canonical_contract_fallback(alert_disposition.get("reason_code"))
     logistics = _first_reason(latest_ngi) or f"live alert disposition {decision} / {reason_code}"
     energy = (
         "P_AI "

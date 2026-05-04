@@ -6,7 +6,7 @@
 
 **Tech Stack:** Git, GitHub remote workflow, project plan docs.
 
-**Status:** In progress on local branch `codex/pr29-clean-runtime-cut` for PR #30.
+**Status:** In progress on local branch `codex/state-config-schema-guard` after local `origin/main` advanced to PR #34 merge commit `ff63fd2`; remote confirmation/push remains blocked by GitHub DNS/API access.
 
 > **PR29 checkpoint note:** This document is a clean PR29/PR30 docs-only handoff cut. Historical references to `codex/pr21-recut-dispatcher-receipt-guard` below are preserved as execution context from the original runtime branch, not as the active review branch for this replacement PR.
 
@@ -983,3 +983,66 @@
 - [x] 2026-05-04 12:03:43+0800: Added a red-green ops-health regression proving malformed fallback identity now exits nonzero with `state_config.fallback_target.market_id must be a non-empty string` instead of emitting a pending-validation rollover candidate with `market_id` as a list.
 - [x] 2026-05-04 12:03:43+0800: While running the full ops-health suite, also made blocker text format from the same rounded freshness/divergence values emitted in JSON, removing a one-centihour flaky assertion path.
 - [ ] Retry GitHub access, confirm PR #30 `CommitCheck` status, then merge or resume runtime work only after that gate clears.
+
+### Task 112: 2026-05-04 13:03+08:00 ops-health state-config nested schema guard
+- [x] 2026-05-04 13:03:27+0800: Current branch started as `codex/pr29-clean-runtime-cut` at `188c87a` with local tracking ref marked gone; local `origin/main` is now `ff63fd2`, the merge commit for PR #34 from `codex/pr29-clean-runtime-cut`.
+- [x] 2026-05-04 13:03:27+0800: `git fetch --prune origin` retried and failed (`Could not resolve host: github.com`, rc=128), so upstream freshness cannot be verified beyond existing local refs.
+- [x] 2026-05-04 13:03:27+0800: `gh pr list --state all --limit 20` and `gh issue list --state all --limit 20` failed with `error connecting to api.github.com`, so PR/issue/comment queues cannot be refreshed.
+- [x] 2026-05-04 13:03:27+0800: `git rebase --fork-point origin/main` completed successfully and moved the branch to local `origin/main` at `ff63fd2`; because the old tracking branch is gone, new work continued on local branch `codex/state-config-schema-guard`.
+- [x] 2026-05-04 13:03:27+0800: Advanced the ops-health fallback config boundary by requiring `state_config` payload, `states`, `current_state`, and current-state bundle schema before fallback successor projection.
+- [x] 2026-05-04 13:03:27+0800: Added a red-green ops-health regression proving malformed `state_config.states` now exits nonzero with `state_config.states must be a JSON object` instead of leaking a Python AttributeError.
+- [ ] Retry GitHub access, publish `codex/state-config-schema-guard`, open PR to `main`, and continue post-PR34 runtime work only after remote state is confirmed.
+
+### Task 113: 2026-05-04 14:03+08:00 ops-health fallback target object schema guard
+- [x] 2026-05-04 14:03:54+0800: Current branch is `codex/state-config-schema-guard` at `95038d0`, tracking local `origin/codex/state-config-schema-guard` before this run.
+- [x] 2026-05-04 14:03:54+0800: `git fetch --prune origin` retried and failed (`Could not resolve host: github.com`, rc=128), so upstream freshness cannot be verified beyond existing local refs.
+- [x] 2026-05-04 14:03:54+0800: `gh pr list --state all --limit 20` and `gh issue list --state all --limit 20` failed with `error connecting to api.github.com`, so PR/issue/comment queues cannot be refreshed.
+- [x] 2026-05-04 14:03:54+0800: `git rebase --fork-point origin/main` completed as a local-only sanity check and reported the branch up to date with the current local `origin/main` at `ff63fd2`.
+- [x] 2026-05-04 14:03:54+0800: Advanced the ops-health fallback config boundary by requiring present `state_config.fallback_target` values to be JSON objects instead of silently treating malformed configured successors as absent.
+- [x] 2026-05-04 14:03:54+0800: Added a red-green ops-health regression proving list-valued `fallback_target` now exits nonzero with `state_config.fallback_target must be a JSON object` instead of emitting `rollover_candidate=null`.
+- [ ] Retry GitHub access, publish `codex/state-config-schema-guard`, open PR to `main`, and continue post-PR34 runtime work only after remote state is confirmed.
+
+### Task 114: 2026-05-04 15:03+08:00 ops-health state-config current-state schema guard
+- [x] 2026-05-04 15:03:30+0800: Current branch is `codex/state-config-schema-guard` at `41b467c`, matching local `origin/codex/state-config-schema-guard` before this run.
+- [x] 2026-05-04 15:03:30+0800: `git fetch --prune origin` retried and failed (`Could not resolve host: github.com`, rc=128), so upstream freshness cannot be verified beyond existing local refs.
+- [x] 2026-05-04 15:03:30+0800: `gh pr list --state all --limit 20` and `gh issue list --state all --limit 20` failed with `error connecting to api.github.com`, so PR/issue/comment queues cannot be refreshed.
+- [x] 2026-05-04 15:03:30+0800: `git rebase --fork-point origin/main` completed as a local-only sanity check and reported the branch up to date with the current local `origin/main` at `ff63fd2`.
+- [x] 2026-05-04 15:03:30+0800: Advanced the ops-health fallback config boundary by requiring a present `state_config.current_state` to be a non-empty string instead of falling through to the default state.
+- [x] 2026-05-04 15:03:30+0800: Added a red-green ops-health regression proving empty `current_state` now exits nonzero with `state_config.current_state must be a non-empty string` instead of emitting blocking JSON with `rollover_candidate=null`.
+- [ ] Retry GitHub access, publish `codex/state-config-schema-guard`, open PR to `main`, and continue post-PR34 runtime work only after remote state is confirmed.
+
+### Task 115: 2026-05-04 16:03+08:00 ops-health state-config current-state presence guard
+- [x] 2026-05-04 16:03:02+0800: Current branch is `codex/state-config-schema-guard` at `9b9e1a6`, matching local `origin/codex/state-config-schema-guard` before this run.
+- [x] 2026-05-04 16:03:02+0800: `git fetch --prune origin` retried and failed (`Could not resolve host: github.com`, rc=128), so upstream freshness cannot be verified beyond existing local refs.
+- [x] 2026-05-04 16:03:02+0800: `gh pr list --state all --limit 20` and `gh issue list --state all --limit 20` failed with `error connecting to api.github.com`, so PR/issue/comment queues cannot be refreshed.
+- [x] 2026-05-04 16:03:02+0800: `git rebase --fork-point origin/main` completed as a local-only sanity check and reported the branch up to date with the current local `origin/main` at `ff63fd2`.
+- [x] 2026-05-04 16:03:02+0800: Advanced the ops-health fallback config boundary by requiring `state_config.current_state` to be explicitly present, preventing missing state from silently falling back to `PRE_AGREEMENT`.
+- [x] 2026-05-04 16:03:02+0800: Added a red-green ops-health regression proving missing `current_state` now exits nonzero with `state_config.current_state must be a non-empty string` instead of emitting blocking JSON with `rollover_candidate=null`.
+- [ ] Retry GitHub access, publish `codex/state-config-schema-guard`, open PR to `main`, and continue post-PR34 runtime work only after remote state is confirmed.
+
+### Task 116: 2026-05-04 17:02+08:00 ops-health state-config JSON parser guard
+- [x] 2026-05-04 17:02:14+0800: Current branch is `codex/state-config-schema-guard` at `3cfc3a5`, matching local `origin/codex/state-config-schema-guard` before this run.
+- [x] 2026-05-04 17:02:14+0800: `git fetch --prune origin` retried and failed (`Could not resolve host: github.com`, rc=128), so upstream freshness cannot be verified beyond existing local refs.
+- [x] 2026-05-04 17:02:14+0800: `gh pr list --state all --limit 20` and `gh issue list --state all --limit 20` failed with `error connecting to api.github.com`, so PR/issue/comment queues cannot be refreshed.
+- [x] 2026-05-04 17:02:14+0800: `git rebase --fork-point origin/main` completed as a local-only sanity check and reported the branch up to date with the current local `origin/main` at `ff63fd2`.
+- [x] 2026-05-04 17:02:14+0800: Advanced the ops-health fallback config boundary by translating malformed `state_config.json` decode failures into the stable schema error `state_config payload must be valid JSON`.
+- [x] 2026-05-04 17:02:14+0800: Added a red-green ops-health regression proving malformed configured fallback JSON now exits nonzero with the explicit state-config parser error instead of leaking Python JSONDecodeError text.
+- [ ] Retry GitHub access, publish `codex/state-config-schema-guard`, open PR to `main`, and continue post-PR34 runtime work only after remote state is confirmed.
+
+### Task 117: 2026-05-04 18:02+08:00 ops-health state-config current bundle presence guard
+- [x] 2026-05-04 18:02:39+0800: Current branch is `codex/state-config-schema-guard` at `d6a83ed`, matching local `origin/codex/state-config-schema-guard` before this run.
+- [x] 2026-05-04 18:02:39+0800: `git fetch --prune origin` retried and failed (`Could not resolve host: github.com`, rc=128), so upstream freshness cannot be verified beyond existing local refs.
+- [x] 2026-05-04 18:02:39+0800: `gh pr list --state all --limit 20` and `gh issue list --state all --limit 20` failed with `error connecting to api.github.com`, so PR/issue/comment queues cannot be refreshed.
+- [x] 2026-05-04 18:02:39+0800: `git rebase --fork-point origin/main` completed as a local-only sanity check and reported the branch up to date with the current local `origin/main` at `ff63fd2`.
+- [x] 2026-05-04 18:02:39+0800: Advanced the ops-health fallback config boundary by requiring `states[current_state]` to exist as a JSON object instead of defaulting missing bundles to an empty configured-successor set.
+- [x] 2026-05-04 18:02:39+0800: Added a red-green ops-health regression proving missing `state_config.states.ACTIVE_TRUCE` now exits nonzero with `state_config.states.ACTIVE_TRUCE must be a JSON object` instead of emitting blocking JSON with `rollover_candidate=null`.
+- [ ] Retry GitHub access, publish `codex/state-config-schema-guard`, open PR to `main`, and continue post-PR34 runtime work only after remote state is confirmed.
+
+### Task 118: 2026-05-04 19:03+08:00 ops-health state-config probability-mode canonicalization
+- [x] 2026-05-04 19:03:06+0800: Current branch is `codex/state-config-schema-guard` at `6c595c6`, matching local `origin/codex/state-config-schema-guard` before this run.
+- [x] 2026-05-04 19:03:06+0800: `git fetch --prune origin` retried and failed (`Could not resolve host: github.com`, rc=128), so upstream freshness cannot be verified beyond existing local refs.
+- [x] 2026-05-04 19:03:06+0800: `gh pr list --state all --limit 20` and `gh issue list --state all --limit 20` failed with `error connecting to api.github.com`, so PR/issue/comment queues cannot be refreshed.
+- [x] 2026-05-04 19:03:06+0800: `git rebase --fork-point origin/main` completed as a local-only sanity check and reported the branch up to date with the current local `origin/main` at `ff63fd2`.
+- [x] 2026-05-04 19:03:06+0800: Advanced the ops-health fallback config projection boundary by canonicalizing `state_config.fallback_target.probability_mode` after validation before emitting rollover candidate evidence.
+- [x] 2026-05-04 19:03:06+0800: Added a red-green ops-health regression proving whitespace-padded fallback `probability_mode` now emits `yes_is_peace` in both `rollover_candidate` and `active_target_reselection.rollover_candidate`.
+- [ ] Retry GitHub access, publish `codex/state-config-schema-guard`, open PR to `main`, and continue post-PR34 runtime work only after remote state is confirmed.

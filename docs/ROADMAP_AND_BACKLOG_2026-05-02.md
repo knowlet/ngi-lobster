@@ -63,6 +63,13 @@
    - 2026-05-04 06:03+08:00：已把同一份 `active_target_reselection` acceptance object 投影到 live progress sync payload，讓 Paperclip / Albert 顯示模板不必從 `blocking_summary` 與 `active_target` 重新拼接 reselection evidence。
    - 2026-05-04 07:03+08:00：已加固 ops-health active-target reselection acceptance schema；只要需要 reselect active target，`active_target_reselection.runtime_target_id` 與 `market_question` 必須是 non-empty string，避免 P0 acceptance object 帶著空 target/question 進入 heartbeat / review / upstream。
    - 2026-05-04 12:03+08:00：已加固 ops-health state-config fallback successor schema；沒有 runtime source 時，configured `fallback_target` 的 `market_id`、`market_slug`、`market_name` 與 optional `probability_mode` 必須維持 machine-readable string schema，避免 pending-validation rollover candidate 帶 malformed identity 進入 reselection evidence。
+   - 2026-05-04 13:03+08:00：已加固 ops-health state-config fallback nested schema；fallback path 讀到的 `state_config` payload、`states`、`current_state` 與 current-state bundle 必須維持明確 object/string schema，避免 malformed plan config 以 Python AttributeError 或靜默空 fallback 進入 reselection evidence。
+   - 2026-05-04 14:03+08:00：已加固 ops-health state-config fallback target object schema；`fallback_target` 若存在就必須是 JSON object，避免 malformed configured successor 被靜默降級成 `rollover_candidate=null`。
+   - 2026-05-04 15:03+08:00：已加固 ops-health state-config current-state schema；`current_state` 欄位若存在就必須是 non-empty string，避免空字串被缺省 fallback 吃掉並輸出不明確的 `rollover_candidate=null`。
+   - 2026-05-04 16:03+08:00：已加固 ops-health state-config current-state presence schema；提供 `state_config` 時 `current_state` 必須明確存在且為 non-empty string，避免缺欄位被隱性改成 `PRE_AGREEMENT` 並靜默省略 configured successor。
+   - 2026-05-04 17:02+08:00：已加固 ops-health state-config JSON parser 邊界；configured fallback 檔案若不是 valid JSON，會以 `state_config payload must be valid JSON` fail closed，不再洩漏 Python JSONDecodeError 給 operator。
+   - 2026-05-04 18:02+08:00：已加固 ops-health state-config current-state bundle lookup；`current_state` 指向缺失的 state bundle 時會 fail closed，不再靜默輸出 `rollover_candidate=null`。
+   - 2026-05-04 19:03+08:00：已加固 ops-health state-config fallback probability-mode projection；configured `fallback_target.probability_mode` 會以 canonical non-empty string 投影，避免 operator-facing rollover candidate 帶前後空白。
 
 5. **Freshness + DQ 監控門檻固定化**
    - 明確把 `latest_ngi_age_hours > 4` 直接設為硬阻斷。
@@ -103,6 +110,7 @@
   - 2026-05-04 04:48+08:00：PO 正式將此刀升為唯一 P0 next cut；在 closed target、`market_accepting_orders=false`、`latest_ngi_stale=true` 且 divergence 仍高於 15pp 的情況下，後續 heartbeat / review / upstream 都以這份 reselection acceptance evidence 是否齊備作為唯一先決條件。
   - 2026-05-04 05:03+08:00：ops-health blocking output 已新增 `active_target_reselection` acceptance object，讓 stale/closed/divergent real-path 摘要仍保留可審核的 target id、market question、reselection action 與唯一 rollover candidate。
   - 2026-05-04 08:03+08:00：已加固 selected rollover candidate projection；明確 open/accepting successor 若缺少 machine-readable `market_id`、`market_slug`、`market_name` 或 `market_question`，ops-health 會 fail closed，不再輸出帶 `null` 的 reselection acceptance evidence。
+  - 2026-05-04 17:20+08:00：PO 依 live verifier 再確認，當前 target 仍是 closed / not accepting orders，且 `latest_ngi_age_hours=6.09` 已超過 4 小時硬門檻；下一個 P0 cut 不只要補 deterministic successor validation / recut，還必須把 fresh NGI refresh 一起納入 acceptance，否則 reselection evidence 仍會被 stale blocker 擋住，無法視為可 merge 的產品前進。
 - 同次證據包重放腳本仍有 stale reuse 風險。
   - 2026-05-02 13:04+08:00：已加固 `write_dispatcher_e2e_bundle` 的 alert artifact 載入邊界，若檔名要求的 run id 與 JSON 內 `run_id` 不一致會 fail closed，避免 standalone E2E bundle 重用 stale alert artifact。
   - 2026-05-02 14:03+08:00：已加固 `write_dispatcher_e2e_bundle` 的 delivery receipt 載入邊界，若檔名要求的 run id 與 receipt JSON 內 `run_id` 不一致會 fail closed，避免 delivery proof 被 stale receipt 汙染。
@@ -149,6 +157,12 @@
 - ops-health blocking output 必須提供 dedicated `active_target_reselection` object，讓 stale/closed/divergent target 狀態也能直接供 heartbeat / review / upstream 驗收，不必由 operator 重新拼接零散欄位。
 - ops-health active-target reselection acceptance object 若 `reselection_required=true`，`runtime_target_id` 與 `market_question` 必須維持 non-empty string schema，不能輸出缺少 target/question 的 P0 acceptance evidence。
 - ops-health state-config fallback successor 也必須維持 identity/display string schema；沒有 runtime source 時，configured `fallback_target` 不能把 malformed `market_id`、`market_slug`、`market_name` 或 `probability_mode` 投影成 pending-validation rollover candidate。
+- ops-health state-config fallback path 的外層 config 也必須維持 schema；`state_config` payload、`states`、`current_state` 與 current-state bundle 不能用 malformed JSON 型別觸發不明確 parser error 或靜默省略 configured successor。
+- ops-health state-config fallback target 若存在也必須是 JSON object；malformed `fallback_target` 不能被當作沒有 configured successor 而靜默輸出 `rollover_candidate=null`。
+- ops-health state-config `current_state` 若存在也必須是 non-empty string；空字串不能被當成缺省狀態，避免 configured successor lookup 被靜默改到 `PRE_AGREEMENT`。
+- ops-health state-config `current_state` 也必須明確存在；缺欄位不能套用 legacy default，避免 operator 以為沒有 configured successor 可用。
+- ops-health state-config `current_state` 指向的 current-state bundle 必須明確存在且為 JSON object；缺失 bundle 不能被當成空設定並靜默省略 configured successor。
+- ops-health state-config fallback 檔案也必須是 valid JSON；malformed configured fallback 不能把底層 JSONDecodeError 直接洩漏到 operator-facing schema boundary。
 - ops-health 的 latest NGI timestamp 欄位若存在，也必須維持 ISO-8601 schema，不能把 malformed timestamp 洩漏成底層 parser error。
 - ops-health 的 SQLite freshness timestamp `market_snapshots.snapshot_at_utc` 也必須維持 ISO-8601 schema，不能把 malformed store timestamp 洩漏成底層 parser error。
 

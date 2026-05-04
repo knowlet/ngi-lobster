@@ -325,13 +325,26 @@ def _load_rollover_candidate_from_state_config(latest_ngi_path: Path) -> dict[st
     if not state_config_path.exists():
         return None
 
-    payload = json.loads(state_config_path.read_text(encoding="utf-8"))
-    states = payload.get("states") or {}
-    current_state = payload.get("current_state") or "PRE_AGREEMENT"
-    bundle = states.get(current_state) or {}
-    fallback = bundle.get("fallback_target") or {}
-    if not isinstance(fallback, dict):
+    try:
+        payload = json.loads(state_config_path.read_text(encoding="utf-8"))
+    except json.JSONDecodeError as exc:
+        raise RuntimeError("state_config payload must be valid JSON") from exc
+    if not isinstance(payload, dict):
+        raise RuntimeError("state_config payload must be a JSON object")
+    states = payload.get("states", {})
+    if not isinstance(states, dict):
+        raise RuntimeError("state_config.states must be a JSON object")
+    current_state = payload.get("current_state")
+    if not isinstance(current_state, str) or not current_state.strip():
+        raise RuntimeError("state_config.current_state must be a non-empty string")
+    bundle = states.get(current_state)
+    if not isinstance(bundle, dict):
+        raise RuntimeError(f"state_config.states.{current_state} must be a JSON object")
+    fallback = bundle.get("fallback_target")
+    if fallback is None:
         return None
+    if not isinstance(fallback, dict):
+        raise RuntimeError("state_config.fallback_target must be a JSON object")
 
     market_id = fallback.get("market_id")
     market_slug = fallback.get("market_slug")
@@ -353,17 +366,20 @@ def _load_rollover_candidate_from_state_config(latest_ngi_path: Path) -> dict[st
         "market_name",
         context="state_config.fallback_target",
     )
+    probability_mode = fallback.get("probability_mode")
     validate_optional_non_empty_string(
-        fallback.get("probability_mode"),
+        probability_mode,
         "probability_mode",
         context="state_config.fallback_target",
     )
+    if isinstance(probability_mode, str):
+        probability_mode = probability_mode.strip()
 
     return {
         "market_id": market_id,
         "market_slug": market_slug,
         "market_name": market_name,
-        "probability_mode": fallback.get("probability_mode"),
+        "probability_mode": probability_mode,
         "source": "state_config_fallback",
         "state": current_state,
     }

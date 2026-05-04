@@ -1064,3 +1064,12 @@
 - [x] 2026-05-04 21:03:52+0800: Advanced the ops-health fallback config projection boundary by canonicalizing optional `state_config.fallback_target.market_question` after validation before emitting rollover candidate evidence.
 - [x] 2026-05-04 21:03:52+0800: Added a red-green ops-health regression proving whitespace-padded fallback `market_question` now emits a stripped value in both `rollover_candidate` and `active_target_reselection.rollover_candidate`.
 - [ ] Retry GitHub access, publish `codex/state-config-schema-followup`, open PR to `main`, and continue post-PR35 runtime work only after remote state is confirmed.
+
+### Task 121: 2026-05-04 22:02+08:00 ops-health state-config current-state canonicalization
+- [x] 2026-05-04 22:02:52+0800: Current branch is `codex/state-config-schema-followup`; local `origin/main` is `06b64a2`, which already contains the prior state-config fallback identity/market-question patches from #36.
+- [x] 2026-05-04 22:02:52+0800: `git fetch --prune origin` retried and failed (`Could not resolve host: github.com`, rc=128), so upstream freshness cannot be verified beyond existing local refs.
+- [x] 2026-05-04 22:02:52+0800: `gh pr list --state all --limit 20` and `gh issue list --state all --limit 20` failed with `error connecting to api.github.com`, so PR/issue/comment queues cannot be refreshed.
+- [x] 2026-05-04 22:02:52+0800: Local-only rebase sanity showed the previous `598f212` market-question patch contents were already upstream in local `origin/main`; branch was reattached to `codex/state-config-schema-followup` and upstream tracking was unset because the remote branch is gone.
+- [x] 2026-05-04 22:02:52+0800: Advanced the ops-health fallback config boundary by canonicalizing `state_config.current_state` before current-state bundle lookup and rollover candidate projection.
+- [x] 2026-05-04 22:02:52+0800: Added a red-green ops-health regression proving whitespace-padded `current_state` now resolves `ACTIVE_TRUCE` and emits canonical rollover candidate state instead of failing as a missing bundle.
+- [ ] Retry GitHub access, publish `codex/state-config-schema-followup`, open PR to `main`, and continue post-PR36 runtime work only after remote state is confirmed.

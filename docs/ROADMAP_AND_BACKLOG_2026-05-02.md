@@ -72,6 +72,7 @@
    - 2026-05-04 19:03+08:00：已加固 ops-health state-config fallback probability-mode projection；configured `fallback_target.probability_mode` 會以 canonical non-empty string 投影，避免 operator-facing rollover candidate 帶前後空白。
    - 2026-05-04 20:02+08:00：已加固 ops-health state-config fallback identity projection；configured `fallback_target.market_id`、`market_slug` 與 `market_name` 會以 canonical non-empty string 投影，避免 operator-facing rollover candidate 帶前後空白。
    - 2026-05-04 21:03+08:00：已加固 ops-health state-config fallback display projection；configured `fallback_target.market_question` 若存在會以 canonical non-empty string 投影，避免 configured successor 的 operator-facing question 帶前後空白或被靜默省略。
+   - 2026-05-04 22:02+08:00：已加固 ops-health state-config current-state projection；`current_state` 會先 canonicalize 再 lookup current bundle 與投影到 rollover candidate，避免前後空白導致 configured successor 被誤判缺失。
 
 5. **Freshness + DQ 監控門檻固定化**
    - 明確把 `latest_ngi_age_hours > 4` 直接設為硬阻斷。
@@ -160,6 +161,7 @@
 - ops-health active-target reselection acceptance object 若 `reselection_required=true`，`runtime_target_id` 與 `market_question` 必須維持 non-empty string schema，不能輸出缺少 target/question 的 P0 acceptance evidence。
 - ops-health state-config fallback successor 也必須維持 identity/display string schema；沒有 runtime source 時，configured `fallback_target` 不能把 malformed `market_id`、`market_slug`、`market_name` 或 `probability_mode` 投影成 pending-validation rollover candidate。
 - ops-health state-config fallback display 欄位若提供 `market_question`，也必須維持 canonical non-empty string schema，不能讓 configured successor 的 operator-facing question 帶前後空白或被省略。
+- ops-health state-config `current_state` lookup 必須使用 canonical non-empty string；前後空白不能讓 configured current-state bundle lookup 失敗，或把 padded state 投影到 rollover candidate。
 - ops-health state-config fallback path 的外層 config 也必須維持 schema；`state_config` payload、`states`、`current_state` 與 current-state bundle 不能用 malformed JSON 型別觸發不明確 parser error 或靜默省略 configured successor。
 - ops-health state-config fallback target 若存在也必須是 JSON object；malformed `fallback_target` 不能被當作沒有 configured successor 而靜默輸出 `rollover_candidate=null`。
 - ops-health state-config `current_state` 若存在也必須是 non-empty string；空字串不能被當成缺省狀態，避免 configured successor lookup 被靜默改到 `PRE_AGREEMENT`。

@@ -108,6 +108,7 @@
   - 2026-05-04 04:48+08:00：PO 正式將此刀升為唯一 P0 next cut；在 closed target、`market_accepting_orders=false`、`latest_ngi_stale=true` 且 divergence 仍高於 15pp 的情況下，後續 heartbeat / review / upstream 都以這份 reselection acceptance evidence 是否齊備作為唯一先決條件。
   - 2026-05-04 05:03+08:00：ops-health blocking output 已新增 `active_target_reselection` acceptance object，讓 stale/closed/divergent real-path 摘要仍保留可審核的 target id、market question、reselection action 與唯一 rollover candidate。
   - 2026-05-04 08:03+08:00：已加固 selected rollover candidate projection；明確 open/accepting successor 若缺少 machine-readable `market_id`、`market_slug`、`market_name` 或 `market_question`，ops-health 會 fail closed，不再輸出帶 `null` 的 reselection acceptance evidence。
+  - 2026-05-04 17:20+08:00：PO 依 live verifier 再確認，當前 target 仍是 closed / not accepting orders，且 `latest_ngi_age_hours=6.09` 已超過 4 小時硬門檻；下一個 P0 cut 不只要補 deterministic successor validation / recut，還必須把 fresh NGI refresh 一起納入 acceptance，否則 reselection evidence 仍會被 stale blocker 擋住，無法視為可 merge 的產品前進。
 - 同次證據包重放腳本仍有 stale reuse 風險。
   - 2026-05-02 13:04+08:00：已加固 `write_dispatcher_e2e_bundle` 的 alert artifact 載入邊界，若檔名要求的 run id 與 JSON 內 `run_id` 不一致會 fail closed，避免 standalone E2E bundle 重用 stale alert artifact。
   - 2026-05-02 14:03+08:00：已加固 `write_dispatcher_e2e_bundle` 的 delivery receipt 載入邊界，若檔名要求的 run id 與 receipt JSON 內 `run_id` 不一致會 fail closed，避免 delivery proof 被 stale receipt 汙染。

@@ -1028,3 +1028,12 @@
 - [x] 2026-05-04 17:02:14+0800: Advanced the ops-health fallback config boundary by translating malformed `state_config.json` decode failures into the stable schema error `state_config payload must be valid JSON`.
 - [x] 2026-05-04 17:02:14+0800: Added a red-green ops-health regression proving malformed configured fallback JSON now exits nonzero with the explicit state-config parser error instead of leaking Python JSONDecodeError text.
 - [ ] Retry GitHub access, publish `codex/state-config-schema-guard`, open PR to `main`, and continue post-PR34 runtime work only after remote state is confirmed.
+
+### Task 117: 2026-05-04 18:02+08:00 ops-health state-config current bundle presence guard
+- [x] 2026-05-04 18:02:39+0800: Current branch is `codex/state-config-schema-guard` at `d6a83ed`, matching local `origin/codex/state-config-schema-guard` before this run.
+- [x] 2026-05-04 18:02:39+0800: `git fetch --prune origin` retried and failed (`Could not resolve host: github.com`, rc=128), so upstream freshness cannot be verified beyond existing local refs.
+- [x] 2026-05-04 18:02:39+0800: `gh pr list --state all --limit 20` and `gh issue list --state all --limit 20` failed with `error connecting to api.github.com`, so PR/issue/comment queues cannot be refreshed.
+- [x] 2026-05-04 18:02:39+0800: `git rebase --fork-point origin/main` completed as a local-only sanity check and reported the branch up to date with the current local `origin/main` at `ff63fd2`.
+- [x] 2026-05-04 18:02:39+0800: Advanced the ops-health fallback config boundary by requiring `states[current_state]` to exist as a JSON object instead of defaulting missing bundles to an empty configured-successor set.
+- [x] 2026-05-04 18:02:39+0800: Added a red-green ops-health regression proving missing `state_config.states.ACTIVE_TRUCE` now exits nonzero with `state_config.states.ACTIVE_TRUCE must be a JSON object` instead of emitting blocking JSON with `rollover_candidate=null`.
+- [ ] Retry GitHub access, publish `codex/state-config-schema-guard`, open PR to `main`, and continue post-PR34 runtime work only after remote state is confirmed.

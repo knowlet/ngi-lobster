@@ -9,7 +9,7 @@
       "test-official"
     ],
     "source_paths": [
-      "/Users/knowlet/.openclaw/workspace/projects/ngi-lobster/tmp-official-state.json"
+      "tmp-official-state.json"
     ],
     "source_urls": [
       "https://example.com/b"
@@ -52,7 +52,7 @@
         "cursor": "2026-04-14T07:00:00+00:00",
         "updated_at_utc": "2026-04-14T07:30:56.326756+00:00",
         "metadata": {
-          "url": "file:///Users/knowlet/.openclaw/workspace/projects/ngi-lobster/tmp-official-feed.xml",
+          "url": "repo://tmp-official-feed.xml",
           "since_cursor": null
         }
       }
@@ -60,6 +60,6 @@
   },
   "raw_pointer": "official-statements-tracker",
   "metadata": {
-    "feed_url": "file:///Users/knowlet/.openclaw/workspace/projects/ngi-lobster/tmp-official-feed.xml"
+    "feed_url": "repo://tmp-official-feed.xml"
   }
 }

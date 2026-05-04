@@ -129,6 +129,55 @@ class SourceFusionTest(unittest.TestCase):
         self.assertTrue(result.data["target_detail"]["market_accepting_orders"])
         self.assertAlmostEqual(result.data["market_escalation_probability"], 0.58)
 
+    def test_source_fusion_does_not_rank_ambiguous_accepting_orders_as_true(self):
+        result = build_source_fusion_result(
+            SourceFusionInput(
+                official_statements={"ran_at_utc": "2026-04-15T00:00:00+00:00", "evidence": {"items": []}},
+                watchlist={"ran_at_utc": "2026-04-15T01:00:00+00:00", "evidence": {"items": []}},
+                firehose=None,
+                polymarket={
+                    "ran_at_utc": "2026-04-15T02:00:00+00:00",
+                    "evidence": {
+                        "items": [
+                            {
+                                "external_id": "ambiguous-successor",
+                                "title": "Ambiguous successor market",
+                                "url": "ambiguous-successor",
+                                "collected_at_utc": "2026-04-15T02:05:00+00:00",
+                                "metadata": {
+                                    "market_id": "ambiguous-successor",
+                                    "slug": "ambiguous-successor",
+                                    "yes_probability": 0.39,
+                                    "active": True,
+                                    "closed": False,
+                                    "accepting_orders": "unknown",
+                                    "source_config": {"label": "Ambiguous successor market"},
+                                },
+                            },
+                            {
+                                "external_id": "open-successor",
+                                "title": "Open successor market",
+                                "url": "open-successor",
+                                "collected_at_utc": "2026-04-15T02:01:00+00:00",
+                                "metadata": {
+                                    "market_id": "open-successor",
+                                    "slug": "open-successor",
+                                    "yes_probability": 0.42,
+                                    "active": True,
+                                    "closed": False,
+                                    "accepting_orders": True,
+                                    "source_config": {"label": "Open successor market"},
+                                },
+                            },
+                        ]
+                    },
+                },
+            )
+        )
+
+        self.assertEqual(result.data["market_target"]["market_id"], "open-successor")
+        self.assertTrue(result.data["target_detail"]["market_accepting_orders"])
+
     def test_source_fusion_preserves_market_accepting_orders_flag(self):
         result = build_source_fusion_result(
             SourceFusionInput(

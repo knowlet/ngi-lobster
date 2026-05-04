@@ -87,7 +87,13 @@ def _flag(value: Any) -> bool | None:
             return True
         if normalized in {"false", "0", "no", "n", "off"}:
             return False
-    return bool(value)
+        return None
+    if isinstance(value, (int, float)):
+        if value == 1:
+            return True
+        if value == 0:
+            return False
+    return None
 
 
 def _market_item_rank(item: dict[str, Any]) -> tuple[int, int, int, float]:

@@ -50,7 +50,7 @@
         "cursor": "2026-04-14T09:00:00+00:00",
         "updated_at_utc": "2026-04-21T09:04:08.129040+00:00",
         "metadata": {
-          "url": "file:///Users/knowlet/.openclaw/workspace/projects/ngi-lobster/tmp-test-watch-feed.xml",
+          "url": "repo://tmp-test-watch-feed.xml",
           "source_type": "analyst_feed",
           "since_cursor": null
         }
@@ -59,6 +59,6 @@
   },
   "raw_pointer": "20260421T090408Z",
   "metadata": {
-    "feed_url": "file:///Users/knowlet/.openclaw/workspace/projects/ngi-lobster/tmp-test-watch-feed.xml"
+    "feed_url": "repo://tmp-test-watch-feed.xml"
   }
 }

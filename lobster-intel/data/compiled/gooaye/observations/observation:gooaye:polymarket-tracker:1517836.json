@@ -26,7 +26,7 @@
   "event_type": "market_candidate",
   "stance": "market_snapshot",
   "time_window": {
-    "start_at_utc": "2026-06-30T23:55:00Z",
+    "start_at_utc": "2026-04-14T12:53:36.530942+00:00",
     "end_at_utc": "2026-04-14T12:53:36.530942+00:00"
   },
   "location": null,

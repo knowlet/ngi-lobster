@@ -34,6 +34,6 @@
   "source_confidence": 0.55,
   "extractive_rationale": "Watch Test",
   "metadata": {
-    "feed_url": "file:///Users/knowlet/.openclaw/workspace/projects/ngi-lobster/tmp-test-watch-feed.xml"
+    "feed_url": "repo://tmp-test-watch-feed.xml"
   }
 }

@@ -9,7 +9,7 @@
       "test-official"
     ],
     "source_paths": [
-      "/Users/knowlet/.openclaw/workspace/projects/ngi-lobster/tmp-official-state.json"
+      "tmp-official-state.json"
     ],
     "source_urls": [
       "https://example.com/b"
@@ -36,6 +36,6 @@
   "source_confidence": 0.7,
   "extractive_rationale": "Statement B",
   "metadata": {
-    "feed_url": "file:///Users/knowlet/.openclaw/workspace/projects/ngi-lobster/tmp-official-feed.xml"
+    "feed_url": "repo://tmp-official-feed.xml"
   }
 }

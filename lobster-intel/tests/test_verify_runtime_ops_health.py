@@ -976,8 +976,10 @@ def test_verify_runtime_ops_health_fails_when_probability_fields_are_malformed(
 ):
     for context, key, replacement in (
         ("latest_ngi", "first_principles_probability", True),
+        ("latest_ngi", "first_principles_probability", float("nan")),
         ("target_detail", "market_yes_probability", "0.62"),
         ("target_detail", "market_yes_probability", 1.2),
+        ("target_detail", "market_yes_probability", float("inf")),
     ):
         case_dir = tmp_path / f"{context}-{key}-{str(replacement).lower()}"
         case_dir.mkdir()

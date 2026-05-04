@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import math
 import os
 import sqlite3
 import sys
@@ -61,7 +62,7 @@ def validate_probability(value: object, key: str, *, context: str) -> float:
     if isinstance(value, bool) or not isinstance(value, (int, float)):
         raise RuntimeError(f"{context}.{key} must be a JSON number between 0 and 1")
     probability = float(value)
-    if probability < 0 or probability > 1:
+    if not math.isfinite(probability) or not 0 <= probability <= 1:
         raise RuntimeError(f"{context}.{key} must be a JSON number between 0 and 1")
     return probability
 

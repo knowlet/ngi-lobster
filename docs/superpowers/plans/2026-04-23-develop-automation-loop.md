@@ -6,7 +6,7 @@
 
 **Tech Stack:** Git, GitHub remote workflow, project plan docs.
 
-**Status:** In progress on local branch `codex/state-config-schema-followup` after local `origin/main` advanced to PR #35 merge commit `13476d7`; remote confirmation/push remains blocked by GitHub DNS/API access.
+**Status:** In progress on local branch `codex/state-config-schema-followup-2` after local `origin/main` advanced to PR #37 merge commit `27e4e33`; remote confirmation/push remains blocked by GitHub DNS/API access.
 
 > **PR29 checkpoint note:** This document is a clean PR29/PR30 docs-only handoff cut. Historical references to `codex/pr21-recut-dispatcher-receipt-guard` below are preserved as execution context from the original runtime branch, not as the active review branch for this replacement PR.
 
@@ -1073,3 +1073,12 @@
 - [x] 2026-05-04 22:02:52+0800: Advanced the ops-health fallback config boundary by canonicalizing `state_config.current_state` before current-state bundle lookup and rollover candidate projection.
 - [x] 2026-05-04 22:02:52+0800: Added a red-green ops-health regression proving whitespace-padded `current_state` now resolves `ACTIVE_TRUCE` and emits canonical rollover candidate state instead of failing as a missing bundle.
 - [ ] Retry GitHub access, publish `codex/state-config-schema-followup`, open PR to `main`, and continue post-PR36 runtime work only after remote state is confirmed.
+
+### Task 122: 2026-05-04 23:03+08:00 ops-health state-config source metadata projection
+- [x] 2026-05-04 23:03:41+0800: Current branch started on `codex/state-config-schema-followup` at `312e386`, but the upstream tracking ref was gone and local `origin/main` had advanced to `27e4e33` from PR #37.
+- [x] 2026-05-04 23:03:41+0800: `git fetch --prune origin` retried and failed (`Could not resolve host: github.com`, rc=128), so upstream freshness cannot be verified beyond existing local refs.
+- [x] 2026-05-04 23:03:41+0800: `gh pr list --state all --limit 20` and `gh issue list --state all --limit 20` failed with `error connecting to api.github.com`, so PR/issue/comment queues cannot be refreshed.
+- [x] 2026-05-04 23:03:41+0800: Created fresh branch `codex/state-config-schema-followup-2` from local `origin/main` at `27e4e33` to avoid continuing on a gone PR branch.
+- [x] 2026-05-04 23:03:41+0800: Advanced the ops-health fallback config projection boundary by validating and canonicalizing optional `state_config.fallback_target.type` and `topic_slug` before emitting pending-validation rollover candidate evidence.
+- [x] 2026-05-04 23:03:41+0800: Added a red-green ops-health regression proving whitespace-padded fallback source metadata now emits canonical `target_type` and `topic_slug` in both `rollover_candidate` and `active_target_reselection.rollover_candidate`.
+- [ ] Retry GitHub access, publish `codex/state-config-schema-followup-2`, open PR to `main`, and continue post-PR37 runtime work only after remote state is confirmed.

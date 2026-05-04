@@ -73,6 +73,7 @@
    - 2026-05-04 20:02+08:00：已加固 ops-health state-config fallback identity projection；configured `fallback_target.market_id`、`market_slug` 與 `market_name` 會以 canonical non-empty string 投影，避免 operator-facing rollover candidate 帶前後空白。
    - 2026-05-04 21:03+08:00：已加固 ops-health state-config fallback display projection；configured `fallback_target.market_question` 若存在會以 canonical non-empty string 投影，避免 configured successor 的 operator-facing question 帶前後空白或被靜默省略。
    - 2026-05-04 22:02+08:00：已加固 ops-health state-config current-state projection；`current_state` 會先 canonicalize 再 lookup current bundle 與投影到 rollover candidate，避免前後空白導致 configured successor 被誤判缺失。
+   - 2026-05-04 23:03+08:00：已加固 ops-health state-config fallback source metadata projection；configured `fallback_target.type` 與 `topic_slug` 若存在會以 canonical non-empty string 投影到 pending-validation rollover candidate，避免 operator-facing successor evidence 遺失來源分類。
 
 5. **Freshness + DQ 監控門檻固定化**
    - 明確把 `latest_ngi_age_hours > 4` 直接設為硬阻斷。
@@ -167,6 +168,7 @@
 - ops-health state-config `current_state` 若存在也必須是 non-empty string；空字串不能被當成缺省狀態，避免 configured successor lookup 被靜默改到 `PRE_AGREEMENT`。
 - ops-health state-config `current_state` 也必須明確存在；缺欄位不能套用 legacy default，避免 operator 以為沒有 configured successor 可用。
 - ops-health state-config `current_state` 指向的 current-state bundle 必須明確存在且為 JSON object；缺失 bundle 不能被當成空設定並靜默省略 configured successor。
+- ops-health state-config fallback source metadata 若提供 `type` / `topic_slug`，也必須維持 canonical non-empty string schema，並投影進 pending-validation rollover candidate。
 - ops-health state-config fallback 檔案也必須是 valid JSON；malformed configured fallback 不能把底層 JSONDecodeError 直接洩漏到 operator-facing schema boundary。
 - ops-health 的 latest NGI timestamp 欄位若存在，也必須維持 ISO-8601 schema，不能把 malformed timestamp 洩漏成底層 parser error。
 - ops-health 的 SQLite freshness timestamp `market_snapshots.snapshot_at_utc` 也必須維持 ISO-8601 schema，不能把 malformed store timestamp 洩漏成底層 parser error。

@@ -69,6 +69,7 @@
    - 2026-05-04 16:03+08:00：已加固 ops-health state-config current-state presence schema；提供 `state_config` 時 `current_state` 必須明確存在且為 non-empty string，避免缺欄位被隱性改成 `PRE_AGREEMENT` 並靜默省略 configured successor。
    - 2026-05-04 17:02+08:00：已加固 ops-health state-config JSON parser 邊界；configured fallback 檔案若不是 valid JSON，會以 `state_config payload must be valid JSON` fail closed，不再洩漏 Python JSONDecodeError 給 operator。
    - 2026-05-04 18:02+08:00：已加固 ops-health state-config current-state bundle lookup；`current_state` 指向缺失的 state bundle 時會 fail closed，不再靜默輸出 `rollover_candidate=null`。
+   - 2026-05-04 19:03+08:00：已加固 ops-health state-config fallback probability-mode projection；configured `fallback_target.probability_mode` 會以 canonical non-empty string 投影，避免 operator-facing rollover candidate 帶前後空白。
 
 5. **Freshness + DQ 監控門檻固定化**
    - 明確把 `latest_ngi_age_hours > 4` 直接設為硬阻斷。

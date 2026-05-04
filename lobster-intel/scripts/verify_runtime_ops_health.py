@@ -366,17 +366,20 @@ def _load_rollover_candidate_from_state_config(latest_ngi_path: Path) -> dict[st
         "market_name",
         context="state_config.fallback_target",
     )
+    probability_mode = fallback.get("probability_mode")
     validate_optional_non_empty_string(
-        fallback.get("probability_mode"),
+        probability_mode,
         "probability_mode",
         context="state_config.fallback_target",
     )
+    if isinstance(probability_mode, str):
+        probability_mode = probability_mode.strip()
 
     return {
         "market_id": market_id,
         "market_slug": market_slug,
         "market_name": market_name,
-        "probability_mode": fallback.get("probability_mode"),
+        "probability_mode": probability_mode,
         "source": "state_config_fallback",
         "state": current_state,
     }

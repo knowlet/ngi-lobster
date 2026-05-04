@@ -992,3 +992,12 @@
 - [x] 2026-05-04 13:03:27+0800: Advanced the ops-health fallback config boundary by requiring `state_config` payload, `states`, `current_state`, and current-state bundle schema before fallback successor projection.
 - [x] 2026-05-04 13:03:27+0800: Added a red-green ops-health regression proving malformed `state_config.states` now exits nonzero with `state_config.states must be a JSON object` instead of leaking a Python AttributeError.
 - [ ] Retry GitHub access, publish `codex/state-config-schema-guard`, open PR to `main`, and continue post-PR34 runtime work only after remote state is confirmed.
+
+### Task 113: 2026-05-04 14:03+08:00 ops-health fallback target object schema guard
+- [x] 2026-05-04 14:03:54+0800: Current branch is `codex/state-config-schema-guard` at `95038d0`, tracking local `origin/codex/state-config-schema-guard` before this run.
+- [x] 2026-05-04 14:03:54+0800: `git fetch --prune origin` retried and failed (`Could not resolve host: github.com`, rc=128), so upstream freshness cannot be verified beyond existing local refs.
+- [x] 2026-05-04 14:03:54+0800: `gh pr list --state all --limit 20` and `gh issue list --state all --limit 20` failed with `error connecting to api.github.com`, so PR/issue/comment queues cannot be refreshed.
+- [x] 2026-05-04 14:03:54+0800: `git rebase --fork-point origin/main` completed as a local-only sanity check and reported the branch up to date with the current local `origin/main` at `ff63fd2`.
+- [x] 2026-05-04 14:03:54+0800: Advanced the ops-health fallback config boundary by requiring present `state_config.fallback_target` values to be JSON objects instead of silently treating malformed configured successors as absent.
+- [x] 2026-05-04 14:03:54+0800: Added a red-green ops-health regression proving list-valued `fallback_target` now exits nonzero with `state_config.fallback_target must be a JSON object` instead of emitting `rollover_candidate=null`.
+- [ ] Retry GitHub access, publish `codex/state-config-schema-guard`, open PR to `main`, and continue post-PR34 runtime work only after remote state is confirmed.

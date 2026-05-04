@@ -337,9 +337,11 @@ def _load_rollover_candidate_from_state_config(latest_ngi_path: Path) -> dict[st
     bundle = states.get(current_state) or {}
     if not isinstance(bundle, dict):
         raise RuntimeError(f"state_config.states.{current_state} must be a JSON object")
-    fallback = bundle.get("fallback_target") or {}
-    if not isinstance(fallback, dict):
+    fallback = bundle.get("fallback_target")
+    if fallback is None:
         return None
+    if not isinstance(fallback, dict):
+        raise RuntimeError("state_config.fallback_target must be a JSON object")
 
     market_id = fallback.get("market_id")
     market_slug = fallback.get("market_slug")

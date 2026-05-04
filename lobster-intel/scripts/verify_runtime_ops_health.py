@@ -325,7 +325,10 @@ def _load_rollover_candidate_from_state_config(latest_ngi_path: Path) -> dict[st
     if not state_config_path.exists():
         return None
 
-    payload = json.loads(state_config_path.read_text(encoding="utf-8"))
+    try:
+        payload = json.loads(state_config_path.read_text(encoding="utf-8"))
+    except json.JSONDecodeError as exc:
+        raise RuntimeError("state_config payload must be valid JSON") from exc
     if not isinstance(payload, dict):
         raise RuntimeError("state_config payload must be a JSON object")
     states = payload.get("states", {})

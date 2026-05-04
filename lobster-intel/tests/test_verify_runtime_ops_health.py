@@ -1654,6 +1654,49 @@ def test_verify_runtime_ops_health_rejects_malformed_active_target_identity(tmp_
         assert result.stderr.strip() == f"latest_ngi.{context}.{key} must be a non-empty string"
 
 
+def test_verify_runtime_ops_health_strips_active_target_identity_fields(tmp_path: Path):
+    state_path = tmp_path / "STATE.yaml"
+    state_path.write_text('dq_status: "pass"\n', encoding="utf-8")
+    db_path = tmp_path / "intelligence_store.sqlite"
+    write_db(db_path, "2099-01-01T00:00:00+00:00")
+    latest_ngi_path = tmp_path / "latest_ngi.json"
+    write_latest_ngi(
+        latest_ngi_path,
+        first_principles_probability=0.52,
+        market_yes_probability=0.60,
+        market_closed=True,
+        market_accepting_orders=False,
+    )
+    latest_ngi = json.loads(latest_ngi_path.read_text(encoding="utf-8"))
+    latest_ngi["market_target"]["market_id"] = " 1517836 "
+    latest_ngi["market_target"]["market_name"] = (
+        " Trump announces end of military operations against Iran by June 30th "
+    )
+    latest_ngi["target_detail"]["market_id"] = " 1517836 "
+    latest_ngi["target_detail"]["market_question"] = (
+        " Trump announces end of military operations against Iran by June 30th? "
+    )
+    latest_ngi["target_detail"]["probability_mode"] = " yes_is_peace "
+    latest_ngi_path.write_text(json.dumps(latest_ngi), encoding="utf-8")
+
+    result = run_cli(state_path, db_path, latest_ngi_path)
+
+    assert result.returncode == 1
+    assert result.stderr == ""
+    payload = json.loads(result.stdout)
+    assert payload["market_target_id"] == "1517836"
+    assert (
+        payload["market_target_name"]
+        == "Trump announces end of military operations against Iran by June 30th"
+    )
+    assert payload["probability_mode"] == "yes_is_peace"
+    assert payload["active_target_reselection"]["runtime_target_id"] == "1517836"
+    assert (
+        payload["active_target_reselection"]["market_question"]
+        == "Trump announces end of military operations against Iran by June 30th?"
+    )
+
+
 def test_verify_runtime_ops_health_fails_when_rollover_candidate_probability_is_malformed(
     tmp_path: Path,
 ):

@@ -87,6 +87,13 @@ def require_non_empty_string(value: object, key: str, *, context: str) -> str:
     return value
 
 
+def canonical_optional_string(value: object) -> str | None:
+    if value is None:
+        return None
+    assert isinstance(value, str)
+    return value.strip()
+
+
 def read_optional_object(payload: dict[str, object], key: str, *, context: str) -> dict[str, object]:
     value = payload.get(key)
     if value is None:
@@ -460,9 +467,13 @@ def build_summary(
     validate_optional_non_empty_string(
         latest_ngi.get("probability_mode"), "probability_mode", context="latest_ngi"
     )
-    probability_mode = (
-        target_detail.get("probability_mode") or latest_ngi.get("probability_mode") or "unknown"
-    )
+    market_target_id = canonical_optional_string(market_target.get("market_id"))
+    market_target_name = canonical_optional_string(market_target.get("market_name"))
+    target_detail_id = canonical_optional_string(target_detail.get("market_id"))
+    target_detail_question = canonical_optional_string(target_detail.get("market_question"))
+    target_probability_mode = canonical_optional_string(target_detail.get("probability_mode"))
+    latest_probability_mode = canonical_optional_string(latest_ngi.get("probability_mode"))
+    probability_mode = target_probability_mode or latest_probability_mode or "unknown"
     divergence_pp = abs(first_principles_probability - market_yes_probability) * 100.0
     first_principles_minus_market_pp = (first_principles_probability - market_yes_probability) * 100.0
     freshness_hours_display = round(freshness_hours, 4)
@@ -486,9 +497,10 @@ def build_summary(
     )
     reselection_required = closed_target_blocking
     runtime_source_payload = _parse_runtime_source_payload(runtime_source_path)
+    current_market_id = market_target_id or target_detail_id
     rollover_candidate = _select_rollover_candidate(
         runtime_source_payload,
-        current_market_id=str(market_target.get("market_id") or target_detail.get("market_id") or "") or None,
+        current_market_id=current_market_id,
     )
     rollover_candidate_blocker = None
     if reselection_required:
@@ -499,7 +511,7 @@ def build_summary(
         if rollover_candidate_blocker is None:
             rollover_candidate_blocker = _describe_rollover_candidate_blocker(
                 runtime_source_payload,
-                current_market_id=str(market_target.get("market_id") or target_detail.get("market_id") or "") or None,
+                current_market_id=current_market_id,
                 rollover_candidate=rollover_candidate,
             )
 
@@ -528,8 +540,8 @@ def build_summary(
         status = "fail"
         blockers.append(f"divergence_pp={divergence_pp_display:.2f}")
 
-    runtime_target_id = market_target.get("market_id") or target_detail.get("market_id")
-    market_question = target_detail.get("market_question")
+    runtime_target_id = market_target_id or target_detail_id
+    market_question = target_detail_question
     if reselection_required:
         runtime_target_id = require_non_empty_string(
             runtime_target_id,
@@ -570,8 +582,8 @@ def build_summary(
         "first_principles_minus_market_pp": first_principles_minus_market_pp_display,
         "direction": compute_signed_divergence_direction(first_principles_minus_market_pp),
         "probability_mode": probability_mode,
-        "market_target_id": market_target.get("market_id") or target_detail.get("market_id"),
-        "market_target_name": market_target.get("market_name") or target_detail.get("market_question"),
+        "market_target_id": market_target_id or target_detail_id,
+        "market_target_name": market_target_name or target_detail_question,
         "market_closed": market_closed,
         "market_accepting_orders": market_accepting_orders,
         "closed_target_blocking": closed_target_blocking,

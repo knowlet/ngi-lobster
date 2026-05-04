@@ -1,4 +1,5 @@
 import json
+import os
 import subprocess
 import sys
 from pathlib import Path
@@ -72,16 +73,27 @@ def write_runtime_source(path: Path, *, items: list[dict[str, object]]):
     )
 
 
-def run_cli(state_path: Path, db_path: Path, latest_ngi_path: Path, runtime_source_path: Path | None = None):
+def run_cli(
+    state_path: Path,
+    db_path: Path,
+    latest_ngi_path: Path,
+    runtime_source_path: Path | None = None,
+    *,
+    env: dict[str, str] | None = None,
+):
     argv = [sys.executable, str(SCRIPT), str(state_path), str(db_path), str(latest_ngi_path)]
     if runtime_source_path is not None:
         argv.append(str(runtime_source_path))
+    effective_env = os.environ.copy()
+    if env:
+        effective_env.update(env)
     return subprocess.run(
         argv,
         cwd=REPO,
         text=True,
         capture_output=True,
         check=False,
+        env=effective_env,
     )
 
 
@@ -400,6 +412,65 @@ def test_verify_runtime_ops_health_fails_closed_when_market_is_closed(tmp_path: 
         "published_at_utc": None,
     }
     assert payload["blockers"] == ["market_closed=true", "market_accepting_orders=false"]
+
+
+def test_verify_runtime_ops_health_uses_state_config_fallback_for_live_reselection_cut(
+    tmp_path: Path,
+):
+    state_path = tmp_path / "STATE.yaml"
+    state_path.write_text('dq_status: "pass"\n', encoding="utf-8")
+    db_path = tmp_path / "intelligence_store.sqlite"
+    write_db(db_path, "2099-01-01T00:00:00+00:00")
+    latest_ngi_path = tmp_path / "latest_ngi.json"
+    write_latest_ngi(
+        latest_ngi_path,
+        first_principles_probability=0.52,
+        market_yes_probability=0.60,
+        market_closed=True,
+        market_accepting_orders=False,
+    )
+    state_config_path = tmp_path / "state_config.json"
+    state_config_path.write_text(
+        json.dumps(
+            {
+                "current_state": "ACTIVE_TRUCE",
+                "states": {
+                    "ACTIVE_TRUCE": {
+                        "fallback_target": {
+                            "market_id": "1517835",
+                            "market_slug": "fallback-market",
+                            "market_name": "Fallback target",
+                            "probability_mode": "yes_is_peace",
+                        }
+                    }
+                },
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    result = run_cli(
+        state_path,
+        db_path,
+        latest_ngi_path,
+        env={"LOBSTER_STATE_CONFIG_PATH": str(state_config_path)},
+    )
+
+    assert result.returncode == 1
+    payload = json.loads(result.stdout)
+    assert payload["closed_target_blocking"] is True
+    assert payload["reselection_required"] is True
+    assert payload["next_contract_action"] == "reselect_active_target"
+    assert payload["rollover_candidate"] == {
+        "market_id": "1517835",
+        "market_slug": "fallback-market",
+        "market_name": "Fallback target",
+        "probability_mode": "yes_is_peace",
+        "source": "state_config_fallback",
+        "state": "ACTIVE_TRUCE",
+    }
+    assert payload["rollover_candidate_blocker"] == "configured_successor_pending_validation"
+    assert payload["active_target_reselection"]["rollover_candidate"] == payload["rollover_candidate"]
 
 
 def test_verify_runtime_ops_health_ignores_ambiguous_runtime_boolean_for_rollover_rank(tmp_path: Path):

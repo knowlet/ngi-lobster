@@ -256,6 +256,12 @@ def build_live_progress_sync_payload(
             "latest_ngi_threshold_hours": ops_health["latest_ngi_threshold_hours"],
             "latest_ngi_stale": ops_health["latest_ngi_stale"],
         },
+        "contract_action": {
+            "reselection_required": ops_health["reselection_required"],
+            "next_contract_action": ops_health["next_contract_action"],
+            "rollover_candidate": ops_health["rollover_candidate"],
+            "rollover_candidate_blocker": ops_health["rollover_candidate_blocker"],
+        },
         "blockers": list(ops_health["blockers"]),
         "basis_lines": basis,
     }

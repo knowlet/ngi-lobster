@@ -244,11 +244,31 @@ def _select_rollover_candidate(
     candidate = max(eligible, key=_market_item_rank)
     metadata = candidate.get("metadata") or {}
     source_config = metadata.get("source_config") or {}
+    market_id = require_non_empty_string(
+        metadata.get("market_id") or candidate.get("external_id"),
+        "market_id",
+        context="rollover_candidate",
+    )
+    market_slug = require_non_empty_string(
+        metadata.get("slug") or candidate.get("url"),
+        "market_slug",
+        context="rollover_candidate",
+    )
+    market_name = require_non_empty_string(
+        source_config.get("label") or candidate.get("title"),
+        "market_name",
+        context="rollover_candidate",
+    )
+    market_question = require_non_empty_string(
+        candidate.get("title"),
+        "market_question",
+        context="rollover_candidate",
+    )
     return {
-        "market_id": metadata.get("market_id") or candidate.get("external_id"),
-        "market_slug": metadata.get("slug") or candidate.get("url"),
-        "market_name": source_config.get("label") or candidate.get("title"),
-        "market_question": candidate.get("title"),
+        "market_id": market_id,
+        "market_slug": market_slug,
+        "market_name": market_name,
+        "market_question": market_question,
         "market_yes_probability": metadata.get("yes_probability"),
         "market_closed": _as_bool(metadata.get("closed")),
         "market_active": _as_bool(metadata.get("active")),

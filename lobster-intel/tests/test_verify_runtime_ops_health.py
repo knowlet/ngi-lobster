@@ -549,6 +549,47 @@ def test_verify_runtime_ops_health_rejects_malformed_rollover_candidate_identity
     )
 
 
+def test_verify_runtime_ops_health_requires_selected_rollover_candidate_question(tmp_path: Path):
+    state_path = tmp_path / "STATE.yaml"
+    state_path.write_text('dq_status: "pass"\n', encoding="utf-8")
+    db_path = tmp_path / "intelligence_store.sqlite"
+    write_db(db_path, "2099-01-01T00:00:00+00:00")
+    latest_ngi_path = tmp_path / "latest_ngi.json"
+    write_latest_ngi(
+        latest_ngi_path,
+        first_principles_probability=0.52,
+        market_yes_probability=0.60,
+        market_closed=True,
+        market_accepting_orders=False,
+    )
+    runtime_source_path = tmp_path / "polymarket-runtime.json"
+    write_runtime_source(
+        runtime_source_path,
+        items=[
+            {
+                "external_id": "rollover-1518000",
+                "url": "open-successor",
+                "collected_at_utc": "2099-01-01T00:05:00+00:00",
+                "metadata": {
+                    "market_id": "rollover-1518000",
+                    "slug": "open-successor",
+                    "yes_probability": 0.42,
+                    "active": True,
+                    "closed": False,
+                    "accepting_orders": True,
+                    "source_config": {"label": "Open successor market"},
+                },
+            }
+        ],
+    )
+
+    result = run_cli(state_path, db_path, latest_ngi_path, runtime_source_path)
+
+    assert result.returncode == 1
+    assert result.stdout == ""
+    assert result.stderr.strip() == "rollover_candidate.market_question must be a non-empty string"
+
+
 def test_verify_runtime_ops_health_rejects_malformed_runtime_source_run_timestamp(tmp_path: Path):
     state_path = tmp_path / "STATE.yaml"
     state_path.write_text('dq_status: "pass"\n', encoding="utf-8")

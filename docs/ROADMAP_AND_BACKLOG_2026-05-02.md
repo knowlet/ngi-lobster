@@ -98,6 +98,7 @@
   - Deadline：2026-05-04 end of day（GMT+8）
   - 2026-05-04 04:48+08:00：PO 正式將此刀升為唯一 P0 next cut；在 closed target、`market_accepting_orders=false`、`latest_ngi_stale=true` 且 divergence 仍高於 15pp 的情況下，後續 heartbeat / review / upstream 都以這份 reselection acceptance evidence 是否齊備作為唯一先決條件。
   - 2026-05-04 05:03+08:00：ops-health blocking output 已新增 `active_target_reselection` acceptance object，讓 stale/closed/divergent real-path 摘要仍保留可審核的 target id、market question、reselection action 與唯一 rollover candidate。
+  - 2026-05-04 08:03+08:00：已加固 selected rollover candidate projection；明確 open/accepting successor 若缺少 machine-readable `market_id`、`market_slug`、`market_name` 或 `market_question`，ops-health 會 fail closed，不再輸出帶 `null` 的 reselection acceptance evidence。
 - 同次證據包重放腳本仍有 stale reuse 風險。
   - 2026-05-02 13:04+08:00：已加固 `write_dispatcher_e2e_bundle` 的 alert artifact 載入邊界，若檔名要求的 run id 與 JSON 內 `run_id` 不一致會 fail closed，避免 standalone E2E bundle 重用 stale alert artifact。
   - 2026-05-02 14:03+08:00：已加固 `write_dispatcher_e2e_bundle` 的 delivery receipt 載入邊界，若檔名要求的 run id 與 receipt JSON 內 `run_id` 不一致會 fail closed，避免 delivery proof 被 stale receipt 汙染。
@@ -135,6 +136,7 @@
 - ops-health runtime-source rollover candidate 的 `metadata.yes_probability` 若存在，也必須維持 0..1 JSON number schema，不能把字串、boolean 或超界值投影到 machine-readable successor 建議。
 - ops-health runtime-source rollover candidate 的 `collected_at_utc` / `published_at_utc` 若存在，也必須維持 ISO-8601 timestamp schema，不能把 malformed timestamp 投影到 operator-facing rollover guidance。
 - ops-health runtime-source rollover candidate 的 identity/display 欄位若存在，也必須維持 non-empty string schema，不能把 malformed target id、slug、title、url 或 label 投影到 operator-facing rollover guidance。
+- ops-health selected rollover candidate 的 projected identity/display 欄位必須解析為 non-empty string；即使 tracker item 本身通過 optional schema guard，也不能輸出缺少 `market_question` 等關鍵 acceptance 欄位的 candidate。
 - ops-health runtime-source payload 的 top-level `ran_at_utc` 若存在，也必須維持 ISO-8601 timestamp schema，不能把 malformed tracker run timestamp 帶進 operator 摘要。
 - ops-health latest NGI 的 `probability_mode` 若存在，也必須維持 non-empty string schema，不能把 malformed mode 欄位投影到 operator-facing 摘要。
 - ops-health latest NGI 的 active-target identity/display 欄位若存在，也必須維持 non-empty string schema，不能把 malformed `market_target` / `target_detail` target id、name 或 question 投影到 operator-facing 摘要。

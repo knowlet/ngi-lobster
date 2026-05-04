@@ -433,6 +433,59 @@ def test_build_live_progress_sync_payload_rejects_malformed_contract_envelope_fi
         )
 
 
+def test_build_live_progress_sync_payload_strips_contract_envelope_basis_fields(
+    tmp_path: Path,
+):
+    state_path = tmp_path / "STATE.yaml"
+    state_path.write_text('dq_status: "pass"\n', encoding="utf-8")
+    db_path = tmp_path / "intelligence_store.sqlite"
+    write_db(db_path, "2099-01-01T00:00:00+00:00")
+    latest_ngi_path = tmp_path / "latest_ngi.json"
+    write_latest_ngi(latest_ngi_path, include_delivery_proof=False)
+    latest_ngi = json.loads(latest_ngi_path.read_text(encoding="utf-8"))
+    latest_ngi.pop("explain")
+    latest_ngi["alert_disposition"]["decision"] = " suppressed "
+    latest_ngi["alert_disposition"]["should_send"] = False
+    latest_ngi["alert_disposition"]["reason_code"] = " no_change "
+    latest_ngi["alert_disposition"]["contract_version"] = " legacy-monitor-contract-v1 "
+    latest_ngi["alert_disposition"]["e2e_run_id"] = " legacy-monitor-20260501T002054.879803Z "
+    latest_ngi_path.write_text(json.dumps(latest_ngi), encoding="utf-8")
+
+    result = run_cli(state_path, db_path, latest_ngi_path)
+
+    assert result.returncode == 0, result.stderr
+    sync_payload = json.loads(result.stdout)
+    assert (
+        sync_payload["basis_lines"]["logistics"]
+        == "live alert disposition suppressed / no_change"
+    )
+    assert sync_payload["alert_disposition"]["contract_version"] == "legacy-monitor-contract-v1"
+    assert sync_payload["alert_disposition"]["e2e_run_id"] == "legacy-monitor-20260501T002054.879803Z"
+
+
+def test_build_basis_lines_falls_back_to_unknown_for_blank_contract_fields():
+    import importlib.util
+
+    sys.path.insert(0, str(SCRIPT.parent))
+    spec = importlib.util.spec_from_file_location("build_live_progress_sync_payload", SCRIPT)
+    assert spec is not None and spec.loader is not None
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+
+    latest_ngi = {
+        "alert_disposition": {"decision": "   ", "reason_code": "	"},
+    }
+    ops_health = {
+        "first_principles_probability": 0.25,
+        "market_yes_probability": 0.75,
+        "blockers": [],
+    }
+
+    basis = module._build_basis_lines(latest_ngi=latest_ngi, ops_health=ops_health)
+
+    assert basis["logistics"] == "live alert disposition unknown / unknown"
+
+
 def test_build_live_progress_sync_payload_requires_machine_readable_positive_delivery_proof(tmp_path: Path):
     for missing_key in ("boundary", "proof_id"):
         case_dir = tmp_path / missing_key

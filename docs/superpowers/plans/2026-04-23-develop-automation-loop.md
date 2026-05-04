@@ -1118,3 +1118,12 @@
 - [x] 2026-05-05 03:03:30+0800: Advanced the live-sync alert disposition boundary by canonicalizing parsed `should_send` and `target_contract_match` values before projecting them into operator-facing sync payloads.
 - [x] 2026-05-05 03:03:30+0800: Added a red-green live-sync regression proving padded serialized boolean fields now emit JSON booleans instead of raw strings.
 - [ ] Retry GitHub access, publish `codex/live-sync-schema-followup-3`, open PR to `main`, and continue post-PR42 runtime work only after remote state is confirmed.
+
+### Task 127: 2026-05-05 04:04+08:00 live-sync contract envelope basis canonicalization
+- [x] 2026-05-05 04:04:01+0800: Current branch started on `codex/live-sync-schema-followup-3` at `2a14618`, but its upstream tracking ref was gone and local `origin/main` had advanced to `8957f1a` from PR #43.
+- [x] 2026-05-05 04:04:01+0800: `git fetch --prune origin` retried and failed (`Could not resolve host: github.com`, rc=128), so upstream freshness cannot be verified beyond existing local refs.
+- [x] 2026-05-05 04:04:01+0800: `gh pr list --state all --limit 20` and `gh issue list --state all --limit 20` failed with `error connecting to api.github.com`, so PR/issue/comment queues cannot be refreshed.
+- [x] 2026-05-05 04:04:01+0800: Created fresh branch `codex/live-sync-schema-followup-4` from local `origin/main` at `8957f1a` to avoid continuing on a gone PR branch whose patch was already absorbed.
+- [x] 2026-05-05 04:04:01+0800: Advanced the live-sync contract envelope projection boundary by canonicalizing `decision` and `reason_code` before fallback `basis_lines.logistics` rendering.
+- [x] 2026-05-05 04:04:01+0800: Added a red-green live-sync regression proving padded contract envelope fields now emit stripped fallback basis text and stripped payload identifiers.
+- [ ] Retry GitHub access, publish `codex/live-sync-schema-followup-4`, open PR to `main`, and continue post-PR43 runtime work only after remote state is confirmed.

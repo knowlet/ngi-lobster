@@ -29,8 +29,9 @@ def _first_reason(payload: dict[str, Any]) -> str | None:
 
 
 def _build_basis_lines(*, latest_ngi: dict[str, Any], ops_health: dict[str, Any]) -> dict[str, str]:
-    decision = ((latest_ngi.get("alert_disposition") or {}).get("decision") or "unknown")
-    reason_code = ((latest_ngi.get("alert_disposition") or {}).get("reason_code") or "unknown")
+    alert_disposition = latest_ngi.get("alert_disposition") or {}
+    decision = str(alert_disposition.get("decision") or "unknown").strip()
+    reason_code = str(alert_disposition.get("reason_code") or "unknown").strip()
     logistics = _first_reason(latest_ngi) or f"live alert disposition {decision} / {reason_code}"
     energy = (
         "P_AI "

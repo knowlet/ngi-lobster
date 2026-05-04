@@ -153,6 +153,7 @@
 - live progress sync 即使是 non-positive payload，只要收到 `delivery_proof`，proof 內 machine-readable 欄位也必須維持字串 schema；malformed proof field 不能被投影到 operator-facing sync payload。
 - live progress sync 的 alert boolean flags 必須維持 JSON boolean projection；`should_send` / `target_contract_match` 可接受明確 serialized boolean input，但 operator-facing payload 不能再輸出 padded/raw 字串旗標。
 - live progress sync 的 alert contract envelope 必須維持 string schema；`decision`、`reason_code`、`contract_version`、`e2e_run_id` 不能用 malformed JSON 型別進入 operator-facing sync payload。
+- live progress sync 的 alert contract envelope 通過 schema 後也必須 canonicalize；`decision` / `reason_code` fallback 文案與 `contract_version` / `e2e_run_id` payload 不能保留前後空白。
 - live progress sync 若收到 `alert_disposition.target_contract_match`，即使 payload 是 suppressed/non-positive，也必須是明確 boolean-equivalent；ambiguous contract evidence 不能被投影進 operator-facing sync payload。
 - live progress sync 的 operator target display 欄位必須維持 string schema；`target_detail.market_question` 不能缺失或空白，避免 `blocking_summary` / `market_target` 輸出不可審核的空 question。
 - live progress sync 的 operator target display 欄位通過 schema 後也必須 canonicalize；`target_detail.market_question` 的前後空白不能原樣投影進 `blocking_summary` / `market_target`。

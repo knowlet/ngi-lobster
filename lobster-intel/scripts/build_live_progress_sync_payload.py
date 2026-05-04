@@ -104,7 +104,7 @@ def _require_non_empty_string(payload: dict[str, Any], key: str, *, context: str
     value = payload.get(key)
     if not isinstance(value, str) or not value.strip():
         raise RuntimeError(f"{context}.{key} must be a non-empty string")
-    return value
+    return value.strip()
 
 
 def _validate_delivery_proof_fields(proof: dict[str, Any]) -> None:

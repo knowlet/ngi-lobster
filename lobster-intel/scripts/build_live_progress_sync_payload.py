@@ -145,6 +145,18 @@ def _require_delivery_proof(alert_disposition: dict[str, Any]) -> dict[str, Any]
     return proof
 
 
+def _validate_non_positive_contract_match(alert_disposition: dict[str, Any]) -> None:
+    if _is_positive_delivery(alert_disposition):
+        return
+    if (
+        "target_contract_match" in alert_disposition
+        and _as_bool(alert_disposition.get("target_contract_match")) is None
+    ):
+        raise RuntimeError(
+            "latest_ngi.alert_disposition.target_contract_match must be a boolean-equivalent value"
+        )
+
+
 def build_live_progress_sync_payload(
     state_path: Path,
     db_path: Path,
@@ -165,6 +177,7 @@ def build_live_progress_sync_payload(
         alert_disposition, "decision", context="latest_ngi.alert_disposition"
     )
     delivery_proof = _require_delivery_proof(alert_disposition)
+    _validate_non_positive_contract_match(alert_disposition)
     reason_code = _require_non_empty_string(
         alert_disposition, "reason_code", context="latest_ngi.alert_disposition"
     )

@@ -503,6 +503,31 @@ def test_build_live_progress_sync_payload_rejects_ambiguous_contract_match(tmp_p
     assert result.stderr.strip() == "positive latest_ngi.alert_disposition.target_contract_match must be true"
 
 
+def test_build_live_progress_sync_payload_rejects_ambiguous_non_positive_contract_match(
+    tmp_path: Path,
+):
+    state_path = tmp_path / "STATE.yaml"
+    state_path.write_text('dq_status: "pass"\n', encoding="utf-8")
+    db_path = tmp_path / "intelligence_store.sqlite"
+    write_db(db_path, "2099-01-01T00:00:00+00:00")
+    latest_ngi_path = tmp_path / "latest_ngi.json"
+    write_latest_ngi(latest_ngi_path, include_delivery_proof=False)
+    latest_ngi = json.loads(latest_ngi_path.read_text(encoding="utf-8"))
+    latest_ngi["alert_disposition"]["decision"] = "suppressed"
+    latest_ngi["alert_disposition"]["should_send"] = False
+    latest_ngi["alert_disposition"]["target_contract_match"] = "unknown"
+    latest_ngi_path.write_text(json.dumps(latest_ngi), encoding="utf-8")
+
+    result = run_cli(state_path, db_path, latest_ngi_path)
+
+    assert result.returncode == 1
+    assert result.stdout == ""
+    assert (
+        result.stderr.strip()
+        == "latest_ngi.alert_disposition.target_contract_match must be a boolean-equivalent value"
+    )
+
+
 def test_build_live_progress_sync_payload_rejects_stale_latest_ngi(tmp_path: Path):
     state_path = tmp_path / "STATE.yaml"
     state_path.write_text('dq_status: "pass"\n', encoding="utf-8")

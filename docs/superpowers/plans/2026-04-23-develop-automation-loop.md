@@ -1127,3 +1127,12 @@
 - [x] 2026-05-05 04:04:01+0800: Advanced the live-sync contract envelope projection boundary by canonicalizing `decision` and `reason_code` before fallback `basis_lines.logistics` rendering.
 - [x] 2026-05-05 04:04:01+0800: Added a red-green live-sync regression proving padded contract envelope fields now emit stripped fallback basis text and stripped payload identifiers.
 - [ ] Retry GitHub access, publish `codex/live-sync-schema-followup-4`, open PR to `main`, and continue post-PR43 runtime work only after remote state is confirmed.
+
+### Task 128: 2026-05-05 05:02+08:00 live-sync delivery proof blank-field canonicalization
+- [x] 2026-05-05 05:02:53+0800: Current branch started on `codex/live-sync-schema-followup-4` at `b00d926`, but its upstream tracking ref was gone and local `origin/main` had advanced to `0017abe` from PR #44.
+- [x] 2026-05-05 05:02:53+0800: `git fetch --prune origin` retried and failed (`Could not resolve host: github.com`, rc=128), so upstream freshness cannot be verified beyond existing local refs.
+- [x] 2026-05-05 05:02:53+0800: `gh pr list --state all --limit 20` and `gh issue list --state all --limit 20` failed with `error connecting to api.github.com`, so PR/issue/comment queues cannot be refreshed.
+- [x] 2026-05-05 05:02:53+0800: Local-only rebase onto `origin/main` showed the previous `b00d926` patch was already absorbed, then created fresh branch `codex/live-sync-schema-followup-5` from local `origin/main`.
+- [x] 2026-05-05 05:02:53+0800: Advanced the live-sync delivery proof projection boundary by omitting blank proof fields after canonicalization while preserving valid fallback `sink_message_id` evidence.
+- [x] 2026-05-05 05:02:53+0800: Added a red-green live-sync regression proving blank `proof_id` no longer appears in operator-facing `delivery_proof` when `sink_message_id` is valid.
+- [ ] Retry GitHub access, publish `codex/live-sync-schema-followup-5`, open PR to `main`, and continue post-PR44 runtime work only after remote state is confirmed.

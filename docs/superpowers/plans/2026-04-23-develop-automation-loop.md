@@ -6,7 +6,7 @@
 
 **Tech Stack:** Git, GitHub remote workflow, project plan docs.
 
-**Status:** In progress on local branch `codex/state-config-schema-followup-2` after local `origin/main` advanced to PR #37 merge commit `27e4e33`; remote confirmation/push remains blocked by GitHub DNS/API access.
+**Status:** In progress on local branch `codex/state-config-schema-followup-3` after local `origin/main` advanced to PR #38 merge commit `a1d7f3c`; remote confirmation/push remains blocked by GitHub DNS/API access.
 
 > **PR29 checkpoint note:** This document is a clean PR29/PR30 docs-only handoff cut. Historical references to `codex/pr21-recut-dispatcher-receipt-guard` below are preserved as execution context from the original runtime branch, not as the active review branch for this replacement PR.
 
@@ -1082,3 +1082,12 @@
 - [x] 2026-05-04 23:03:41+0800: Advanced the ops-health fallback config projection boundary by validating and canonicalizing optional `state_config.fallback_target.type` and `topic_slug` before emitting pending-validation rollover candidate evidence.
 - [x] 2026-05-04 23:03:41+0800: Added a red-green ops-health regression proving whitespace-padded fallback source metadata now emits canonical `target_type` and `topic_slug` in both `rollover_candidate` and `active_target_reselection.rollover_candidate`.
 - [ ] Retry GitHub access, publish `codex/state-config-schema-followup-2`, open PR to `main`, and continue post-PR37 runtime work only after remote state is confirmed.
+
+### Task 123: 2026-05-05 00:03+08:00 live-sync latest NGI JSON parser guard
+- [x] 2026-05-05 00:03:00+0800: Current branch started on `codex/state-config-schema-followup-2` at `62e0145`, but its upstream tracking ref was gone and local `origin/main` had advanced to `a1d7f3c` from PR #38.
+- [x] 2026-05-05 00:03:00+0800: `git fetch --prune origin` retried and failed (`Could not resolve host: github.com`, rc=128), so upstream freshness cannot be verified beyond existing local refs.
+- [x] 2026-05-05 00:03:00+0800: `gh pr list --state all --limit 20` and `gh issue list --state all --limit 20` failed with `error connecting to api.github.com`, so PR/issue/comment queues cannot be refreshed.
+- [x] 2026-05-05 00:03:00+0800: Created fresh branch `codex/state-config-schema-followup-3` from local `origin/main` at `a1d7f3c` to avoid continuing on a gone PR branch.
+- [x] 2026-05-05 00:03:00+0800: Advanced the live-sync latest NGI parser boundary by translating malformed `latest_ngi.json` decode failures into the stable schema error `latest_ngi payload must be valid JSON`.
+- [x] 2026-05-05 00:03:00+0800: Added a red-green live-sync regression proving malformed `latest_ngi.json` now exits nonzero with the explicit parser error instead of leaking Python JSONDecodeError text.
+- [ ] Retry GitHub access, publish `codex/state-config-schema-followup-3`, open PR to `main`, and continue post-PR38 runtime work only after remote state is confirmed.

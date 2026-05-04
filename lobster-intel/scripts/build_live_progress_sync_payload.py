@@ -163,7 +163,10 @@ def build_live_progress_sync_payload(
     latest_ngi_path: Path,
     runtime_source_path: Path | None = None,
 ) -> dict[str, Any]:
-    latest_ngi = json.loads(latest_ngi_path.read_text(encoding="utf-8"))
+    try:
+        latest_ngi = json.loads(latest_ngi_path.read_text(encoding="utf-8"))
+    except json.JSONDecodeError as exc:
+        raise RuntimeError("latest_ngi payload must be valid JSON") from exc
     if not isinstance(latest_ngi, dict):
         raise RuntimeError("latest_ngi payload must be a JSON object")
     for key in REQUIRED_TOP_LEVEL_KEYS:

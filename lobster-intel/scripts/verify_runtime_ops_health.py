@@ -355,17 +355,17 @@ def _load_rollover_candidate_from_state_config(latest_ngi_path: Path) -> dict[st
         market_id,
         "market_id",
         context="state_config.fallback_target",
-    )
+    ).strip()
     market_slug = require_non_empty_string(
         market_slug,
         "market_slug",
         context="state_config.fallback_target",
-    )
+    ).strip()
     market_name = require_non_empty_string(
         market_name,
         "market_name",
         context="state_config.fallback_target",
-    )
+    ).strip()
     probability_mode = fallback.get("probability_mode")
     validate_optional_non_empty_string(
         probability_mode,

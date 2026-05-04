@@ -76,6 +76,47 @@ def _parse_ts(value: Any) -> datetime | None:
         return None
 
 
+def _flag(value: Any) -> bool | None:
+    if value is None:
+        return None
+    if isinstance(value, bool):
+        return value
+    if isinstance(value, str):
+        normalized = value.strip().lower()
+        if normalized in {"true", "1", "yes", "y", "on"}:
+            return True
+        if normalized in {"false", "0", "no", "n", "off"}:
+            return False
+        return None
+    if isinstance(value, (int, float)):
+        if value == 1:
+            return True
+        if value == 0:
+            return False
+    return None
+
+
+def _market_item_rank(item: dict[str, Any]) -> tuple[int, int, int, float]:
+    metadata = item.get("metadata") or {}
+    accepting_orders = _flag(metadata.get("accepting_orders"))
+    active = _flag(metadata.get("active"))
+    closed = _flag(metadata.get("closed"))
+    latest_dt = _parse_ts(item.get("collected_at_utc")) or _parse_ts(item.get("published_at_utc"))
+    latest_ts = latest_dt.timestamp() if latest_dt is not None else float("-inf")
+    return (
+        1 if accepting_orders is True else 0,
+        1 if closed is False else 0,
+        1 if active is True else 0,
+        latest_ts,
+    )
+
+
+def _select_market_item(items: list[dict[str, Any]]) -> dict[str, Any] | None:
+    if not items:
+        return None
+    return max(items, key=_market_item_rank)
+
+
 def _latest_item_ts(items: list[dict[str, Any]], field: str) -> str | None:
     latest_value: str | None = None
     latest_dt: datetime | None = None
@@ -121,7 +162,7 @@ def build_source_fusion_result(inp: SourceFusionInput) -> FusionComputationResul
     watchlist_items = _items(inp.watchlist)
     firehose_items = _items(inp.firehose)
     polymarket_items = _items(inp.polymarket)
-    market_item = polymarket_items[0] if polymarket_items else None
+    market_item = _select_market_item(polymarket_items)
 
     official_strength = _official_signal_strength(official_items)
     watchlist_strength = _watchlist_signal_strength(watchlist_items)
@@ -161,6 +202,7 @@ def build_source_fusion_result(inp: SourceFusionInput) -> FusionComputationResul
         "market_yes_probability": metadata.get("yes_probability"),
         "market_closed": metadata.get("closed"),
         "market_active": metadata.get("active"),
+        "market_accepting_orders": metadata.get("accepting_orders"),
         "probability_mode": "yes_is_peace",
     }
 

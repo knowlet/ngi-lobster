@@ -25,6 +25,11 @@ RELATIVE_SYNC_PATHS = (
         Path("lobster-intel/packages/lobster-delivery/lobster_delivery/dispatcher_artifacts.py"),
         "dispatcher artifacts",
     ),
+    (
+        Path("scripts/verify_runtime_ops_health.py"),
+        Path("lobster-intel/scripts/verify_runtime_ops_health.py"),
+        "runtime ops health verifier",
+    ),
 )
 
 

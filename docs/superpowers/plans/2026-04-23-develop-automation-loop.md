@@ -510,3 +510,476 @@
 - [x] 2026-05-02 06:03:06+0800: `gh pr list --state all --limit 20` and `gh issue list --state all --limit 20` failed with `error connecting to api.github.com`, so PR #30 merge-state and issue triage cannot be refreshed.
 - [x] 2026-05-02 06:03:06+0800: Open local work remains unchanged: PR #30 is still governed by the Task 52 external `CommitCheck` setup/removal gate, and no unchecked non-network implementation slice is available.
 - [ ] Retry GitHub access, confirm PR #30 `CommitCheck` status, then merge or resume runtime work only after that gate clears.
+
+### Task 59: 2026-05-02 07:01+08:00 network-blocked PR30 checkpoint
+- [x] 2026-05-02 07:01:41+0800: Current branch is `codex/pr29-clean-runtime-cut` at `5303fed`, matching local `origin/codex/pr29-clean-runtime-cut` before this checkpoint.
+- [x] 2026-05-02 07:01:41+0800: `git fetch --prune origin` retried and failed (`Could not resolve host: github.com`, rc=128), so upstream freshness cannot be verified in this run.
+- [x] 2026-05-02 07:01:41+0800: `git rebase --fork-point origin/main` reports the branch is up to date against local tracking only.
+- [x] 2026-05-02 07:01:41+0800: `gh pr list --state all --limit 20` and `gh issue list --state all --limit 20` failed with `error connecting to api.github.com`, so PR #30 merge-state and issue triage cannot be refreshed.
+- [x] 2026-05-02 07:01:41+0800: Open local work remains unchanged: PR #30 is still governed by the Task 52 external `CommitCheck` setup/removal gate, and no unchecked non-network implementation slice is available.
+- [ ] Retry GitHub access, confirm PR #30 `CommitCheck` status, then merge or resume runtime work only after that gate clears.
+
+### Task 60: 2026-05-02 08:03+08:00 network-blocked PR30 checkpoint
+- [x] 2026-05-02 08:03:40+0800: Current branch is `codex/pr29-clean-runtime-cut` at `85d8a83`, matching local `origin/codex/pr29-clean-runtime-cut` before this checkpoint.
+- [x] 2026-05-02 08:03:40+0800: `git fetch --prune origin` retried and failed (`Could not resolve host: github.com`, rc=128), so upstream freshness cannot be verified in this run.
+- [x] 2026-05-02 08:03:40+0800: `git rebase --fork-point origin/main` reports the branch is up to date against local tracking only.
+- [x] 2026-05-02 08:03:40+0800: `gh pr list --state all --limit 20` and `gh issue list --state all --limit 20` failed with `error connecting to api.github.com`, so PR #30 merge-state and issue triage cannot be refreshed.
+- [x] 2026-05-02 08:03:40+0800: Open local work remains unchanged: PR #30 is still governed by the Task 52 external `CommitCheck` setup/removal gate, and no unchecked non-network implementation slice is available.
+- [ ] Retry GitHub access, confirm PR #30 `CommitCheck` status, then merge or resume runtime work only after that gate clears.
+
+### Task 61: 2026-05-02 09:03+08:00 network-blocked PR30 checkpoint
+- [x] 2026-05-02 09:03:15+0800: Current branch is `codex/pr29-clean-runtime-cut` at `7dd6943`, matching local `origin/codex/pr29-clean-runtime-cut` before this checkpoint.
+- [x] 2026-05-02 09:03:15+0800: `git fetch --prune origin` retried and failed (`Could not resolve host: github.com`, rc=128), so upstream freshness cannot be verified in this run.
+- [x] 2026-05-02 09:03:15+0800: `git rebase --fork-point origin/main` reports the branch is up to date against local tracking only.
+- [x] 2026-05-02 09:03:15+0800: `gh pr list --state all --limit 20` and `gh issue list --state all --limit 20` failed with `error connecting to api.github.com`, so PR #30 merge-state and issue triage cannot be refreshed.
+- [x] 2026-05-02 09:03:15+0800: Open local work remains unchanged: PR #30 is still governed by the Task 52 external `CommitCheck` setup/removal gate, and no unchecked non-network implementation slice is available.
+- [ ] Retry GitHub access, confirm PR #30 `CommitCheck` status, then merge or resume runtime work only after that gate clears.
+
+### Task 62: 2026-05-02 10:03+08:00 network-blocked PR30 checkpoint
+- [x] 2026-05-02 10:03:00+0800: Current branch is `codex/pr29-clean-runtime-cut` at `0ace58e`, matching local `origin/codex/pr29-clean-runtime-cut` before this checkpoint.
+- [x] 2026-05-02 10:03:00+0800: `git fetch --prune origin` retried and failed (`Could not resolve host: github.com`, rc=128), so upstream freshness cannot be verified in this run.
+- [x] 2026-05-02 10:03:00+0800: `git rebase --fork-point origin/main` reports the branch is up to date against local tracking only.
+- [x] 2026-05-02 10:03:00+0800: `gh pr list --state all --limit 20` and `gh issue list --state all --limit 20` failed with `error connecting to api.github.com`, so PR #30 merge-state and issue triage cannot be refreshed.
+- [x] 2026-05-02 10:03:00+0800: No unchecked non-network implementation slice is available; open local work remains gated by PR #30's Task 52 external `CommitCheck` setup/removal decision.
+- [ ] Retry GitHub access, confirm PR #30 `CommitCheck` status, then merge or resume runtime work only after that gate clears.
+
+### Task 63: 2026-05-02 11:03+08:00 network-blocked PR30 checkpoint
+- [x] 2026-05-02 11:03:42+0800: Current branch is `codex/pr29-clean-runtime-cut` at `0e0d71c`, matching local `origin/codex/pr29-clean-runtime-cut` before this checkpoint.
+- [x] 2026-05-02 11:03:42+0800: `git fetch --prune origin` retried and failed (`Could not resolve host: github.com`, rc=128), so upstream freshness cannot be verified in this run.
+- [x] 2026-05-02 11:03:42+0800: `git rebase --fork-point origin/main` reports the branch is up to date against local tracking only.
+- [x] 2026-05-02 11:03:42+0800: `gh pr list --state all --limit 20` and `gh issue list --state all --limit 20` failed with `error connecting to api.github.com`, so PR #30 merge-state and issue triage cannot be refreshed.
+- [x] 2026-05-02 11:03:42+0800: No unchecked non-network implementation slice is available; open local work remains gated by PR #30's Task 52 external `CommitCheck` setup/removal decision.
+- [ ] Retry GitHub access, confirm PR #30 `CommitCheck` status, then merge or resume runtime work only after that gate clears.
+
+### Task 64: 2026-05-02 12:04+08:00 active-target mismatch boolean hardening
+- [x] 2026-05-02 12:04:50+0800: Current branch is `codex/pr29-clean-runtime-cut` at `b463dd0`, matching local `origin/codex/pr29-clean-runtime-cut` before this run.
+- [x] 2026-05-02 12:04:50+0800: `git fetch --prune origin` retried and failed (`Could not resolve host: github.com`, rc=128), so upstream freshness cannot be verified in this run.
+- [x] 2026-05-02 12:04:50+0800: `gh pr list --state all --limit 20` and `gh issue list --state all --limit 20` failed with `error connecting to api.github.com`, so PR #30 merge-state and issue triage cannot be refreshed.
+- [x] 2026-05-02 12:04:50+0800: `git rebase --fork-point origin/main` hit the known rolling-plan conflict while replaying old checkpoint commit `14bebae` and was aborted cleanly.
+- [x] 2026-05-02 12:04:50+0800: Advanced the roadmap P0 active-target mismatch/outward reason boundary by preserving string false values in `repair_latest_ngi_contract.py` instead of coercing them to truthy Python booleans.
+- [x] 2026-05-02 12:04:50+0800: Added regression coverage proving `target_contract_match="false"` stays false while `no_novelty_within_24h` still maps outward to `active_target_contract_ok` and preserves `internal_runtime_reason_code`.
+- [ ] Retry GitHub access, confirm PR #30 `CommitCheck` status, then merge or resume runtime work only after that gate clears.
+
+### Task 65: 2026-05-02 13:04+08:00 dispatcher bundle stale-alert guard
+- [x] 2026-05-02 13:04:06+0800: Current branch is `codex/pr29-clean-runtime-cut` at `9ab8551`, matching local `origin/codex/pr29-clean-runtime-cut` before this run.
+- [x] 2026-05-02 13:04:06+0800: `git fetch --prune origin` retried and failed (`Could not resolve host: github.com`, rc=128), so upstream freshness cannot be verified in this run.
+- [x] 2026-05-02 13:04:06+0800: `gh pr list --state all --limit 20` and `gh issue list --state all --limit 20` failed with `error connecting to api.github.com`, so PR #30 merge-state and issue triage cannot be refreshed.
+- [x] 2026-05-02 13:04:06+0800: `git rebase --fork-point origin/main` hit the known rolling-plan conflict while replaying old checkpoint commit `14bebae` and was aborted cleanly.
+- [x] 2026-05-02 13:04:06+0800: Advanced the roadmap P0 stale-reuse boundary by making dispatcher E2E bundle loading fail closed when an alert artifact JSON `run_id` does not match the requested run id.
+- [x] 2026-05-02 13:04:06+0800: Added regression coverage proving stale positive-control alert artifacts cannot be accepted by `write_dispatcher_e2e_bundle`.
+- [ ] Retry GitHub access, confirm PR #30 `CommitCheck` status, then merge or resume runtime work only after that gate clears.
+
+### Task 66: 2026-05-02 14:03+08:00 dispatcher bundle stale-receipt guard
+- [x] 2026-05-02 14:03:48+0800: Current branch is `codex/pr29-clean-runtime-cut` at `0dc5664`, matching local `origin/codex/pr29-clean-runtime-cut` before this run.
+- [x] 2026-05-02 14:03:48+0800: `git fetch --prune origin` retried and failed (`Could not resolve host: github.com`, rc=128), so upstream freshness cannot be verified in this run.
+- [x] 2026-05-02 14:03:48+0800: `gh pr list --state all --limit 20` and `gh issue list --state all --limit 20` failed with `error connecting to api.github.com`, so PR #30 merge-state and issue triage cannot be refreshed.
+- [x] 2026-05-02 14:03:48+0800: `git rebase --fork-point origin/main` hit the known rolling-plan conflict while replaying old checkpoint commit `14bebae` and was aborted cleanly.
+- [x] 2026-05-02 14:03:48+0800: Advanced the roadmap P0 stale-reuse boundary by making dispatcher E2E bundle loading fail closed when a delivery receipt JSON `run_id` does not match the requested positive-control run id.
+- [x] 2026-05-02 14:03:48+0800: Added regression coverage proving stale positive-control delivery receipts cannot stamp machine-readable delivery proof onto a shared E2E bundle.
+- [ ] Retry GitHub access, confirm PR #30 `CommitCheck` status, then merge or resume runtime work only after that gate clears.
+
+### Task 67: 2026-05-02 15:05+08:00 live sync delivery-proof guard
+- [x] 2026-05-02 15:05:04+0800: Current branch is `codex/pr29-clean-runtime-cut` at `284c417`, matching local `origin/codex/pr29-clean-runtime-cut` before this run.
+- [x] 2026-05-02 15:05:04+0800: `git fetch --prune origin` retried and failed (`Could not resolve host: github.com`, rc=128), so upstream freshness cannot be verified in this run.
+- [x] 2026-05-02 15:05:04+0800: `gh pr list --state all --limit 20` and `gh issue list --state all --limit 20` failed with `error connecting to api.github.com`, so PR #30 merge-state and issue triage cannot be refreshed.
+- [x] 2026-05-02 15:05:04+0800: `git rebase --fork-point origin/main` hit the known rolling-plan conflict while replaying old checkpoint commit `14bebae` and was aborted cleanly.
+- [x] 2026-05-02 15:05:04+0800: Advanced the roadmap P0 live-path proof boundary by making `build_live_progress_sync_payload.py` fail closed when a positive alert disposition lacks machine-readable `delivery_proof`.
+- [x] 2026-05-02 15:05:04+0800: Added regression coverage proving live sync payload exports `alert_disposition.delivery_proof` when present and rejects positive delivery without it.
+- [ ] Retry GitHub access, confirm PR #30 `CommitCheck` status, then merge or resume runtime work only after that gate clears.
+
+### Task 68: 2026-05-02 16:02+08:00 same-run recut operator checklist
+- [x] 2026-05-02 16:02:30+0800: Current branch is `codex/pr29-clean-runtime-cut` at `b7246f0`, matching local `origin/codex/pr29-clean-runtime-cut` before this run.
+- [x] 2026-05-02 16:02:30+0800: `git fetch --prune origin` retried and failed (`Could not resolve host: github.com`, rc=128), so upstream freshness cannot be verified in this run.
+- [x] 2026-05-02 16:02:30+0800: `gh pr list --state all --limit 20` and `gh issue list --state all --limit 20` failed with `error connecting to api.github.com`, so PR #30 merge-state and issue triage cannot be refreshed.
+- [x] 2026-05-02 16:02:30+0800: `git rebase --fork-point origin/main` hit the known rolling-plan conflict while replaying old checkpoint commit `14bebae` and was aborted cleanly.
+- [x] 2026-05-02 16:02:30+0800: Advanced the roadmap Phase A same-run reproduction slice by documenting one canonical recut checklist across README, install docs, and reporting operator docs.
+- [x] 2026-05-02 16:02:30+0800: The checklist now requires fresh suppressed and positive runtime run ids, target audit before dispatcher acceptance, one explicit bundle id, positive-control machine-readable `delivery_proof`, bundle verification, and live contract verification before PO-ready claims.
+- [ ] Retry GitHub access, confirm PR #30 `CommitCheck` status, then merge or resume runtime work only after that gate clears.
+
+### Task 69: 2026-05-02 17:03+08:00 dispatcher renderer contract gate
+- [x] 2026-05-02 17:03:46+0800: Current branch is `codex/pr29-clean-runtime-cut` at `d52d53c`, matching local `origin/codex/pr29-clean-runtime-cut` before this run.
+- [x] 2026-05-02 17:03:46+0800: `git fetch --prune origin` retried and failed (`Could not resolve host: github.com`, rc=128), so upstream freshness cannot be verified in this run.
+- [x] 2026-05-02 17:03:46+0800: `gh pr list --state all --limit 20` and `gh issue list --state all --limit 20` failed with `error connecting to api.github.com`, so PR #30 merge-state and issue triage cannot be refreshed.
+- [x] 2026-05-02 17:03:46+0800: `git rebase --fork-point origin/main` hit the known rolling-plan conflict while replaying old checkpoint commit `14bebae` and was aborted cleanly.
+- [x] 2026-05-02 17:03:46+0800: Advanced the roadmap Phase A delivery/renderer hardening slice by making direct dispatcher artifact rendering validate the normalized runtime payload with `build_alert_contract_view` before any alert/receipt files are written.
+- [x] 2026-05-02 17:03:46+0800: Added regression coverage proving a direct writer consumer without a shared explain-contract `e2e_run_id` fails closed and leaves no alert artifact behind.
+- [ ] Retry GitHub access, confirm PR #30 `CommitCheck` status, then merge or resume runtime work only after that gate clears.
+
+### Task 70: 2026-05-02 18:04+08:00 dispatcher bundle runtime identity guard
+- [x] 2026-05-02 18:04:29+0800: Current branch is `codex/pr29-clean-runtime-cut` at `e46c71d`, matching local `origin/codex/pr29-clean-runtime-cut` before this run.
+- [x] 2026-05-02 18:04:29+0800: `git fetch --prune origin` retried and failed (`Could not resolve host: github.com`, rc=128), so upstream freshness cannot be verified in this run.
+- [x] 2026-05-02 18:04:29+0800: `gh pr list --state all --limit 20` and `gh issue list --state all --limit 20` failed with `error connecting to api.github.com`, so PR #30 merge-state and issue triage cannot be refreshed.
+- [x] 2026-05-02 18:04:29+0800: `git rebase --fork-point origin/main` hit the known rolling-plan conflict while replaying old checkpoint commit `14bebae` and was aborted cleanly.
+- [x] 2026-05-02 18:04:29+0800: Advanced the roadmap P0 stale-reuse boundary by making dispatcher E2E bundle projection reject stale runtime run artifacts when JSON `run_id` does not match the requested run id.
+- [x] 2026-05-02 18:04:29+0800: Added regression coverage proving stale runtime compare artifacts are also rejected before they can stamp target ids into the shared E2E bundle.
+- [ ] Retry GitHub access, confirm PR #30 `CommitCheck` status, then merge or resume runtime work only after that gate clears.
+
+### Task 71: 2026-05-02 19:04+08:00 live sync rollover candidate bridge
+- [x] 2026-05-02 19:04:33+0800: Current branch is `codex/pr29-clean-runtime-cut` at `69bc8c7`, matching local `origin/codex/pr29-clean-runtime-cut` before this run.
+- [x] 2026-05-02 19:04:33+0800: `git fetch --prune origin` retried and failed (`Could not resolve host: github.com`, rc=128), so upstream freshness cannot be verified in this run.
+- [x] 2026-05-02 19:04:33+0800: `gh pr list --state all --limit 20` and `gh issue list --state all --limit 20` failed with `error connecting to api.github.com`, so PR #30 merge-state and issue triage cannot be refreshed.
+- [x] 2026-05-02 19:04:33+0800: `git rebase --fork-point origin/main` hit the known rolling-plan conflict while replaying old checkpoint commit `14bebae` and was aborted cleanly.
+- [x] 2026-05-02 19:04:33+0800: Advanced the roadmap Phase B readable-summary slice by letting `build_live_progress_sync_payload.py` accept the polymarket runtime source evidence and pass it through ops-health.
+- [x] 2026-05-02 19:04:33+0800: Added regression coverage proving closed active targets now surface `active_target.reselection_required`, `next_contract_action`, and a machine-readable `rollover_candidate` in the live sync payload.
+- [ ] Retry GitHub access, confirm PR #30 `CommitCheck` status, then merge or resume runtime work only after that gate clears.
+
+### Task 72: 2026-05-02 20:04+08:00 live sync positive contract-match guard
+- [x] 2026-05-02 20:04:14+0800: Current branch is `codex/pr29-clean-runtime-cut` at `0364389`, ahead of stale local `origin/codex/pr29-clean-runtime-cut`.
+- [x] 2026-05-02 20:04:14+0800: `git fetch --prune origin` retried and failed (`Could not resolve host: github.com`, rc=128), so upstream freshness cannot be verified in this run.
+- [x] 2026-05-02 20:04:14+0800: `gh pr list --state all --limit 20` and `gh issue list --state all --limit 20` failed with `error connecting to api.github.com`, so PR #30 merge-state and issue triage cannot be refreshed.
+- [x] 2026-05-02 20:04:14+0800: `git rebase --fork-point origin/main` hit the known rolling-plan conflict while replaying old checkpoint commit `14bebae` and was aborted cleanly.
+- [x] 2026-05-02 20:04:14+0800: Advanced the roadmap Phase B/C delivery-routing boundary by making `build_live_progress_sync_payload.py` reject positive delivery when `alert_disposition.target_contract_match` is not true-equivalent.
+- [x] 2026-05-02 20:04:14+0800: Added regression coverage proving serialized `target_contract_match="false"` cannot pass live sync positive-delivery output even when machine-readable delivery proof is present.
+- [ ] Retry GitHub access, confirm PR #30 `CommitCheck` status, then merge or resume runtime work only after that gate clears.
+
+### Task 73: 2026-05-02 21:02+08:00 live sync stale-latest gate
+- [x] 2026-05-02 21:02:47+0800: Current branch is `codex/pr29-clean-runtime-cut` at `ed44518`, ahead of stale local `origin/codex/pr29-clean-runtime-cut`.
+- [x] 2026-05-02 21:02:47+0800: `git fetch --prune origin` retried and failed (`Could not resolve host: github.com`, rc=128), so upstream freshness cannot be verified in this run.
+- [x] 2026-05-02 21:02:47+0800: `gh pr list --state all --limit 20` and `gh issue list --state all --limit 20` failed with `error connecting to api.github.com`, so PR #30 merge-state and issue triage cannot be refreshed.
+- [x] 2026-05-02 21:02:47+0800: `git rebase --fork-point origin/main` hit the known rolling-plan conflict while replaying old checkpoint commit `14bebae` and was aborted cleanly.
+- [x] 2026-05-02 21:02:47+0800: Advanced the roadmap Phase B freshness/DQ gate by making `build_live_progress_sync_payload.py` fail closed before emitting a user-facing payload when `latest_ngi.json` is stale.
+- [x] 2026-05-02 21:02:47+0800: Added regression coverage proving `latest_ngi_age_hours > 4` exits nonzero with no sync payload instead of returning `sync_status=blocking`.
+- [ ] Retry GitHub access, confirm PR #30 `CommitCheck` status, then merge or resume runtime work only after that gate clears.
+
+### Task 74: 2026-05-02 22:04+08:00 live sync ambiguous contract-match guard
+- [x] 2026-05-02 22:04:35+0800: Current branch is `codex/pr29-clean-runtime-cut` at `66d582c`, matching local `origin/codex/pr29-clean-runtime-cut` before this run.
+- [x] 2026-05-02 22:04:35+0800: `git fetch --prune origin` retried and failed (`Could not resolve host: github.com`, rc=128), so upstream freshness cannot be verified in this run.
+- [x] 2026-05-02 22:04:35+0800: `gh pr list --state all --limit 20` and `gh issue list --state all --limit 20` failed with `error connecting to api.github.com`, so PR #30 merge-state and issue triage cannot be refreshed.
+- [x] 2026-05-02 22:04:35+0800: `git rebase --fork-point origin/main` hit the known rolling-plan conflict while replaying old checkpoint commit `14bebae` and was aborted cleanly.
+- [x] 2026-05-02 22:04:35+0800: Advanced the roadmap Phase B/C delivery-routing boundary by making `build_live_progress_sync_payload.py` reject ambiguous `target_contract_match` values instead of treating arbitrary non-empty strings as truthy.
+- [x] 2026-05-02 22:04:35+0800: Added regression coverage proving `target_contract_match="unknown"` exits nonzero with no live sync payload even when machine-readable delivery proof is present.
+- [ ] Retry GitHub access, confirm PR #30 `CommitCheck` status, then merge or resume runtime work only after that gate clears.
+
+### Task 75: 2026-05-02 23:03+08:00 ops-health rollover boolean guard
+- [x] 2026-05-02 23:03:13+0800: Current branch is `codex/pr29-clean-runtime-cut` at `6787e2b`, matching local `origin/codex/pr29-clean-runtime-cut` before this run.
+- [x] 2026-05-02 23:03:13+0800: `git fetch --prune origin` retried and failed (`Could not resolve host: github.com`, rc=128), so upstream freshness cannot be verified in this run.
+- [x] 2026-05-02 23:03:13+0800: `gh pr list --state all --limit 20` and `gh issue list --state all --limit 20` failed with `error connecting to api.github.com`, so PR #30 merge-state and issue triage cannot be refreshed.
+- [x] 2026-05-02 23:03:13+0800: `git rebase --fork-point origin/main` hit the known rolling-plan conflict while replaying old checkpoint commit `14bebae` and was aborted cleanly.
+- [x] 2026-05-02 23:03:13+0800: Advanced the roadmap Phase B readable-summary boundary by making ops-health treat ambiguous runtime-source boolean strings as unknown instead of truthy.
+- [x] 2026-05-02 23:03:13+0800: Added regression coverage proving `accepting_orders="unknown"` cannot outrank an explicit open rollover candidate in runtime-source candidate ranking.
+- [ ] Retry GitHub access, confirm PR #30 `CommitCheck` status, then merge or resume runtime work only after that gate clears.
+
+### Task 76: 2026-05-03 00:04+08:00 ops-health actionable rollover candidate guard
+- [x] 2026-05-03 00:04:09+0800: Current branch is `codex/pr29-clean-runtime-cut` at `84f6b31`, matching local `origin/codex/pr29-clean-runtime-cut` before this run.
+- [x] 2026-05-03 00:04:09+0800: `git fetch --prune origin` retried and failed (`Could not resolve host: github.com`, rc=128), so upstream freshness cannot be verified in this run.
+- [x] 2026-05-03 00:04:09+0800: `gh pr list --state all --limit 20` and `gh issue list --state all --limit 20` failed with `error connecting to api.github.com`, so PR #30 merge-state and issue triage cannot be refreshed.
+- [x] 2026-05-03 00:04:09+0800: `git rebase --fork-point origin/main` hit the known rolling-plan conflict while replaying old checkpoint commit `14bebae` and was aborted cleanly.
+- [x] 2026-05-03 00:04:09+0800: Advanced the roadmap Phase B readable-summary boundary by requiring rollover candidates to be explicit open successors with `closed=false` and `accepting_orders=true`.
+- [x] 2026-05-03 00:04:09+0800: Added regression coverage proving an ambiguous-only successor set keeps `rollover_candidate=null` instead of suggesting a non-actionable target switch.
+- [ ] Retry GitHub access, confirm PR #30 `CommitCheck` status, then merge or resume runtime work only after that gate clears.
+
+### Task 77: 2026-05-03 01:03+08:00 ops-health active-target ambiguous status guard
+- [x] 2026-05-03 01:03:28+0800: Current branch is `codex/pr29-clean-runtime-cut` at `3c0264f`, matching local `origin/codex/pr29-clean-runtime-cut` before this run.
+- [x] 2026-05-03 01:03:28+0800: `git fetch --prune origin` retried and failed (`Could not resolve host: github.com`, rc=128), so upstream freshness cannot be verified in this run.
+- [x] 2026-05-03 01:03:28+0800: `gh pr list --state all --limit 20` and `gh issue list --state all --limit 20` failed with `error connecting to api.github.com`, so PR #30 merge-state and issue triage cannot be refreshed.
+- [x] 2026-05-03 01:03:28+0800: `git rebase --fork-point origin/main` hit the known rolling-plan conflict while replaying old checkpoint commit `14bebae` and was aborted cleanly.
+- [x] 2026-05-03 01:03:28+0800: Advanced the roadmap Phase B readable-summary boundary by making ops-health fail closed when active-target status booleans are explicitly present but ambiguous.
+- [x] 2026-05-03 01:03:28+0800: Added regression coverage proving `market_closed="unknown"` and `market_accepting_orders="unknown"` now produce `reselection_required=true` with explicit blockers instead of `status=pass`.
+- [ ] Retry GitHub access, confirm PR #30 `CommitCheck` status, then merge or resume runtime work only after that gate clears.
+
+### Task 78: 2026-05-03 02:03+08:00 ops-health runtime-source input guard
+- [x] 2026-05-03 02:02:47+0800: Current branch is `codex/pr29-clean-runtime-cut` at `0ec086e`, matching local `origin/codex/pr29-clean-runtime-cut` before this run.
+- [x] 2026-05-03 02:02:47+0800: `git fetch --prune origin` retried and failed (`Could not resolve host: github.com`, rc=128), so upstream freshness cannot be verified in this run.
+- [x] 2026-05-03 02:02:47+0800: `gh pr list --state all --limit 20` and `gh issue list --state all --limit 20` failed with `error connecting to api.github.com`, so PR #30 merge-state and issue triage cannot be refreshed.
+- [x] 2026-05-03 02:02:47+0800: `git rebase --fork-point origin/main` hit the known rolling-plan conflict while replaying old checkpoint commit `14bebae` and was aborted cleanly.
+- [x] 2026-05-03 02:02:47+0800: Advanced the roadmap Phase B readable-summary boundary by making ops-health fail closed when an explicitly provided runtime-source path is missing or not a JSON object.
+- [x] 2026-05-03 02:02:47+0800: Added regression coverage proving missing and malformed runtime-source payloads exit nonzero before a misleading blocking summary can be emitted.
+- [ ] Retry GitHub access, confirm PR #30 `CommitCheck` status, then merge or resume runtime work only after that gate clears.
+
+### Task 79: 2026-05-03 03:03+08:00 ops-health runtime-source items schema guard
+- [x] 2026-05-03 03:03:43+0800: Current branch is `codex/pr29-clean-runtime-cut` at `d3bb58f`, matching local `origin/codex/pr29-clean-runtime-cut` before this run.
+- [x] 2026-05-03 03:03:43+0800: `git fetch --prune origin` retried and failed (`Could not resolve host: github.com`, rc=128), so upstream freshness cannot be verified in this run.
+- [x] 2026-05-03 03:03:43+0800: `gh pr list --state all --limit 20` and `gh issue list --state all --limit 20` failed with `error connecting to api.github.com`, so PR #30 merge-state and issue triage cannot be refreshed.
+- [x] 2026-05-03 03:03:43+0800: `git rebase --fork-point origin/main` hit the known rolling-plan conflict while replaying old checkpoint commit `14bebae` and was aborted cleanly.
+- [x] 2026-05-03 03:03:43+0800: Advanced the roadmap Phase B readable-summary boundary by making ops-health fail closed when an explicitly provided runtime-source payload has malformed `evidence.items`.
+- [x] 2026-05-03 03:03:43+0800: Added regression coverage proving `evidence.items` as a JSON object now exits nonzero instead of silently producing `rollover_candidate=null` with a passing summary.
+- [ ] Retry GitHub access, confirm PR #30 `CommitCheck` status, then merge or resume runtime work only after that gate clears.
+
+### Task 80: 2026-05-03 04:03+08:00 ops-health runtime-source item schema guard
+- [x] 2026-05-03 04:03:42+0800: Current branch is `codex/pr29-clean-runtime-cut` at `412f974`, matching local `origin/codex/pr29-clean-runtime-cut` before this run.
+- [x] 2026-05-03 04:03:42+0800: `git fetch --prune origin` retried and failed (`Could not resolve host: github.com`, rc=128), so upstream freshness cannot be verified in this run.
+- [x] 2026-05-03 04:03:42+0800: `gh pr list --state all --limit 20` and `gh issue list --state all --limit 20` failed with `error connecting to api.github.com`, so PR #30 merge-state and issue triage cannot be refreshed.
+- [x] 2026-05-03 04:03:42+0800: `git rebase --fork-point origin/main` hit the known rolling-plan conflict while replaying old checkpoint commit `14bebae` and was aborted cleanly.
+- [x] 2026-05-03 04:03:42+0800: Advanced the roadmap Phase B readable-summary boundary by making ops-health fail closed when runtime-source `evidence.items` contains non-object entries or non-object item `metadata`.
+- [x] 2026-05-03 04:03:42+0800: Added regression coverage proving malformed tracker items now exit nonzero with explicit schema errors instead of silently omitting rollover evidence or leaking an AttributeError.
+- [ ] Retry GitHub access, confirm PR #30 `CommitCheck` status, then merge or resume runtime work only after that gate clears.
+
+### Task 81: 2026-05-03 05:03+08:00 ops-health latest NGI schema guard
+- [x] 2026-05-03 05:03:02+0800: Current branch is `codex/pr29-clean-runtime-cut` at `e9f69f8`, ahead of local `origin/codex/pr29-clean-runtime-cut` before this run.
+- [x] 2026-05-03 05:03:02+0800: `git fetch --prune origin` retried and failed (`Could not resolve host: github.com`, rc=128), so upstream freshness cannot be verified in this run.
+- [x] 2026-05-03 05:03:02+0800: `gh pr list --state all --limit 20` and `gh issue list --state all --limit 20` failed with `error connecting to api.github.com`, so PR #30 merge-state and issue triage cannot be refreshed.
+- [x] 2026-05-03 05:03:02+0800: `git rebase --fork-point origin/main` hit the known rolling-plan conflict while replaying old checkpoint commit `14bebae` and was aborted cleanly.
+- [x] 2026-05-03 05:03:02+0800: Advanced the roadmap Phase B readable-summary boundary by making ops-health fail closed when latest NGI `market_target` or `target_detail` is not a JSON object.
+- [x] 2026-05-03 05:03:02+0800: Added regression coverage proving malformed latest NGI active-target objects now exit nonzero with explicit schema errors instead of leaking Python AttributeError output.
+- [ ] Retry GitHub access, confirm PR #30 `CommitCheck` status, then merge or resume runtime work only after that gate clears.
+
+### Task 82: 2026-05-03 06:02+08:00 ops-health latest NGI payload schema guard
+- [x] 2026-05-03 06:01:55+0800: Current branch is `codex/pr29-clean-runtime-cut` at `b837781`, matching local `origin/codex/pr29-clean-runtime-cut` before this run.
+- [x] 2026-05-03 06:01:55+0800: `git fetch --prune origin` retried and failed (`Could not resolve host: github.com`, rc=128), so upstream freshness cannot be verified in this run.
+- [x] 2026-05-03 06:01:55+0800: `gh pr list --state all --limit 20` and `gh issue list --state all --limit 20` failed with `error connecting to api.github.com`, so PR #30 merge-state and issue triage cannot be refreshed.
+- [x] 2026-05-03 06:01:55+0800: `git rebase --fork-point origin/main` hit the known rolling-plan conflict while replaying old checkpoint commit `14bebae` and was aborted cleanly.
+- [x] 2026-05-03 06:01:55+0800: Advanced the roadmap Phase B readable-summary boundary by making ops-health fail closed when `latest_ngi.json` top-level payload is not a JSON object.
+- [x] 2026-05-03 06:01:55+0800: Added regression coverage proving malformed latest NGI top-level payloads now exit nonzero with an explicit schema error instead of leaking Python AttributeError output.
+- [ ] Retry GitHub access, confirm PR #30 `CommitCheck` status, then merge or resume runtime work only after that gate clears.
+
+### Task 83: 2026-05-03 07:03+08:00 ops-health runtime-source source-config schema guard
+- [x] 2026-05-03 07:02:42+0800: Current branch is `codex/pr29-clean-runtime-cut` at `308a7b7`, ahead of local `origin/codex/pr29-clean-runtime-cut` before this run.
+- [x] 2026-05-03 07:02:42+0800: `git fetch --prune origin` retried and failed (`Could not resolve host: github.com`, rc=128), so upstream freshness cannot be verified in this run.
+- [x] 2026-05-03 07:02:42+0800: `gh pr list --state all --limit 20` and `gh issue list --state all --limit 20` failed with `error connecting to api.github.com`, so PR #30 merge-state and issue triage cannot be refreshed.
+- [x] 2026-05-03 07:02:42+0800: `git rebase --fork-point origin/main` hit the known rolling-plan conflict while replaying old checkpoint commit `14bebae` and was aborted cleanly.
+- [x] 2026-05-03 07:02:42+0800: Advanced the roadmap Phase B readable-summary boundary by making ops-health fail closed when runtime-source item `metadata.source_config` is present but not a JSON object.
+- [x] 2026-05-03 07:02:42+0800: Added regression coverage proving malformed runtime-source `metadata.source_config` exits nonzero with an explicit schema error instead of leaking Python AttributeError output.
+- [ ] Retry GitHub access, confirm PR #30 `CommitCheck` status, then merge or resume runtime work only after that gate clears.
+
+### Task 84: 2026-05-03 08:04+08:00 rollover candidate blocker reason
+- [x] 2026-05-03 08:04:05+0800: Current branch is `codex/pr29-clean-runtime-cut` at `30daf1e`, matching local `origin/codex/pr29-clean-runtime-cut` before this run.
+- [x] 2026-05-03 08:04:05+0800: `git fetch --prune origin` retried and failed (`Could not resolve host: github.com`, rc=128), so upstream freshness cannot be verified in this run.
+- [x] 2026-05-03 08:04:05+0800: `gh pr list --state all --limit 20` and `gh issue list --state all --limit 20` failed with `error connecting to api.github.com`, so PR #30 merge-state and issue triage cannot be refreshed.
+- [x] 2026-05-03 08:04:05+0800: `git rebase --fork-point origin/main` hit the known rolling-plan conflict while replaying old checkpoint commit `14bebae` and was aborted cleanly.
+- [x] 2026-05-03 08:04:05+0800: Advanced the roadmap Phase B readable-summary boundary by adding machine-readable `rollover_candidate_blocker` output when active-target reselection is required but no actionable rollover candidate can be emitted.
+- [x] 2026-05-03 08:04:05+0800: Added regression coverage proving ambiguous-only successor evidence now yields `rollover_candidate=null` plus `rollover_candidate_blocker=no_explicit_open_accepting_successor` in both ops-health and live progress sync payloads.
+- [ ] Retry GitHub access, confirm PR #30 `CommitCheck` status, then merge or resume runtime work only after that gate clears.
+
+### Task 85: 2026-05-03 09:03+08:00 live-sync latest NGI payload schema guard
+- [x] 2026-05-03 09:03:35+0800: Current branch is `codex/pr29-clean-runtime-cut` at `bb92255`, ahead of local `origin/codex/pr29-clean-runtime-cut` before this run.
+- [x] 2026-05-03 09:03:35+0800: `git fetch --prune origin` retried and failed (`Could not resolve host: github.com`, rc=128), so upstream freshness cannot be verified in this run.
+- [x] 2026-05-03 09:03:35+0800: `gh pr list --state all --limit 20` and `gh issue list --state all --limit 20` failed with `error connecting to api.github.com`, so PR #30 merge-state and issue triage cannot be refreshed.
+- [x] 2026-05-03 09:03:35+0800: `git rebase --fork-point origin/main` hit the known rolling-plan conflict while replaying old checkpoint commit `14bebae` and was aborted cleanly.
+- [x] 2026-05-03 09:03:35+0800: Advanced the roadmap Phase B readable-summary boundary by making live progress sync fail closed when `latest_ngi.json` top-level payload is not a JSON object.
+- [x] 2026-05-03 09:03:35+0800: Added regression coverage proving malformed latest NGI payloads now emit `latest_ngi payload must be a JSON object` instead of a misleading required-key error.
+- [ ] Retry GitHub access, confirm PR #30 `CommitCheck` status, then merge or resume runtime work only after that gate clears.
+
+### Task 86: 2026-05-03 10:02+08:00 live-sync latest NGI nested object schema guard
+- [x] 2026-05-03 10:02:33+0800: Current branch is `codex/pr29-clean-runtime-cut` at `f87b839`, matching local `origin/codex/pr29-clean-runtime-cut` before this run.
+- [x] 2026-05-03 10:02:33+0800: `git fetch --prune origin` retried and failed (`Could not resolve host: github.com`, rc=128), so upstream freshness cannot be verified in this run.
+- [x] 2026-05-03 10:02:33+0800: `gh pr list --state all --limit 20` and `gh issue list --state all --limit 20` failed with `error connecting to api.github.com`, so PR #30 merge-state and issue triage cannot be refreshed.
+- [x] 2026-05-03 10:02:33+0800: `git rebase --fork-point origin/main` hit the known rolling-plan conflict while replaying old checkpoint commit `14bebae` and was aborted cleanly.
+- [x] 2026-05-03 10:02:33+0800: Advanced the roadmap Phase B readable-summary boundary by making live progress sync fail closed when latest NGI `market_target`, `target_detail`, or `alert_disposition` is present but not a JSON object.
+- [x] 2026-05-03 10:02:33+0800: Added regression coverage proving malformed latest NGI nested objects now emit explicit schema errors instead of misleading missing-field errors.
+- [ ] Retry GitHub access, confirm PR #30 `CommitCheck` status, then merge or resume runtime work only after that gate clears.
+
+### Task 87: 2026-05-03 11:03+08:00 live-sync delivery proof schema guard
+- [x] 2026-05-03 11:03:28+0800: Current branch is `codex/pr29-clean-runtime-cut` at `a19a317`, matching local `origin/codex/pr29-clean-runtime-cut` before this run.
+- [x] 2026-05-03 11:03:28+0800: `git fetch --prune origin` retried and failed (`Could not resolve host: github.com`, rc=128), so upstream freshness cannot be verified in this run.
+- [x] 2026-05-03 11:03:28+0800: `gh pr list --state all --limit 20` and `gh issue list --state all --limit 20` failed with `error connecting to api.github.com`, so PR #30 merge-state and issue triage cannot be refreshed.
+- [x] 2026-05-03 11:03:28+0800: `git rebase --fork-point origin/main` hit the known rolling-plan conflict while replaying old checkpoint commit `14bebae` and was aborted cleanly.
+- [x] 2026-05-03 11:03:28+0800: Advanced the roadmap Phase B readable-summary boundary by making live progress sync fail closed when `alert_disposition.delivery_proof` is present but not a JSON object, even for non-positive delivery payloads.
+- [x] 2026-05-03 11:03:28+0800: Added regression coverage proving malformed delivery proof no longer gets silently omitted from the sync payload.
+- [ ] Retry GitHub access, confirm PR #30 `CommitCheck` status, then merge or resume runtime work only after that gate clears.
+
+### Task 88: 2026-05-03 12:02+08:00 live-sync delivery proof field guard
+- [x] 2026-05-03 12:02:46+0800: Current branch is `codex/pr29-clean-runtime-cut` at `2b386b0`, matching local `origin/codex/pr29-clean-runtime-cut` before this run.
+- [x] 2026-05-03 12:02:46+0800: `git fetch --prune origin` retried and failed (`Could not resolve host: github.com`, rc=128), so upstream freshness cannot be verified in this run.
+- [x] 2026-05-03 12:02:46+0800: `gh pr list --state all --limit 20` and `gh issue list --state all --limit 20` failed with `error connecting to api.github.com`, so PR #30 merge-state and issue triage cannot be refreshed.
+- [x] 2026-05-03 12:02:46+0800: `git rebase --fork-point origin/main` hit the known rolling-plan conflict while replaying old checkpoint commit `14bebae` and was aborted cleanly.
+- [x] 2026-05-03 12:02:46+0800: Advanced the roadmap Phase B delivery-proof boundary by requiring positive live-sync `delivery_proof` to include a machine-readable `boundary` and proof identifier (`proof_id` or `sink_message_id`).
+- [x] 2026-05-03 12:02:46+0800: Added regression coverage proving positive delivery exits nonzero with explicit missing-field errors when the proof lacks `boundary` or any proof id.
+- [ ] Retry GitHub access, confirm PR #30 `CommitCheck` status, then merge or resume runtime work only after that gate clears.
+
+### Task 89: 2026-05-03 13:03+08:00 live-sync delivery proof type guard
+- [x] 2026-05-03 13:02:56+0800: Current branch is `codex/pr29-clean-runtime-cut` at `e433af7`, matching local `origin/codex/pr29-clean-runtime-cut` before this run.
+- [x] 2026-05-03 13:02:56+0800: `git fetch --prune origin` retried and failed (`Could not resolve host: github.com`, rc=128), so upstream freshness cannot be verified in this run.
+- [x] 2026-05-03 13:02:56+0800: `gh pr list --state all --limit 20` and `gh issue list --state all --limit 20` failed with `error connecting to api.github.com`, so PR #30 merge-state and issue triage cannot be refreshed.
+- [x] 2026-05-03 13:02:56+0800: `git rebase --fork-point origin/main` hit the known rolling-plan conflict while replaying old checkpoint commit `14bebae` and was aborted cleanly.
+- [x] 2026-05-03 13:02:56+0800: Advanced the roadmap Phase B delivery-proof boundary by requiring positive live-sync `delivery_proof.boundary` and proof id fields to be actual non-empty strings, not values that only become non-empty after stringification.
+- [x] 2026-05-03 13:02:56+0800: Added a red-green regression proving numeric `boundary` and list-valued `proof_id` now exit nonzero with explicit schema errors instead of emitting a sync payload.
+- [ ] Retry GitHub access, confirm PR #30 `CommitCheck` status, then merge or resume runtime work only after that gate clears.
+
+### Task 90: 2026-05-03 15:03+08:00 live-sync proof-id fallback guard
+- [x] 2026-05-03 15:03:45+0800: Current branch is `codex/pr29-clean-runtime-cut` at `1de45cb`, matching local `origin/codex/pr29-clean-runtime-cut` before this run.
+- [x] 2026-05-03 15:03:45+0800: `git fetch --prune origin` retried and failed (`Could not resolve host: github.com`, rc=128), so upstream freshness cannot be verified in this run.
+- [x] 2026-05-03 15:03:45+0800: `gh pr list --state all --limit 20` and `gh issue list --state all --limit 20` failed with `error connecting to api.github.com`, so PR #30 merge-state and issue triage cannot be refreshed.
+- [x] 2026-05-03 15:03:45+0800: `git rebase --fork-point origin/main` hit the known rolling-plan conflict while replaying old checkpoint commit `14bebae` and was aborted cleanly.
+- [x] 2026-05-03 15:03:45+0800: Advanced the roadmap Phase B delivery-proof boundary by accepting `sink_message_id` as the proof identifier when `proof_id` is blank, matching the documented `proof_id` or `sink_message_id` contract.
+- [x] 2026-05-03 15:03:45+0800: Added a red-green regression proving blank `proof_id` no longer masks a valid `sink_message_id`, while malformed proof-id types still fail closed.
+- [ ] Retry GitHub access, confirm PR #30 `CommitCheck` status, then merge or resume runtime work only after that gate clears.
+
+### Task 91: 2026-05-03 16:02+08:00 live-sync should-send parser guard
+- [x] 2026-05-03 16:02:48+0800: Current branch is `codex/pr29-clean-runtime-cut` at `4e5171a`, matching local `origin/codex/pr29-clean-runtime-cut` before this run.
+- [x] 2026-05-03 16:02:48+0800: `git fetch --prune origin` retried and failed (`Could not resolve host: github.com`, rc=128), so upstream freshness cannot be verified in this run.
+- [x] 2026-05-03 16:02:48+0800: `gh pr list --state all --limit 20` and `gh issue list --state all --limit 20` failed with `error connecting to api.github.com`, so PR #30 merge-state and issue triage cannot be refreshed.
+- [x] 2026-05-03 16:02:48+0800: `git rebase --fork-point origin/main` hit the known rolling-plan conflict while replaying old checkpoint commit `14bebae` and was aborted cleanly.
+- [x] 2026-05-03 16:02:48+0800: Advanced the roadmap Phase B delivery-routing boundary by making live progress sync fail closed when `alert_disposition.should_send` is present but not an explicit boolean-equivalent value.
+- [x] 2026-05-03 16:02:48+0800: Added a red-green regression proving `should_send="unknown"` now exits nonzero with an explicit parser error instead of emitting a non-positive sync payload.
+- [ ] Retry GitHub access, confirm PR #30 `CommitCheck` status, then merge or resume runtime work only after that gate clears.
+
+### Task 92: 2026-05-03 17:02+08:00 live-sync explicit suppress guard
+- [x] 2026-05-03 17:02:40+0800: Current branch is `codex/pr29-clean-runtime-cut` at `3f0b26b`, matching local `origin/codex/pr29-clean-runtime-cut` before this run.
+- [x] 2026-05-03 17:02:40+0800: `git fetch --prune origin` retried and failed (`Could not resolve host: github.com`, rc=128), so upstream freshness cannot be verified in this run.
+- [x] 2026-05-03 17:02:40+0800: `gh pr list --state all --limit 20` and `gh issue list --state all --limit 20` failed with `error connecting to api.github.com`, so PR #30 merge-state and issue triage cannot be refreshed.
+- [x] 2026-05-03 17:02:40+0800: `git rebase --fork-point origin/main` hit the known rolling-plan conflict while replaying old checkpoint commit `14bebae` and was aborted cleanly.
+- [x] 2026-05-03 17:02:40+0800: Advanced the roadmap Phase B delivery-routing boundary by making explicit `alert_disposition.should_send=false` override legacy positive `decision` text as a non-positive live-sync payload.
+- [x] 2026-05-03 17:02:40+0800: Added a red-green regression proving `should_send=false` no longer requires positive delivery proof even when `decision` still says `would_send`.
+- [ ] Retry GitHub access, confirm PR #30 `CommitCheck` status, then merge or resume runtime work only after that gate clears.
+
+### Task 93: 2026-05-03 18:03+08:00 live-sync non-positive proof field guard
+- [x] 2026-05-03 18:03:13+0800: Current branch is `codex/pr29-clean-runtime-cut` at `189be3e`, ahead 1 from local `origin/codex/pr29-clean-runtime-cut` before this run.
+- [x] 2026-05-03 18:03:13+0800: `git fetch --prune origin` retried and failed (`Could not resolve host: github.com`, rc=128), so upstream freshness cannot be verified in this run.
+- [x] 2026-05-03 18:03:13+0800: `gh pr list --state all --limit 20` and `gh issue list --state all --limit 20` failed with `error connecting to api.github.com`, so PR #30 merge-state and issue triage cannot be refreshed.
+- [x] 2026-05-03 18:03:13+0800: `git rebase --fork-point origin/main` hit the known rolling-plan conflict while replaying old checkpoint commit `14bebae` and was aborted cleanly.
+- [x] 2026-05-03 18:03:13+0800: Advanced the roadmap Phase B delivery-proof boundary by validating malformed `delivery_proof` fields even when `alert_disposition.should_send=false` makes the payload non-positive.
+- [x] 2026-05-03 18:03:13+0800: Added a red-green regression proving non-positive payloads with numeric `delivery_proof.boundary` now exit nonzero instead of exporting malformed proof.
+- [ ] Retry GitHub access, confirm PR #30 `CommitCheck` status, then merge or resume runtime work only after that gate clears.
+
+### Task 94: 2026-05-03 19:04+08:00 ops-health probability schema guard
+- [x] 2026-05-03 19:04:43+0800: Current branch is `codex/pr29-clean-runtime-cut` at `2818b9c`, matching local `origin/codex/pr29-clean-runtime-cut` before this run.
+- [x] 2026-05-03 19:04:43+0800: `git fetch --prune origin` retried and failed (`Could not resolve host: github.com`, rc=128), so upstream freshness cannot be verified in this run.
+- [x] 2026-05-03 19:04:43+0800: `gh pr list --state all --limit 20` and `gh issue list --state all --limit 20` failed with `error connecting to api.github.com`, so PR #30 merge-state and issue triage cannot be refreshed.
+- [x] 2026-05-03 19:04:43+0800: `git rebase --fork-point origin/main` hit the known rolling-plan conflict while replaying old checkpoint commit `14bebae` and was aborted cleanly.
+- [x] 2026-05-03 19:04:43+0800: Advanced the roadmap Phase B schema boundary by requiring `latest_ngi.first_principles_probability` and `target_detail.market_yes_probability` to be JSON numbers in the 0..1 range.
+- [x] 2026-05-03 19:04:43+0800: Added a red-green regression proving boolean, string, and out-of-range probability values now exit nonzero with explicit schema errors instead of being coerced into an ops-health summary.
+- [ ] Retry GitHub access, confirm PR #30 `CommitCheck` status, then merge or resume runtime work only after that gate clears.
+
+### Task 95: 2026-05-03 20:03+08:00 ops-health rollover candidate probability schema guard
+- [x] 2026-05-03 20:03:03+0800: Current branch is `codex/pr29-clean-runtime-cut` at `9732941`, ahead 1 from local `origin/codex/pr29-clean-runtime-cut` before this run.
+- [x] 2026-05-03 20:03:03+0800: `git fetch --prune origin` retried and failed (`Could not resolve host: github.com`, rc=128), so upstream freshness cannot be verified in this run.
+- [x] 2026-05-03 20:03:03+0800: `gh pr list --state all --limit 20` and `gh issue list --state all --limit 20` failed with `error connecting to api.github.com`, so PR #30 merge-state and issue triage cannot be refreshed.
+- [x] 2026-05-03 20:03:03+0800: `git rebase --fork-point origin/main` hit the known rolling-plan conflict while replaying old checkpoint commit `14bebae` and was aborted cleanly.
+- [x] 2026-05-03 20:03:03+0800: Advanced the roadmap Phase B schema boundary by requiring runtime-source rollover candidate `metadata.yes_probability`, when present, to be a JSON number in the 0..1 range.
+- [x] 2026-05-03 20:03:03+0800: Added a red-green regression proving string, boolean, and out-of-range candidate probability values now exit nonzero with explicit schema errors instead of being projected into an operator-facing rollover candidate.
+- [ ] Retry GitHub access, confirm PR #30 `CommitCheck` status, then merge or resume runtime work only after that gate clears.
+
+### Task 96: 2026-05-03 21:04+08:00 ops-health rollover timestamp schema guard
+- [x] 2026-05-03 21:04:16+0800: Current branch is `codex/pr29-clean-runtime-cut` at `2d8d790`, ahead 2 from local `origin/codex/pr29-clean-runtime-cut` before this run.
+- [x] 2026-05-03 21:04:16+0800: `git fetch --prune origin` retried and failed (`Could not resolve host: github.com`, rc=128), so upstream freshness cannot be verified in this run.
+- [x] 2026-05-03 21:04:16+0800: `gh pr list --state all --limit 20` and `gh issue list --state all --limit 20` failed with `error connecting to api.github.com`, so PR #30 merge-state and issue triage cannot be refreshed.
+- [x] 2026-05-03 21:04:16+0800: `git rebase --fork-point origin/main` hit the known rolling-plan conflict while replaying old checkpoint commit `14bebae` and was aborted cleanly.
+- [x] 2026-05-03 21:04:16+0800: Advanced the roadmap Phase B schema boundary by requiring runtime-source rollover candidate `collected_at_utc` and `published_at_utc`, when present, to be ISO-8601 timestamps.
+- [x] 2026-05-03 21:04:16+0800: Added a red-green regression proving malformed candidate timestamps now exit nonzero with explicit schema errors instead of being projected into operator-facing rollover guidance.
+- [ ] Retry GitHub access, confirm PR #30 `CommitCheck` status, then merge or resume runtime work only after that gate clears.
+
+### Task 97: 2026-05-03 22:04+08:00 ops-health latest NGI timestamp schema guard
+- [x] 2026-05-03 22:04:23+0800: Current branch is `codex/pr29-clean-runtime-cut` at `dfe67f4`, ahead 3 from local `origin/codex/pr29-clean-runtime-cut` before this run.
+- [x] 2026-05-03 22:04:23+0800: `git fetch --prune origin` retried and failed (`Could not resolve host: github.com`, rc=128), so upstream freshness cannot be verified in this run.
+- [x] 2026-05-03 22:04:23+0800: `gh pr list --state all --limit 20` and `gh issue list --state all --limit 20` failed with `error connecting to api.github.com`, so PR #30 merge-state and issue triage cannot be refreshed.
+- [x] 2026-05-03 22:04:23+0800: `git rebase --fork-point origin/main` hit the known rolling-plan conflict while replaying old checkpoint commit `14bebae` and was aborted cleanly.
+- [x] 2026-05-03 22:04:23+0800: Advanced the roadmap Phase B schema boundary by requiring latest NGI timestamp fields, when present, to be ISO-8601 timestamps.
+- [x] 2026-05-03 22:04:23+0800: Added a red-green regression proving malformed `latest_ngi.timestamp_utc` now exits nonzero with an explicit schema error instead of leaking the lower-level timestamp parser error.
+- [ ] Retry GitHub access, confirm PR #30 `CommitCheck` status, then merge or resume runtime work only after that gate clears.
+
+### Task 98: 2026-05-03 23:03+08:00 ops-health store timestamp schema guard
+- [x] 2026-05-03 23:03:55+0800: Current branch is `codex/pr29-clean-runtime-cut` at `2df9da8`, matching local `origin/codex/pr29-clean-runtime-cut` before this run.
+- [x] 2026-05-03 23:03:55+0800: `git fetch --prune origin` retried and failed (`Could not resolve host: github.com`, rc=128), so upstream freshness cannot be verified in this run.
+- [x] 2026-05-03 23:03:55+0800: `gh pr list --state all --limit 20` and `gh issue list --state all --limit 20` failed with `error connecting to api.github.com`, so PR #30 merge-state and issue triage cannot be refreshed.
+- [x] 2026-05-03 23:03:55+0800: `git rebase --fork-point origin/main` hit the known rolling-plan conflict while replaying old checkpoint commit `14bebae` and was aborted cleanly.
+- [x] 2026-05-03 23:03:55+0800: Advanced the roadmap Phase B schema boundary by requiring SQLite `market_snapshots.snapshot_at_utc` freshness timestamps to be ISO-8601 timestamps.
+- [x] 2026-05-03 23:03:55+0800: Added a red-green regression proving malformed store freshness timestamps now exit nonzero with an explicit schema error instead of leaking the lower-level timestamp parser error.
+- [ ] Retry GitHub access, confirm PR #30 `CommitCheck` status, then merge or resume runtime work only after that gate clears.
+
+### Task 99: 2026-05-04 00:02+08:00 live-sync contract envelope schema guard
+- [x] 2026-05-04 00:02:50+0800: Current branch is `codex/pr29-clean-runtime-cut` at `743f572`, matching local `origin/codex/pr29-clean-runtime-cut` before this run.
+- [x] 2026-05-04 00:02:50+0800: `git fetch --prune origin` retried and failed (`Could not resolve host: github.com`, rc=128), so upstream freshness cannot be verified in this run.
+- [x] 2026-05-04 00:02:50+0800: `gh pr list --state all --limit 20` and `gh issue list --state all --limit 20` failed with `error connecting to api.github.com`, so PR #30 merge-state and issue triage cannot be refreshed.
+- [x] 2026-05-04 00:02:50+0800: `git rebase --fork-point origin/main` hit the known rolling-plan conflict while replaying old checkpoint commit `14bebae` and was aborted cleanly.
+- [x] 2026-05-04 00:02:50+0800: Advanced the roadmap Phase B delivery contract boundary by requiring live-sync `alert_disposition.reason_code`, `contract_version`, and `e2e_run_id` to be non-empty strings before they enter the operator-facing sync payload.
+- [x] 2026-05-04 00:02:50+0800: Added a red-green regression proving malformed alert contract envelope fields now exit nonzero with explicit schema errors instead of being projected into live progress sync output.
+- [ ] Retry GitHub access, confirm PR #30 `CommitCheck` status, then merge or resume runtime work only after that gate clears.
+
+### Task 100: 2026-05-04 01:03+08:00 ops-health rollover identity schema guard
+- [x] 2026-05-04 01:03:25+0800: Current branch is `codex/pr29-clean-runtime-cut` at `2d9a8f1`, matching local `origin/codex/pr29-clean-runtime-cut` before this run.
+- [x] 2026-05-04 01:03:25+0800: `git fetch --prune origin` retried and failed (`Could not resolve host: github.com`, rc=128), so upstream freshness cannot be verified in this run.
+- [x] 2026-05-04 01:03:25+0800: `gh pr list --state all --limit 20` and `gh issue list --state all --limit 20` failed with `error connecting to api.github.com`, so PR #30 merge-state and issue triage cannot be refreshed.
+- [x] 2026-05-04 01:03:25+0800: `git rebase --fork-point origin/main` hit the known rolling-plan conflict while replaying old checkpoint commit `14bebae` and was aborted cleanly.
+- [x] 2026-05-04 01:03:25+0800: Advanced the roadmap Phase B schema boundary by requiring runtime-source rollover candidate identity/display fields to be non-empty strings before projection.
+- [x] 2026-05-04 01:03:25+0800: Added a red-green regression proving malformed candidate `metadata.market_id` now exits nonzero with an explicit schema error instead of leaking into operator-facing rollover guidance.
+- [ ] Retry GitHub access, confirm PR #30 `CommitCheck` status, then merge or resume runtime work only after that gate clears.
+
+### Task 101: 2026-05-04 02:03+08:00 ops-health runtime-source run timestamp schema guard
+- [x] 2026-05-04 02:03:44+0800: Current branch is `codex/pr29-clean-runtime-cut` at `6bf4cad`, ahead 1 from local `origin/codex/pr29-clean-runtime-cut` before this run.
+- [x] 2026-05-04 02:03:44+0800: `git fetch --prune origin` retried and failed (`Could not resolve host: github.com`, rc=128), so upstream freshness cannot be verified in this run.
+- [x] 2026-05-04 02:03:44+0800: `gh pr list --state all --limit 20` and `gh issue list --state all --limit 20` failed with `error connecting to api.github.com`, so PR #30 merge-state and issue triage cannot be refreshed.
+- [x] 2026-05-04 02:03:44+0800: `git rebase --fork-point origin/main` hit the known rolling-plan conflict while replaying old checkpoint commit `14bebae` and was aborted cleanly.
+- [x] 2026-05-04 02:03:44+0800: Advanced the roadmap Phase B schema boundary by requiring runtime-source top-level `ran_at_utc`, when present, to be an ISO-8601 timestamp.
+- [x] 2026-05-04 02:03:44+0800: Added a red-green regression proving malformed tracker run timestamps now exit nonzero with an explicit schema error instead of being accepted into an operator-facing ops-health summary.
+- [ ] Retry GitHub access, confirm PR #30 `CommitCheck` status, then merge or resume runtime work only after that gate clears.
+
+### Task 102: 2026-05-04 03:02+08:00 ops-health probability-mode schema guard
+- [x] 2026-05-04 03:02:30+0800: Current branch is `codex/pr29-clean-runtime-cut` at `f2c4c26`, matching local `origin/codex/pr29-clean-runtime-cut` before this run.
+- [x] 2026-05-04 03:02:30+0800: `git fetch --prune origin` retried and failed (`Could not resolve host: github.com`, rc=128), so upstream freshness cannot be verified in this run.
+- [x] 2026-05-04 03:02:30+0800: `gh pr list --state all --limit 20` and `gh issue list --state all --limit 20` failed with `error connecting to api.github.com`, so PR #30 merge-state and issue triage cannot be refreshed.
+- [x] 2026-05-04 03:02:30+0800: `git rebase --fork-point origin/main` hit the known rolling-plan conflict while replaying old checkpoint commit `14bebae` and was aborted cleanly.
+- [x] 2026-05-04 03:02:30+0800: Advanced the roadmap Phase B schema boundary by requiring latest NGI `probability_mode` fields, when present, to be non-empty strings before projection into ops-health summaries.
+- [x] 2026-05-04 03:02:30+0800: Added a red-green regression proving malformed `target_detail.probability_mode` and top-level `latest_ngi.probability_mode` now exit nonzero with explicit schema errors instead of leaking into operator-facing output.
+- [ ] Retry GitHub access, confirm PR #30 `CommitCheck` status, then merge or resume runtime work only after that gate clears.
+
+### Task 103: 2026-05-04 04:03+08:00 ops-health active-target identity schema guard
+- [x] 2026-05-04 04:03:25+0800: Current branch is `codex/pr29-clean-runtime-cut` at `ee72a22`, matching local `origin/codex/pr29-clean-runtime-cut` before this run.
+- [x] 2026-05-04 04:03:25+0800: `git fetch --prune origin` retried and failed (`Could not resolve host: github.com`, rc=128), so upstream freshness cannot be verified in this run.
+- [x] 2026-05-04 04:03:25+0800: `gh pr list --state all --limit 20` and `gh issue list --state all --limit 20` failed with `error connecting to api.github.com`, so PR #30 merge-state and issue triage cannot be refreshed.
+- [x] 2026-05-04 04:03:25+0800: `git rebase --fork-point origin/main` hit the known rolling-plan conflict while replaying old checkpoint commit `14bebae` and was aborted cleanly.
+- [x] 2026-05-04 04:03:25+0800: Advanced the roadmap Phase B schema boundary by requiring latest NGI active-target identity/display fields to be non-empty strings before projection into ops-health summaries.
+- [x] 2026-05-04 04:03:25+0800: Added a red-green regression proving malformed `market_target.market_id`, `market_target.market_name`, `target_detail.market_id`, and `target_detail.market_question` now exit nonzero with explicit schema errors instead of leaking into operator-facing output.
+- [ ] Retry GitHub access, confirm PR #30 `CommitCheck` status, then merge or resume runtime work only after that gate clears.
+
+### Task 104: 2026-05-04 05:03+08:00 ops-health active-target reselection acceptance summary
+- [x] 2026-05-04 05:03:46+0800: Current branch is `codex/pr29-clean-runtime-cut` at `1978749`, matching local `origin/codex/pr29-clean-runtime-cut` before this run.
+- [x] 2026-05-04 05:03:46+0800: `git fetch --prune origin` retried and failed (`Could not resolve host: github.com`, rc=128), so upstream freshness cannot be verified in this run.
+- [x] 2026-05-04 05:03:46+0800: `gh pr list --state all --limit 20` and `gh issue list --state all --limit 20` failed with `error connecting to api.github.com`, so PR #30 merge-state and issue triage cannot be refreshed.
+- [x] 2026-05-04 05:03:46+0800: `git rebase --fork-point origin/main` hit the known rolling-plan conflict while replaying old checkpoint commit `14bebae` and was aborted cleanly.
+- [x] 2026-05-04 05:03:46+0800: Advanced the active-target P0 by adding an `active_target_reselection` acceptance object to ops-health blocking output, carrying `runtime_target_id`, `market_question`, `next_contract_action`, `rollover_candidate`, and `rollover_candidate_blocker` even when stale/latest NGI and divergence keep the summary failing closed.
+- [x] 2026-05-04 05:03:46+0800: Added a red-green regression proving stale + closed/not-accepting active targets with high divergence and one explicit open successor now emit the dedicated reselection acceptance shape.
+- [ ] Retry GitHub access, confirm PR #30 `CommitCheck` status, then merge or resume runtime work only after that gate clears.
+
+### Task 105: 2026-05-04 06:03+08:00 live-sync active-target reselection acceptance projection
+- [x] 2026-05-04 06:03:04+0800: Current branch is `codex/pr29-clean-runtime-cut` at `0059301`, matching local `origin/codex/pr29-clean-runtime-cut` before this run.
+- [x] 2026-05-04 06:03:04+0800: `git fetch --prune origin` retried and failed (`Could not resolve host: github.com`, rc=128), so upstream freshness cannot be verified in this run.
+- [x] 2026-05-04 06:03:04+0800: `gh pr list --state all --limit 20` and `gh issue list --state all --limit 20` failed with `error connecting to api.github.com`, so PR #30 merge-state and issue triage cannot be refreshed.
+- [x] 2026-05-04 06:03:04+0800: `git rebase --fork-point origin/main` hit the known rolling-plan conflict while replaying old checkpoint commit `14bebae` and was aborted cleanly.
+- [x] 2026-05-04 06:03:04+0800: Advanced the active-target P0 by projecting ops-health `active_target_reselection` directly into live progress sync output, so downstream Paperclip / Albert templates can consume one acceptance object instead of rebuilding it from split fields.
+- [x] 2026-05-04 06:03:04+0800: Added a red-green live-sync regression proving closed/not-accepting active targets with one explicit open successor now emit the dedicated reselection acceptance object in the sync payload.
+- [ ] Retry GitHub access, confirm PR #30 `CommitCheck` status, then merge or resume runtime work only after that gate clears.
+
+### Task 106: 2026-05-04 07:03+08:00 ops-health reselection acceptance schema guard
+- [x] 2026-05-04 07:03:41+0800: Current branch is `codex/pr29-clean-runtime-cut` at `fd4d227`, matching local `origin/codex/pr29-clean-runtime-cut` before this run.
+- [x] 2026-05-04 07:03:41+0800: `git fetch --prune origin` retried and failed (`Could not resolve host: github.com`, rc=128), so upstream freshness cannot be verified in this run.
+- [x] 2026-05-04 07:03:41+0800: `gh pr list --state all --limit 20` and `gh issue list --state all --limit 20` failed with `error connecting to api.github.com`, so PR #30 merge-state and issue triage cannot be refreshed.
+- [x] 2026-05-04 07:03:41+0800: `git rebase --fork-point origin/main` hit the known rolling-plan conflict while replaying old checkpoint commit `14bebae` and was aborted cleanly.
+- [x] 2026-05-04 07:03:41+0800: Advanced the active-target P0 acceptance boundary by requiring `active_target_reselection.runtime_target_id` and `market_question` to be non-empty strings whenever reselection is required.
+- [x] 2026-05-04 07:03:41+0800: Added a red-green ops-health regression proving closed/not-accepting targets missing `market_question` now exit nonzero with an explicit schema error instead of emitting incomplete reselection evidence.
+- [ ] Retry GitHub access, confirm PR #30 `CommitCheck` status, then merge or resume runtime work only after that gate clears.
+
+### Task 107: 2026-05-04 08:03+08:00 ops-health rollover candidate projection schema guard
+- [x] 2026-05-04 08:03:02+0800: Current branch is `codex/pr29-clean-runtime-cut` at `b47872e`, matching local `origin/codex/pr29-clean-runtime-cut` before this run.
+- [x] 2026-05-04 08:03:02+0800: `git fetch --prune origin` retried and failed (`Could not resolve host: github.com`, rc=128), so upstream freshness cannot be verified in this run.
+- [x] 2026-05-04 08:03:02+0800: `gh pr list --state all --limit 20` and `gh issue list --state all --limit 20` failed with `error connecting to api.github.com`, so PR #30 merge-state and issue triage cannot be refreshed.
+- [x] 2026-05-04 08:03:02+0800: `git rebase --fork-point origin/main` hit the known rolling-plan conflict while replaying old checkpoint commit `14bebae` and was aborted cleanly.
+- [x] 2026-05-04 08:03:02+0800: Advanced the active-target P0 acceptance boundary by requiring selected `rollover_candidate` projection fields (`market_id`, `market_slug`, `market_name`, and `market_question`) to resolve to non-empty strings.
+- [x] 2026-05-04 08:03:02+0800: Added a red-green ops-health regression proving an explicit open/accepting successor missing `title` now exits nonzero with `rollover_candidate.market_question must be a non-empty string` instead of emitting `market_question=null` in reselection evidence.
+- [ ] Retry GitHub access, confirm PR #30 `CommitCheck` status, then merge or resume runtime work only after that gate clears.
+
+### Task 108: 2026-05-04 09:03+08:00 live-sync operator target question schema guard
+- [x] 2026-05-04 09:03:15+0800: Current branch is `codex/pr29-clean-runtime-cut` at `d046fe9`, matching local `origin/codex/pr29-clean-runtime-cut` before this run.
+- [x] 2026-05-04 09:03:15+0800: `git fetch --prune origin` retried and failed (`Could not resolve host: github.com`, rc=128), so upstream freshness cannot be verified in this run.
+- [x] 2026-05-04 09:03:15+0800: `gh pr list --state all --limit 20` and `gh issue list --state all --limit 20` failed with `error connecting to api.github.com`, so PR #30 merge-state and issue triage cannot be refreshed.
+- [x] 2026-05-04 09:03:15+0800: `git rebase --fork-point origin/main` hit the known rolling-plan conflict while replaying old checkpoint commit `14bebae` and was aborted cleanly.
+- [x] 2026-05-04 09:03:15+0800: Advanced the live-sync operator-facing schema boundary by requiring `latest_ngi.target_detail.market_question` to be a non-empty string before projection into `blocking_summary` and `market_target`.
+- [x] 2026-05-04 09:03:15+0800: Added a red-green live-sync regression proving a missing operator market question exits nonzero with `latest_ngi.target_detail.market_question must be a non-empty string` instead of emitting `market_question=null`.
+- [ ] Retry GitHub access, confirm PR #30 `CommitCheck` status, then merge or resume runtime work only after that gate clears.
+
+### Task 109: 2026-05-04 10:04+08:00 live-sync alert decision schema guard
+- [x] 2026-05-04 10:04:07+0800: Current branch is `codex/pr29-clean-runtime-cut` at `bbc08c7`, matching local `origin/codex/pr29-clean-runtime-cut` before this run.
+- [x] 2026-05-04 10:04:07+0800: `git fetch --prune origin` retried and failed (`Could not resolve host: github.com`, rc=128), so upstream freshness cannot be verified in this run.
+- [x] 2026-05-04 10:04:07+0800: `gh pr list --state all --limit 20` and `gh issue list --state all --limit 20` failed with `error connecting to api.github.com`, so PR #30 merge-state and issue triage cannot be refreshed.
+- [x] 2026-05-04 10:04:07+0800: `git rebase --fork-point origin/main` hit the known rolling-plan conflict while replaying old checkpoint commit `14bebae` and was aborted cleanly.
+- [x] 2026-05-04 10:04:07+0800: Advanced the live-sync alert contract envelope by requiring `latest_ngi.alert_disposition.decision` to be a non-empty string before projection into the operator payload.
+- [x] 2026-05-04 10:04:07+0800: Added a red-green live-sync regression proving malformed `decision` JSON now exits nonzero with `latest_ngi.alert_disposition.decision must be a non-empty string` instead of leaking into `alert_disposition.decision`.
+- [ ] Retry GitHub access, confirm PR #30 `CommitCheck` status, then merge or resume runtime work only after that gate clears.
+
+### Task 110: 2026-05-04 11:03+08:00 live-sync non-positive contract-match schema guard
+- [x] 2026-05-04 11:03:24+0800: Current branch is `codex/pr29-clean-runtime-cut` at `f2a55b8`, ahead 1 from local `origin/codex/pr29-clean-runtime-cut` before this run.
+- [x] 2026-05-04 11:03:24+0800: `git fetch --prune origin` retried and failed (`Could not resolve host: github.com`, rc=128), so upstream freshness cannot be verified in this run.
+- [x] 2026-05-04 11:03:24+0800: `gh pr list --state all --limit 20` and `gh issue list --state all --limit 20` failed with `error connecting to api.github.com`, so PR #30 merge-state and issue triage cannot be refreshed.
+- [x] 2026-05-04 11:03:24+0800: `git rebase --fork-point origin/main` hit the known rolling-plan conflict while replaying old checkpoint commit `14bebae` and was aborted cleanly.
+- [x] 2026-05-04 11:03:24+0800: Advanced the live-sync contract-match schema boundary by making suppressed/non-positive payloads fail closed when `alert_disposition.target_contract_match` is present but not boolean-equivalent.
+- [x] 2026-05-04 11:03:24+0800: Added a red-green live-sync regression proving `should_send=false` plus `target_contract_match="unknown"` now exits nonzero with `latest_ngi.alert_disposition.target_contract_match must be a boolean-equivalent value` instead of leaking ambiguous contract evidence into the operator payload.
+- [ ] Retry GitHub access, confirm PR #30 `CommitCheck` status, then merge or resume runtime work only after that gate clears.
+
+### Task 111: 2026-05-04 12:03+08:00 ops-health fallback successor schema guard
+- [x] 2026-05-04 12:03:43+0800: Current branch is `codex/pr29-clean-runtime-cut` at `924b34a`, matching local `origin/codex/pr29-clean-runtime-cut` before this run.
+- [x] 2026-05-04 12:03:43+0800: `git fetch --prune origin` retried and failed (`Could not resolve host: github.com`, rc=128), so upstream freshness cannot be verified in this run.
+- [x] 2026-05-04 12:03:43+0800: `gh pr list --state all --limit 20` and `gh issue list --state all --limit 20` failed with `error connecting to api.github.com`, so PR #30 merge-state and issue triage cannot be refreshed.
+- [x] 2026-05-04 12:03:43+0800: `git rebase --fork-point origin/main` hit the known rolling-plan conflict while replaying old checkpoint commit `14bebae` and was aborted cleanly.
+- [x] 2026-05-04 12:03:43+0800: Advanced the ops-health fallback successor boundary by requiring configured `state_config.fallback_target` identity/display fields (`market_id`, `market_slug`, `market_name`, and optional `probability_mode`) to maintain string schema before projection into rollover acceptance evidence.
+- [x] 2026-05-04 12:03:43+0800: Added a red-green ops-health regression proving malformed fallback identity now exits nonzero with `state_config.fallback_target.market_id must be a non-empty string` instead of emitting a pending-validation rollover candidate with `market_id` as a list.
+- [x] 2026-05-04 12:03:43+0800: While running the full ops-health suite, also made blocker text format from the same rounded freshness/divergence values emitted in JSON, removing a one-centihour flaky assertion path.
+- [ ] Retry GitHub access, confirm PR #30 `CommitCheck` status, then merge or resume runtime work only after that gate clears.

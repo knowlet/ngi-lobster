@@ -18,6 +18,16 @@ SUPPRESSED_REASON_MAP = {
 }
 
 
+def _as_bool(value: Any) -> bool:
+    if isinstance(value, str):
+        normalized = value.strip().lower()
+        if normalized in {"false", "0", "no", "n", "off"}:
+            return False
+        if normalized in {"true", "1", "yes", "y", "on"}:
+            return True
+    return bool(value)
+
+
 def _resolve_run_id(timestamp_utc: Any) -> str | None:
     timestamp = str(timestamp_utc or "").strip()
     if not timestamp:
@@ -44,7 +54,7 @@ def _resolve_target_contract_match(
     runtime_target_id: str | None,
 ) -> bool | None:
     if existing_match is not None:
-        return bool(existing_match)
+        return _as_bool(existing_match)
 
     normalized_alert_target_id = str(alert_target_id).strip() or None if alert_target_id is not None else None
     if runtime_target_id and normalized_alert_target_id:

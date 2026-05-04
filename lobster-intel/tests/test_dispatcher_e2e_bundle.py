@@ -205,6 +205,106 @@ def test_write_dispatcher_e2e_bundle_fails_closed_on_mismatched_bundle_id(tmp_pa
         )
 
 
+def test_write_dispatcher_e2e_bundle_fails_closed_on_stale_alert_run_id(tmp_path: Path):
+    thesis_id, suppressed_run_id, positive_run_id = _install_dispatcher_fixture(tmp_path)
+    stale_alert_path = (
+        tmp_path
+        / "lobster-intel"
+        / "data"
+        / "delivery"
+        / thesis_id
+        / "alerts"
+        / f"{positive_run_id}.json"
+    )
+    stale_alert = json.loads(stale_alert_path.read_text(encoding="utf-8"))
+    stale_alert["run_id"] = "positive-20260420T235959Z"
+    _write_json(stale_alert_path, stale_alert)
+
+    with pytest.raises(ValueError, match="alert artifact run_id mismatch"):
+        write_dispatcher_e2e_bundle(
+            workspace_dir=tmp_path,
+            thesis_id=thesis_id,
+            run_ids=[suppressed_run_id, positive_run_id],
+            bundle_id="bundle-20260421-01",
+            now_utc="2026-04-21T00:10:00+00:00",
+        )
+
+
+def test_write_dispatcher_e2e_bundle_fails_closed_on_stale_receipt_run_id(tmp_path: Path):
+    thesis_id, suppressed_run_id, positive_run_id = _install_real_dispatcher_runtime_fixture(tmp_path)
+    stale_receipt_path = (
+        tmp_path
+        / "lobster-intel"
+        / "data"
+        / "delivery"
+        / thesis_id
+        / "receipts"
+        / f"{positive_run_id}.json"
+    )
+    stale_receipt = json.loads(stale_receipt_path.read_text(encoding="utf-8"))
+    stale_receipt["run_id"] = "positive-20260420T235959Z"
+    _write_json(stale_receipt_path, stale_receipt)
+
+    with pytest.raises(ValueError, match="delivery receipt run_id mismatch"):
+        write_dispatcher_e2e_bundle(
+            workspace_dir=tmp_path,
+            thesis_id=thesis_id,
+            run_ids=[suppressed_run_id, positive_run_id],
+            bundle_id="bundle-20260421-bridge",
+            now_utc="2026-04-21T00:10:00+00:00",
+        )
+
+
+def test_write_dispatcher_e2e_bundle_fails_closed_on_stale_runtime_run_id(tmp_path: Path):
+    thesis_id, suppressed_run_id, positive_run_id = _install_real_dispatcher_runtime_fixture(tmp_path)
+    stale_runtime_path = (
+        tmp_path
+        / "lobster-intel"
+        / "data"
+        / "runtime"
+        / thesis_id
+        / "runs"
+        / f"{positive_run_id}.json"
+    )
+    stale_runtime = json.loads(stale_runtime_path.read_text(encoding="utf-8"))
+    stale_runtime["run_id"] = "positive-20260420T235959Z"
+    _write_json(stale_runtime_path, stale_runtime)
+
+    with pytest.raises(ValueError, match="runtime artifact run_id mismatch"):
+        write_dispatcher_e2e_bundle(
+            workspace_dir=tmp_path,
+            thesis_id=thesis_id,
+            run_ids=[suppressed_run_id, positive_run_id],
+            bundle_id="bundle-20260421-bridge",
+            now_utc="2026-04-21T00:10:00+00:00",
+        )
+
+
+def test_write_dispatcher_e2e_bundle_fails_closed_on_stale_compare_run_id(tmp_path: Path):
+    thesis_id, suppressed_run_id, positive_run_id = _install_real_dispatcher_runtime_fixture(tmp_path)
+    stale_compare_path = (
+        tmp_path
+        / "lobster-intel"
+        / "data"
+        / "runtime"
+        / thesis_id
+        / "compare"
+        / f"{positive_run_id}.json"
+    )
+    stale_compare = json.loads(stale_compare_path.read_text(encoding="utf-8"))
+    stale_compare["run_id"] = "positive-20260420T235959Z"
+    _write_json(stale_compare_path, stale_compare)
+
+    with pytest.raises(ValueError, match="runtime compare run_id mismatch"):
+        write_dispatcher_e2e_bundle(
+            workspace_dir=tmp_path,
+            thesis_id=thesis_id,
+            run_ids=[suppressed_run_id, positive_run_id],
+            bundle_id="bundle-20260421-bridge",
+            now_utc="2026-04-21T00:10:00+00:00",
+        )
+
+
 def test_load_dispatcher_e2e_bundle_reads_workspace_artifact(tmp_path: Path):
     thesis_id, suppressed_run_id, positive_run_id = _install_dispatcher_fixture(tmp_path)
     write_dispatcher_e2e_bundle(

@@ -405,6 +405,15 @@ When Product Cut v0 is blocked on real-path acceptance evidence, use exactly one
 
 Do not treat a bundle as PO-acceptable if dispatcher acceptance runs before runtime-target audit, if the bundle mixes old and new `run_id` lineage, or if `verify_latest_ngi_contract.py` still fails after the recut.
 
+Operator acceptance checklist:
+
+- one suppressed runtime `run_id` and one positive-control runtime `run_id` were generated for this recut;
+- both runtime records pass `verify_runtime_target_audit.py` against the current active target contract;
+- `run_dispatcher_acceptance.py` receives exactly those two run ids and one new `--bundle-id`;
+- the positive-control path has persisted or explicit machine-readable `delivery_proof`;
+- `verify_alert_contract_bundle.py` passes on the written bundle artifact;
+- `verify_latest_ngi_contract.py` passes on the live `latest_ngi.json` surface after the recut.
+
 ## 9. Cron status
 
 There is **not yet** a final reusable cron recipe for outside installs.

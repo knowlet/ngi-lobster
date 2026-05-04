@@ -1,0 +1,52 @@
+{
+  "schema_version": "v1",
+  "artifact_id": "observation:gooaye:polymarket-tracker:1517836",
+  "run_id": "20260421T090408Z",
+  "thesis_id": "gooaye",
+  "created_at_utc": "2026-04-21T09:04:08.129015+00:00",
+  "provenance": {
+    "source_ids": [
+      "polymarket"
+    ],
+    "source_paths": [],
+    "source_urls": [
+      "trump-announces-end-of-military-operations-against-iran-by-june-30th-566-326-653-781-167-426-752-225"
+    ],
+    "parent_record_id": "evidence:gooaye:polymarket-tracker:1517836",
+    "run_id": "20260421T090408Z",
+    "checksum": "c66220d897d5896a5e6aec7d2cad6738ed92d436478cf241f809a57a8e370a77"
+  },
+  "contract_version": "ngi_runtime_spine.v1",
+  "evidence_refs": [
+    "evidence:gooaye:polymarket-tracker:1517836"
+  ],
+  "entity_refs": [
+    "1517836"
+  ],
+  "event_type": "market_candidate",
+  "stance": "market_snapshot",
+  "time_window": {
+    "start_at_utc": "2026-04-14T12:53:36.530942+00:00",
+    "end_at_utc": "2026-04-14T12:53:36.530942+00:00"
+  },
+  "location": null,
+  "semantic_tags": [
+    "market_candidate",
+    "unknown_semantic_frame"
+  ],
+  "source_confidence": 0.95,
+  "extractive_rationale": "Trump announces end of military operations against Iran by June 30th?",
+  "metadata": {
+    "market_id": "1517836",
+    "slug": "trump-announces-end-of-military-operations-against-iran-by-june-30th-566-326-653-781-167-426-752-225",
+    "yes_probability": null,
+    "active": true,
+    "closed": false,
+    "source_config": {
+      "id": "1517836",
+      "label": "Trump announces end of military operations against Iran by June 30th"
+    },
+    "market_slug": "trump-announces-end-of-military-operations-against-iran-by-june-30th-566-326-653-781-167-426-752-225",
+    "market_question": "Trump announces end of military operations against Iran by June 30th?"
+  }
+}

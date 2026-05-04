@@ -51,6 +51,15 @@ npm run test:p0-cut
 
 That shortcut runs the dispatcher path verification gate first and then the shared E2E bundle verification gate. It confirms the current blocking acceptance contract, but it does not regenerate the real-path artifacts by itself.
 
+For the canonical same-run real-path recut, keep one lineage:
+
+1. regenerate both runtime records first and keep the fresh suppressed and positive `run_id` values;
+2. audit each `run_id` against the current runtime target before dispatcher acceptance;
+3. run `run_dispatcher_acceptance.py` once with one explicit `bundle_id`;
+4. verify the emitted bundle and then the live `latest_ngi.json` contract surface.
+
+Do not treat the recut as PO-ready if the bundle mixes old and fresh `run_id` values, skips the target audit, or lacks machine-readable positive-control `delivery_proof`.
+
 When PO needs one fast gate for the `latest_ngi.json` runtime contract, use:
 
 ```bash

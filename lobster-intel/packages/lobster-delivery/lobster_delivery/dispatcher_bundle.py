@@ -59,6 +59,42 @@ def _resolve_runtime_target_name(runtime_payload: dict[str, Any], compare_payloa
     )
 
 
+def _validate_alert_run_identity(alert_payload: dict[str, Any], *, run_id: str) -> None:
+    persisted_run_id = str(alert_payload.get("run_id") or "").strip()
+    if persisted_run_id and persisted_run_id != run_id:
+        raise ValueError(
+            "alert artifact run_id mismatch: "
+            f"expected {run_id!r}, got {persisted_run_id!r}"
+        )
+
+
+def _validate_receipt_run_identity(receipt_payload: dict[str, Any], *, run_id: str) -> None:
+    persisted_run_id = str(receipt_payload.get("run_id") or "").strip()
+    if persisted_run_id and persisted_run_id != run_id:
+        raise ValueError(
+            "delivery receipt run_id mismatch: "
+            f"expected {run_id!r}, got {persisted_run_id!r}"
+        )
+
+
+def _validate_runtime_run_identity(runtime_payload: dict[str, Any], *, run_id: str) -> None:
+    persisted_run_id = str(runtime_payload.get("run_id") or "").strip()
+    if persisted_run_id and persisted_run_id != run_id:
+        raise ValueError(
+            "runtime artifact run_id mismatch: "
+            f"expected {run_id!r}, got {persisted_run_id!r}"
+        )
+
+
+def _validate_compare_run_identity(compare_payload: dict[str, Any], *, run_id: str) -> None:
+    persisted_run_id = str(compare_payload.get("run_id") or "").strip()
+    if persisted_run_id and persisted_run_id != run_id:
+        raise ValueError(
+            "runtime compare run_id mismatch: "
+            f"expected {run_id!r}, got {persisted_run_id!r}"
+        )
+
+
 def _project_runtime_dispatcher_payload(
     *,
     workspace_dir: str | Path,
@@ -74,6 +110,12 @@ def _project_runtime_dispatcher_payload(
     runtime_payload = _load_optional_json(runtime_root / "runs" / f"{run_id}.json") or {}
     compare_payload = _load_optional_json(runtime_root / "compare" / f"{run_id}.json") or {}
     receipt_payload = _load_optional_json(delivery_root / "receipts" / f"{run_id}.json") or {}
+    if runtime_payload:
+        _validate_runtime_run_identity(runtime_payload, run_id=run_id)
+    if compare_payload:
+        _validate_compare_run_identity(compare_payload, run_id=run_id)
+    if receipt_payload:
+        _validate_receipt_run_identity(receipt_payload, run_id=run_id)
 
     active_target = runtime_payload.get("active_target") or {}
     runtime_target_id = _resolve_runtime_target_id(
@@ -123,6 +165,7 @@ def load_dispatcher_payloads(
     payloads: list[dict[str, Any]] = []
     for run_id in run_ids:
         alert_payload = _load_json(alerts_root / f"{run_id}.json")
+        _validate_alert_run_identity(alert_payload, run_id=run_id)
         disposition = alert_payload.get("alert_disposition")
         if isinstance(disposition, dict) and disposition.get("e2e_run_id"):
             payloads.append(alert_payload)

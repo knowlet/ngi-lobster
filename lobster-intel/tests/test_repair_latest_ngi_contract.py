@@ -80,6 +80,36 @@ def test_repair_payload_marks_mismatched_target_ids_false():
     assert explain["target_contract_match"] is False
 
 
+def test_repair_payload_preserves_string_false_target_contract_match():
+    payload = {
+        "timestamp_utc": "2026-04-25T12:55:30.291168+00:00",
+        "market_target": {
+            "market_id": "1517836",
+            "market_name": "Trump announces end of military operations against Iran by June 30th",
+        },
+        "alert_disposition": {
+            "should_send": False,
+            "decision": "suppressed",
+            "reason_code": "no_novelty_within_24h",
+            "alert_target_id": "wrong-target",
+            "target_contract_match": "false",
+        },
+        "alert_explain_contract": {
+            "disposition": "suppressed",
+            "reason_code": "no_novelty_within_24h",
+        },
+    }
+
+    repaired = repair_latest_ngi_contract.repair_payload(payload)
+
+    disposition = repaired["alert_disposition"]
+    explain = repaired["alert_explain_contract"]
+    assert disposition["reason_code"] == "active_target_contract_ok"
+    assert disposition["internal_runtime_reason_code"] == "no_novelty_within_24h"
+    assert disposition["target_contract_match"] is False
+    assert explain["target_contract_match"] is False
+
+
 def test_repair_latest_ngi_contract_cli_uses_env_default_path(tmp_path: Path):
     payload_path = tmp_path / "latest_ngi.json"
     payload_path.write_text(

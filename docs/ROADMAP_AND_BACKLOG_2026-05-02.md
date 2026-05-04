@@ -97,6 +97,7 @@
    - 2026-05-04 11:03+08:00：已收緊 non-positive live sync 的 contract-match schema guard；suppressed payload 若仍攜帶 `target_contract_match`，該值必須是明確 boolean-equivalent，避免 ambiguous contract evidence 被投影給 operator。
    - 2026-05-05 01:02+08:00：已補齊 live progress sync 的 operator target display canonicalization；`target_detail.market_question` 通過 non-empty schema 後會以 stripped string 投影到 `blocking_summary` / `market_target`，避免 operator-facing 摘要帶前後空白。
    - 2026-05-05 02:02+08:00：已補齊 live progress sync 的 delivery proof canonicalization；`boundary`、`proof_id` 與 `sink_message_id` 通過 schema 後會以 stripped string 投影，避免 operator-facing machine-readable proof 帶前後空白。
+   - 2026-05-05 05:02+08:00：已補齊 live progress sync 的 delivery proof blank-field canonicalization；`proof_id` 空白但 `sink_message_id` 有效時，payload 會保留可審計 sink id 並省略空白 `proof_id`，避免 operator-facing proof 帶無意義空欄位。
    - 2026-05-05 03:03+08:00：已補齊 live progress sync 的 alert boolean canonicalization；`should_send` 與 `target_contract_match` 先通過 boolean-equivalent parser，再以 JSON boolean 投影到 operator-facing payload，避免字串旗標流出。
 
 ### Phase C｜可擴展性與回歸（第 3–4 週）
@@ -158,6 +159,7 @@
 - live progress sync 的 operator target display 欄位必須維持 string schema；`target_detail.market_question` 不能缺失或空白，避免 `blocking_summary` / `market_target` 輸出不可審核的空 question。
 - live progress sync 的 operator target display 欄位通過 schema 後也必須 canonicalize；`target_detail.market_question` 的前後空白不能原樣投影進 `blocking_summary` / `market_target`。
 - live progress sync 的 delivery proof 欄位通過 schema 後也必須 canonicalize；`boundary`、`proof_id` 與 `sink_message_id` 的前後空白不能原樣投影進 operator-facing machine-readable proof。
+- live progress sync 的 delivery proof 空白欄位不能原樣投影；當 `proof_id` 空白且 `sink_message_id` 有效時，operator-facing proof 必須省略空白 `proof_id` 並保留可審計 sink id。
 - ops-health 的 probability 欄位必須維持 JSON number schema 且落在 0..1；boolean、字串數字或超界值不能被 Python 轉型後繼續輸出健康摘要。
 - ops-health runtime-source rollover candidate 的 `metadata.yes_probability` 若存在，也必須維持 0..1 JSON number schema，不能把字串、boolean 或超界值投影到 machine-readable successor 建議。
 - ops-health runtime-source rollover candidate 的 `collected_at_utc` / `published_at_utc` 若存在，也必須維持 ISO-8601 timestamp schema，不能把 malformed timestamp 投影到 operator-facing rollover guidance。

@@ -555,6 +555,28 @@ def test_build_live_progress_sync_payload_allows_sink_message_id_when_proof_id_i
     )
 
 
+def test_build_live_progress_sync_payload_omits_blank_delivery_proof_fields(tmp_path: Path):
+    state_path = tmp_path / "STATE.yaml"
+    state_path.write_text('dq_status: "pass"\n', encoding="utf-8")
+    db_path = tmp_path / "intelligence_store.sqlite"
+    write_db(db_path, "2099-01-01T00:00:00+00:00")
+    latest_ngi_path = tmp_path / "latest_ngi.json"
+    write_latest_ngi(latest_ngi_path)
+    latest_ngi = json.loads(latest_ngi_path.read_text(encoding="utf-8"))
+    latest_ngi["alert_disposition"]["delivery_proof"]["proof_id"] = " "
+    latest_ngi_path.write_text(json.dumps(latest_ngi), encoding="utf-8")
+
+    result = run_cli(state_path, db_path, latest_ngi_path)
+
+    assert result.returncode == 0, result.stderr
+    sync_payload = json.loads(result.stdout)
+    assert "proof_id" not in sync_payload["alert_disposition"]["delivery_proof"]
+    assert (
+        sync_payload["alert_disposition"]["delivery_proof"]["sink_message_id"]
+        == "heartbeat:legacy-monitor-20260501T002054.879803Z"
+    )
+
+
 def test_build_live_progress_sync_payload_rejects_positive_delivery_without_contract_match(tmp_path: Path):
     state_path = tmp_path / "STATE.yaml"
     state_path.write_text('dq_status: "pass"\n', encoding="utf-8")

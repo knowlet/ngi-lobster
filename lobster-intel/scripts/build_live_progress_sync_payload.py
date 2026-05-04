@@ -131,7 +131,11 @@ def _canonicalize_delivery_proof(proof: dict[str, Any]) -> dict[str, Any]:
     for key in ("boundary", "proof_id", "sink_message_id"):
         value = canonical.get(key)
         if isinstance(value, str):
-            canonical[key] = value.strip()
+            stripped = value.strip()
+            if stripped:
+                canonical[key] = stripped
+            else:
+                canonical.pop(key, None)
     return canonical
 
 

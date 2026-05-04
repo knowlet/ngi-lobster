@@ -66,6 +66,14 @@ When PO needs one fast gate for the `latest_ngi.json` runtime contract, use:
 npm run test:latest-ngi-cut
 ```
 
+When PO needs one repo-level staging gate before a live-health dry run, use:
+
+```bash
+npm run test:staging-cut
+```
+
+That shortcut keeps the current preflight slice on one repeatable command by chaining the P0 dispatcher bundle cut, the `latest_ngi.json` contract gate, the focused ops-health regression suite, and the live-sync payload regression suite before asking for review or moving to live checks.
+
 That shortcut verifies the current product contract for:
 
 - required top-level fields

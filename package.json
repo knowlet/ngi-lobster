@@ -7,6 +7,7 @@
   "scripts": {
     "test:dispatcher-cut": "PYTHONPATH=lobster-intel/packages/lobster-core:lobster-intel/packages/lobster-delivery:lobster-intel/packages/lobster-ingest:lobster-intel/packages/lobster-plugins:lobster-intel/packages/lobster-runtime ./.venv/bin/python -m pytest lobster-intel/tests/test_dispatcher_artifact_writer.py lobster-intel/tests/test_dispatcher_acceptance_cli.py lobster-intel/tests/test_runtime_contract_bundle.py lobster-intel/tests/test_runtime_spine_dispatcher_path.py -q",
     "test:p0-cut": "npm run test:dispatcher-cut && npm run test:e2e-bundle-cut",
+    "test:staging-cut": "npm run test:p0-cut && npm run test:latest-ngi-cut && npm run test:ops-health-cut && npm run test:live-sync-cut",
     "test:latest-ngi-cut": "./.venv/bin/python -m pytest lobster-intel/tests/test_verify_latest_ngi_contract_cli.py -q",
     "refresh:latest-ngi-live": "PYTHONPATH=lobster-intel/packages/lobster-core:lobster-intel/packages/lobster-delivery:lobster-intel/packages/lobster-ingest:lobster-intel/packages/lobster-plugins:lobster-intel/packages/lobster-runtime ./.venv/bin/python legacy/intelligence-model/run_ngi_monitor.py",
     "repair:latest-ngi-contract": "./.venv/bin/python lobster-intel/scripts/repair_latest_ngi_contract.py",

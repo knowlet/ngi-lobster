@@ -58,6 +58,62 @@ def test_verify_latest_ngi_contract_cli_accepts_on_contract_payload(tmp_path: Pa
     assert output["probable_sync_blocker"] is None
 
 
+
+def test_verify_latest_ngi_contract_cli_fails_closed_market_target(tmp_path: Path):
+    repo = Path(__file__).resolve().parents[2]
+    payload = {
+        "market_target": {
+            "market_id": "1517836",
+            "market_name": "Trump announces end of military operations against Iran by June 30th",
+        },
+        "target_detail": {
+            "market_yes_probability": 1.0,
+            "market_closed": True,
+            "market_accepting_orders": False,
+        },
+        "first_principles_probability": 0.19924774591890673,
+        "gap_triggered": True,
+        "divergence_pp": 80.0752,
+        "first_principles_minus_market_pp": -80.0752,
+        "direction": "first_principles_below_market",
+        "alert_disposition": {
+            "should_send": False,
+            "decision": "suppressed",
+            "reason_code": "legacy_target_mismatch",
+            "runtime_target_id": "1517836",
+            "runtime_target_name": "Trump announces end of military operations against Iran by June 30th",
+            "alert_target_id": "1517836",
+            "target_contract_match": True,
+            "contract_version": "v1",
+            "e2e_run_id": "bundle-20260504-closed-market",
+        },
+        "alert_explain_contract": {
+            "disposition": "suppressed",
+            "reason_code": "legacy_target_mismatch",
+        },
+    }
+    payload_path = tmp_path / "latest_ngi.json"
+    payload_path.write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8")
+
+    result = subprocess.run(
+        [
+            sys.executable,
+            "lobster-intel/scripts/verify_latest_ngi_contract.py",
+            str(payload_path),
+        ],
+        cwd=repo,
+        text=True,
+        capture_output=True,
+        check=False,
+    )
+
+    assert result.returncode == 1
+    output = json.loads(result.stdout)
+    assert output["status"] == "contract_violation"
+    assert "active_target_market_closed" in output["issues"]
+    assert "active_target_market_not_accepting_orders" in output["issues"]
+
+
 def test_verify_latest_ngi_contract_cli_uses_env_or_default_path_when_arg_omitted(tmp_path: Path):
     repo = Path(__file__).resolve().parents[2]
     payload = {

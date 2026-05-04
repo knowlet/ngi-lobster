@@ -331,7 +331,7 @@ def _load_rollover_candidate_from_state_config(latest_ngi_path: Path) -> dict[st
     states = payload.get("states") or {}
     if not isinstance(states, dict):
         raise RuntimeError("state_config.states must be a JSON object")
-    current_state = payload.get("current_state") or "PRE_AGREEMENT"
+    current_state = payload.get("current_state", "PRE_AGREEMENT")
     if not isinstance(current_state, str) or not current_state.strip():
         raise RuntimeError("state_config.current_state must be a non-empty string")
     bundle = states.get(current_state) or {}

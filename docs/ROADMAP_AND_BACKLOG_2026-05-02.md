@@ -95,6 +95,7 @@
    - 2026-05-04 09:03+08:00：已收緊 live progress sync 的 operator target display contract；`target_detail.market_question` 必須是 non-empty string，避免 ready/blocking payload 把 `market_question=null` 投影到 Paperclip / Albert operator-facing 摘要。
    - 2026-05-04 10:04+08:00：已補齊 live progress sync 的 alert decision schema guard；`alert_disposition.decision` 必須是 non-empty string，避免 malformed decision JSON 被投影進 operator sync payload。
    - 2026-05-04 11:03+08:00：已收緊 non-positive live sync 的 contract-match schema guard；suppressed payload 若仍攜帶 `target_contract_match`，該值必須是明確 boolean-equivalent，避免 ambiguous contract evidence 被投影給 operator。
+   - 2026-05-05 01:02+08:00：已補齊 live progress sync 的 operator target display canonicalization；`target_detail.market_question` 通過 non-empty schema 後會以 stripped string 投影到 `blocking_summary` / `market_target`，避免 operator-facing 摘要帶前後空白。
 
 ### Phase C｜可擴展性與回歸（第 3–4 週）
 7. **tracker 插件接線規格化**
@@ -151,6 +152,7 @@
 - live progress sync 的 alert contract envelope 必須維持 string schema；`decision`、`reason_code`、`contract_version`、`e2e_run_id` 不能用 malformed JSON 型別進入 operator-facing sync payload。
 - live progress sync 若收到 `alert_disposition.target_contract_match`，即使 payload 是 suppressed/non-positive，也必須是明確 boolean-equivalent；ambiguous contract evidence 不能被投影進 operator-facing sync payload。
 - live progress sync 的 operator target display 欄位必須維持 string schema；`target_detail.market_question` 不能缺失或空白，避免 `blocking_summary` / `market_target` 輸出不可審核的空 question。
+- live progress sync 的 operator target display 欄位通過 schema 後也必須 canonicalize；`target_detail.market_question` 的前後空白不能原樣投影進 `blocking_summary` / `market_target`。
 - ops-health 的 probability 欄位必須維持 JSON number schema 且落在 0..1；boolean、字串數字或超界值不能被 Python 轉型後繼續輸出健康摘要。
 - ops-health runtime-source rollover candidate 的 `metadata.yes_probability` 若存在，也必須維持 0..1 JSON number schema，不能把字串、boolean 或超界值投影到 machine-readable successor 建議。
 - ops-health runtime-source rollover candidate 的 `collected_at_utc` / `published_at_utc` 若存在，也必須維持 ISO-8601 timestamp schema，不能把 malformed timestamp 投影到 operator-facing rollover guidance。

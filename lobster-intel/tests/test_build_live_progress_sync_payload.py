@@ -248,6 +248,35 @@ def test_build_live_progress_sync_payload_requires_operator_market_question(
     assert result.stderr.strip() == "latest_ngi.target_detail.market_question must be a non-empty string"
 
 
+def test_build_live_progress_sync_payload_strips_operator_market_question(
+    tmp_path: Path,
+):
+    state_path = tmp_path / "STATE.yaml"
+    state_path.write_text('dq_status: "pass"\n', encoding="utf-8")
+    db_path = tmp_path / "intelligence_store.sqlite"
+    write_db(db_path, "2099-01-01T00:00:00+00:00")
+    latest_ngi_path = tmp_path / "latest_ngi.json"
+    write_latest_ngi(latest_ngi_path)
+    latest_ngi = json.loads(latest_ngi_path.read_text(encoding="utf-8"))
+    latest_ngi["target_detail"]["market_question"] = (
+        "  Trump announces end of military operations against Iran by June 30th?  "
+    )
+    latest_ngi_path.write_text(json.dumps(latest_ngi), encoding="utf-8")
+
+    result = run_cli(state_path, db_path, latest_ngi_path)
+
+    assert result.returncode == 0, result.stderr
+    payload = json.loads(result.stdout)
+    assert (
+        payload["blocking_summary"]["market_question"]
+        == "Trump announces end of military operations against Iran by June 30th?"
+    )
+    assert (
+        payload["market_target"]["market_question"]
+        == "Trump announces end of military operations against Iran by June 30th?"
+    )
+
+
 def test_build_live_progress_sync_payload_requires_delivery_proof_for_positive_delivery(tmp_path: Path):
     state_path = tmp_path / "STATE.yaml"
     state_path.write_text('dq_status: "pass"\n', encoding="utf-8")

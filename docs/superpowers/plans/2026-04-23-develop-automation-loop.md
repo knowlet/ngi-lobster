@@ -6,7 +6,7 @@
 
 **Tech Stack:** Git, GitHub remote workflow, project plan docs.
 
-**Status:** In progress on local branch `codex/live-sync-schema-followup` after local `origin/main` advanced to PR #39 merge commit `f9b02e2`; remote confirmation/push remains blocked by GitHub DNS/API access.
+**Status:** In progress on local branch `codex/live-sync-schema-followup-2` after local `origin/main` advanced to PR #40 merge commit `fe8e325`; remote confirmation/push remains blocked by GitHub DNS/API access.
 
 > **PR29 checkpoint note:** This document is a clean PR29/PR30 docs-only handoff cut. Historical references to `codex/pr21-recut-dispatcher-receipt-guard` below are preserved as execution context from the original runtime branch, not as the active review branch for this replacement PR.
 
@@ -1100,3 +1100,12 @@
 - [x] 2026-05-05 01:02:10+0800: Advanced the live-sync operator display boundary by canonicalizing `target_detail.market_question` after validation before emitting `blocking_summary.market_question` and `market_target.market_question`.
 - [x] 2026-05-05 01:02:10+0800: Added a red-green live-sync regression proving whitespace-padded `target_detail.market_question` now emits a stripped operator-facing question in both payload locations.
 - [ ] Retry GitHub access, publish `codex/live-sync-schema-followup`, open PR to `main`, and continue post-PR39 runtime work only after remote state is confirmed.
+
+### Task 125: 2026-05-05 02:02+08:00 live-sync delivery proof canonicalization
+- [x] 2026-05-05 02:02:56+0800: Current branch started on `codex/verify-latest-ngi-closed-target-guard` at `1dd9e26`, but its upstream tracking ref was gone and local `origin/main` had advanced to `fe8e325` from PR #40 plus `8af603a` from PR #41.
+- [x] 2026-05-05 02:02:56+0800: `git fetch --prune origin` retried and failed (`Could not resolve host: github.com`, rc=128), so upstream freshness cannot be verified beyond existing local refs.
+- [x] 2026-05-05 02:02:56+0800: `gh pr list --state all --limit 20` and `gh issue list --state all --limit 20` failed with `error connecting to api.github.com`, so PR/issue/comment queues cannot be refreshed.
+- [x] 2026-05-05 02:02:56+0800: Created fresh branch `codex/live-sync-schema-followup-2` from local `origin/main` at `fe8e325` to avoid continuing on a gone PR branch whose patch was already absorbed.
+- [x] 2026-05-05 02:02:56+0800: Advanced the live-sync delivery proof boundary by canonicalizing `boundary`, `proof_id`, and `sink_message_id` after validation before emitting operator-facing machine-readable proof.
+- [x] 2026-05-05 02:02:56+0800: Added a red-green live-sync regression proving whitespace-padded delivery proof fields now emit stripped values in `alert_disposition.delivery_proof`.
+- [ ] Retry GitHub access, publish `codex/live-sync-schema-followup-2`, open PR to `main`, and continue post-PR41 runtime work only after remote state is confirmed.

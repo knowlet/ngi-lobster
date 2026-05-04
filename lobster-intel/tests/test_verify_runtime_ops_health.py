@@ -669,6 +669,57 @@ def test_verify_runtime_ops_health_strips_state_config_current_state(tmp_path: P
     assert payload["active_target_reselection"]["rollover_candidate"] == payload["rollover_candidate"]
 
 
+def test_verify_runtime_ops_health_strips_state_config_fallback_source_metadata(
+    tmp_path: Path,
+):
+    state_path = tmp_path / "STATE.yaml"
+    state_path.write_text('dq_status: "pass"\n', encoding="utf-8")
+    db_path = tmp_path / "intelligence_store.sqlite"
+    write_db(db_path, "2099-01-01T00:00:00+00:00")
+    latest_ngi_path = tmp_path / "latest_ngi.json"
+    write_latest_ngi(
+        latest_ngi_path,
+        first_principles_probability=0.52,
+        market_yes_probability=0.60,
+        market_closed=True,
+        market_accepting_orders=False,
+    )
+    state_config_path = tmp_path / "state_config.json"
+    state_config_path.write_text(
+        json.dumps(
+            {
+                "current_state": "ACTIVE_TRUCE",
+                "states": {
+                    "ACTIVE_TRUCE": {
+                        "fallback_target": {
+                            "type": " polymarket ",
+                            "topic_slug": " us_iran_escalation ",
+                            "market_id": "1517835",
+                            "market_slug": "fallback-market",
+                            "market_name": "Fallback target",
+                            "probability_mode": "yes_is_peace",
+                        }
+                    }
+                },
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    result = run_cli(
+        state_path,
+        db_path,
+        latest_ngi_path,
+        env={"LOBSTER_STATE_CONFIG_PATH": str(state_config_path)},
+    )
+
+    assert result.returncode == 1
+    payload = json.loads(result.stdout)
+    assert payload["rollover_candidate"]["target_type"] == "polymarket"
+    assert payload["rollover_candidate"]["topic_slug"] == "us_iran_escalation"
+    assert payload["active_target_reselection"]["rollover_candidate"] == payload["rollover_candidate"]
+
+
 def test_verify_runtime_ops_health_rejects_malformed_state_config_fallback_identity(
     tmp_path: Path,
 ):

@@ -351,6 +351,8 @@ def _load_rollover_candidate_from_state_config(latest_ngi_path: Path) -> dict[st
     market_slug = fallback.get("market_slug")
     market_name = fallback.get("market_name")
     market_question = fallback.get("market_question")
+    target_type = fallback.get("type")
+    topic_slug = fallback.get("topic_slug")
     if not any((market_id, market_slug, market_name)):
         return None
     market_id = require_non_empty_string(
@@ -383,6 +385,20 @@ def _load_rollover_candidate_from_state_config(latest_ngi_path: Path) -> dict[st
     )
     if isinstance(probability_mode, str):
         probability_mode = probability_mode.strip()
+    validate_optional_non_empty_string(
+        target_type,
+        "type",
+        context="state_config.fallback_target",
+    )
+    if isinstance(target_type, str):
+        target_type = target_type.strip()
+    validate_optional_non_empty_string(
+        topic_slug,
+        "topic_slug",
+        context="state_config.fallback_target",
+    )
+    if isinstance(topic_slug, str):
+        topic_slug = topic_slug.strip()
 
     candidate = {
         "market_id": market_id,
@@ -394,6 +410,10 @@ def _load_rollover_candidate_from_state_config(latest_ngi_path: Path) -> dict[st
     }
     if market_question is not None:
         candidate["market_question"] = market_question
+    if target_type is not None:
+        candidate["target_type"] = target_type
+    if topic_slug is not None:
+        candidate["topic_slug"] = topic_slug
     return candidate
 
 

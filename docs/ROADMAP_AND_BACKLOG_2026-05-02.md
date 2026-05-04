@@ -161,6 +161,7 @@
 - live progress sync 的 operator target display 欄位通過 schema 後也必須 canonicalize；`target_detail.market_question` 的前後空白不能原樣投影進 `blocking_summary` / `market_target`。
 - live progress sync 的 delivery proof 欄位通過 schema 後也必須 canonicalize；`boundary`、`proof_id` 與 `sink_message_id` 的前後空白不能原樣投影進 operator-facing machine-readable proof。
 - live progress sync 的 delivery proof 空白欄位不能原樣投影；當 `proof_id` 空白且 `sink_message_id` 有效時，operator-facing proof 必須省略空白 `proof_id` 並保留可審計 sink id。
+- 2026-05-05 07:02+08:00：已補齊 live progress sync non-positive delivery proof projection；suppressed/non-positive payload 若只帶空白 proof 欄位，canonicalization 會把空 proof 整體省略，避免 operator-facing `delivery_proof={}` 被誤認為可審計證據。
 - ops-health 的 probability 欄位必須維持 JSON number schema 且落在 0..1；boolean、字串數字或超界值不能被 Python 轉型後繼續輸出健康摘要。
 - ops-health runtime-source rollover candidate 的 `metadata.yes_probability` 若存在，也必須維持 0..1 JSON number schema，不能把字串、boolean 或超界值投影到 machine-readable successor 建議。
 - ops-health runtime-source rollover candidate 的 `collected_at_utc` / `published_at_utc` 若存在，也必須維持 ISO-8601 timestamp schema，不能把 malformed timestamp 投影到 operator-facing rollover guidance。

@@ -116,12 +116,7 @@ def _require_non_empty_string(payload: dict[str, Any], key: str, *, context: str
 
 
 def _validate_delivery_proof_fields(proof: dict[str, Any]) -> None:
-    boundary = proof.get("boundary")
-    if boundary is not None and boundary != "":
-        if not isinstance(boundary, str) or not boundary.strip():
-            raise RuntimeError(
-                "latest_ngi.alert_disposition.delivery_proof.boundary must be a non-empty string"
-            )
+    _read_non_empty_string(proof, "boundary")
     _read_non_empty_string(proof, "proof_id")
     _read_non_empty_string(proof, "sink_message_id")
 
@@ -146,7 +141,10 @@ def _require_delivery_proof(alert_disposition: dict[str, Any]) -> dict[str, Any]
     if proof is not None:
         _validate_delivery_proof_fields(proof)
     if not _is_positive_delivery(alert_disposition):
-        return _canonicalize_delivery_proof(proof) if proof is not None else None
+        if proof is None:
+            return None
+        canonical_proof = _canonicalize_delivery_proof(proof)
+        return canonical_proof or None
     if _as_bool(alert_disposition.get("target_contract_match")) is not True:
         raise RuntimeError("positive latest_ngi.alert_disposition.target_contract_match must be true")
     if proof is None:

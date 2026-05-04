@@ -165,6 +165,9 @@ def build_live_progress_sync_payload(
     reason_code = _require_non_empty_string(
         alert_disposition, "reason_code", context="latest_ngi.alert_disposition"
     )
+    market_question = _require_non_empty_string(
+        target_detail, "market_question", context="latest_ngi.target_detail"
+    )
     contract_version = _require_non_empty_string(
         alert_disposition, "contract_version", context="latest_ngi.alert_disposition"
     )
@@ -192,7 +195,7 @@ def build_live_progress_sync_payload(
         "sync_blocked": ops_health["status"] != "pass",
         "blocking_summary": {
             "runtime_target_id": ops_health["market_target_id"],
-            "market_question": target_detail.get("market_question"),
+            "market_question": market_question,
             "reselection_required": ops_health["reselection_required"],
             "next_contract_action": ops_health["next_contract_action"],
             "rollover_candidate_blocker": ops_health["rollover_candidate_blocker"],
@@ -201,7 +204,7 @@ def build_live_progress_sync_payload(
         "market_target": {
             "market_id": ops_health["market_target_id"],
             "market_name": ops_health["market_target_name"],
-            "market_question": target_detail.get("market_question"),
+            "market_question": market_question,
             "probability_mode": ops_health["probability_mode"],
         },
         "alert_disposition": alert_payload,

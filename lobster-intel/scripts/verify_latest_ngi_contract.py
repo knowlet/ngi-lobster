@@ -43,6 +43,26 @@ SIGNED_DIVERGENCE_FIELDS = (
 )
 
 
+def _as_contract_bool(value: object) -> bool | None:
+    if value is None:
+        return None
+    if isinstance(value, bool):
+        return value
+    if isinstance(value, str):
+        normalized = value.strip().lower()
+        if normalized in {"true", "1", "yes", "y", "on"}:
+            return True
+        if normalized in {"false", "0", "no", "n", "off"}:
+            return False
+        return None
+    if isinstance(value, (int, float)):
+        if value == 1:
+            return True
+        if value == 0:
+            return False
+    return None
+
+
 def resolve_latest_ngi_path(argv: list[str]) -> Path:
     if len(argv) == 2:
         return Path(argv[1])
@@ -115,6 +135,15 @@ def main(argv: list[str]) -> int:
     issues: list[str] = []
     disposition_reason = ((payload.get("alert_disposition") or {}).get("reason_code"))
     explain_reason = ((payload.get("alert_explain_contract") or {}).get("reason_code"))
+    target_detail = payload.get("target_detail") or {}
+
+    market_closed = _as_contract_bool(target_detail.get("market_closed"))
+    market_accepting_orders = _as_contract_bool(target_detail.get("market_accepting_orders"))
+
+    if market_closed is True:
+        issues.append("active_target_market_closed")
+    if market_accepting_orders is False:
+        issues.append("active_target_market_not_accepting_orders")
 
     if disposition_reason != explain_reason:
         issues.append("reason_code_mismatch:alert_disposition_vs_alert_explain_contract")

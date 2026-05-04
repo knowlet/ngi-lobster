@@ -973,3 +973,13 @@
 - [x] 2026-05-04 11:03:24+0800: Advanced the live-sync contract-match schema boundary by making suppressed/non-positive payloads fail closed when `alert_disposition.target_contract_match` is present but not boolean-equivalent.
 - [x] 2026-05-04 11:03:24+0800: Added a red-green live-sync regression proving `should_send=false` plus `target_contract_match="unknown"` now exits nonzero with `latest_ngi.alert_disposition.target_contract_match must be a boolean-equivalent value` instead of leaking ambiguous contract evidence into the operator payload.
 - [ ] Retry GitHub access, confirm PR #30 `CommitCheck` status, then merge or resume runtime work only after that gate clears.
+
+### Task 111: 2026-05-04 12:03+08:00 ops-health fallback successor schema guard
+- [x] 2026-05-04 12:03:43+0800: Current branch is `codex/pr29-clean-runtime-cut` at `924b34a`, matching local `origin/codex/pr29-clean-runtime-cut` before this run.
+- [x] 2026-05-04 12:03:43+0800: `git fetch --prune origin` retried and failed (`Could not resolve host: github.com`, rc=128), so upstream freshness cannot be verified in this run.
+- [x] 2026-05-04 12:03:43+0800: `gh pr list --state all --limit 20` and `gh issue list --state all --limit 20` failed with `error connecting to api.github.com`, so PR #30 merge-state and issue triage cannot be refreshed.
+- [x] 2026-05-04 12:03:43+0800: `git rebase --fork-point origin/main` hit the known rolling-plan conflict while replaying old checkpoint commit `14bebae` and was aborted cleanly.
+- [x] 2026-05-04 12:03:43+0800: Advanced the ops-health fallback successor boundary by requiring configured `state_config.fallback_target` identity/display fields (`market_id`, `market_slug`, `market_name`, and optional `probability_mode`) to maintain string schema before projection into rollover acceptance evidence.
+- [x] 2026-05-04 12:03:43+0800: Added a red-green ops-health regression proving malformed fallback identity now exits nonzero with `state_config.fallback_target.market_id must be a non-empty string` instead of emitting a pending-validation rollover candidate with `market_id` as a list.
+- [x] 2026-05-04 12:03:43+0800: While running the full ops-health suite, also made blocker text format from the same rounded freshness/divergence values emitted in JSON, removing a one-centihour flaky assertion path.
+- [ ] Retry GitHub access, confirm PR #30 `CommitCheck` status, then merge or resume runtime work only after that gate clears.

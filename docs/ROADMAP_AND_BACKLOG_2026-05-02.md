@@ -62,6 +62,7 @@
    - 2026-05-04 05:03+08:00：已補齊 ops-health 的 active-target reselection acceptance 摘要；即使 `latest_ngi_stale=true` 且當前 target 已 closed/not accepting orders，blocking JSON 仍會 machine-readable 輸出 `active_target_reselection.runtime_target_id` / `market_question` / `next_contract_action` / `rollover_candidate`，供 P0 reselect cut 驗收。
    - 2026-05-04 06:03+08:00：已把同一份 `active_target_reselection` acceptance object 投影到 live progress sync payload，讓 Paperclip / Albert 顯示模板不必從 `blocking_summary` 與 `active_target` 重新拼接 reselection evidence。
    - 2026-05-04 07:03+08:00：已加固 ops-health active-target reselection acceptance schema；只要需要 reselect active target，`active_target_reselection.runtime_target_id` 與 `market_question` 必須是 non-empty string，避免 P0 acceptance object 帶著空 target/question 進入 heartbeat / review / upstream。
+   - 2026-05-04 12:03+08:00：已加固 ops-health state-config fallback successor schema；沒有 runtime source 時，configured `fallback_target` 的 `market_id`、`market_slug`、`market_name` 與 optional `probability_mode` 必須維持 machine-readable string schema，避免 pending-validation rollover candidate 帶 malformed identity 進入 reselection evidence。
 
 5. **Freshness + DQ 監控門檻固定化**
    - 明確把 `latest_ngi_age_hours > 4` 直接設為硬阻斷。
@@ -147,6 +148,7 @@
 - ops-health latest NGI 的 active-target identity/display 欄位若存在，也必須維持 non-empty string schema，不能把 malformed `market_target` / `target_detail` target id、name 或 question 投影到 operator-facing 摘要。
 - ops-health blocking output 必須提供 dedicated `active_target_reselection` object，讓 stale/closed/divergent target 狀態也能直接供 heartbeat / review / upstream 驗收，不必由 operator 重新拼接零散欄位。
 - ops-health active-target reselection acceptance object 若 `reselection_required=true`，`runtime_target_id` 與 `market_question` 必須維持 non-empty string schema，不能輸出缺少 target/question 的 P0 acceptance evidence。
+- ops-health state-config fallback successor 也必須維持 identity/display string schema；沒有 runtime source 時，configured `fallback_target` 不能把 malformed `market_id`、`market_slug`、`market_name` 或 `probability_mode` 投影成 pending-validation rollover candidate。
 - ops-health 的 latest NGI timestamp 欄位若存在，也必須維持 ISO-8601 schema，不能把 malformed timestamp 洩漏成底層 parser error。
 - ops-health 的 SQLite freshness timestamp `market_snapshots.snapshot_at_utc` 也必須維持 ISO-8601 schema，不能把 malformed store timestamp 洩漏成底層 parser error。
 

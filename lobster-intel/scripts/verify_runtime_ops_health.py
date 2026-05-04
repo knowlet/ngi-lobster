@@ -338,6 +338,26 @@ def _load_rollover_candidate_from_state_config(latest_ngi_path: Path) -> dict[st
     market_name = fallback.get("market_name")
     if not any((market_id, market_slug, market_name)):
         return None
+    market_id = require_non_empty_string(
+        market_id,
+        "market_id",
+        context="state_config.fallback_target",
+    )
+    market_slug = require_non_empty_string(
+        market_slug,
+        "market_slug",
+        context="state_config.fallback_target",
+    )
+    market_name = require_non_empty_string(
+        market_name,
+        "market_name",
+        context="state_config.fallback_target",
+    )
+    validate_optional_non_empty_string(
+        fallback.get("probability_mode"),
+        "probability_mode",
+        context="state_config.fallback_target",
+    )
 
     return {
         "market_id": market_id,
@@ -397,6 +417,10 @@ def build_summary(
     )
     divergence_pp = abs(first_principles_probability - market_yes_probability) * 100.0
     first_principles_minus_market_pp = (first_principles_probability - market_yes_probability) * 100.0
+    freshness_hours_display = round(freshness_hours, 4)
+    latest_ngi_age_hours_display = round(latest_ngi_age_hours, 4)
+    divergence_pp_display = round(divergence_pp, 4)
+    first_principles_minus_market_pp_display = round(first_principles_minus_market_pp, 4)
     stale_data = freshness_hours > FRESHNESS_THRESHOLD_HOURS
     latest_ngi_stale = latest_ngi_age_hours > FRESHNESS_THRESHOLD_HOURS
     divergence_blocking = divergence_pp > DIVERGENCE_THRESHOLD_PP
@@ -438,10 +462,10 @@ def build_summary(
         blockers.append(f"dq_status={dq_status}")
     if stale_data:
         status = "fail"
-        blockers.append(f"stale_data={freshness_hours:.2f}h")
+        blockers.append(f"stale_data={freshness_hours_display:.2f}h")
     if latest_ngi_stale:
         status = "fail"
-        blockers.append(f"latest_ngi_stale={latest_ngi_age_hours:.2f}h")
+        blockers.append(f"latest_ngi_stale={latest_ngi_age_hours_display:.2f}h")
     if closed_target_blocking:
         status = "fail"
         if market_closed is True:
@@ -454,7 +478,7 @@ def build_summary(
             blockers.append("market_accepting_orders=unknown")
     if divergence_blocking:
         status = "fail"
-        blockers.append(f"divergence_pp={divergence_pp:.2f}")
+        blockers.append(f"divergence_pp={divergence_pp_display:.2f}")
 
     runtime_target_id = market_target.get("market_id") or target_detail.get("market_id")
     market_question = target_detail.get("market_question")
@@ -483,19 +507,19 @@ def build_summary(
         "status": status,
         "dq_status": dq_status,
         "latest_snapshot_at_utc": latest_snapshot_at_utc,
-        "freshness_hours": round(freshness_hours, 4),
+        "freshness_hours": freshness_hours_display,
         "freshness_threshold_hours": FRESHNESS_THRESHOLD_HOURS,
         "stale_data": stale_data,
         "latest_ngi_timestamp_utc": latest_ngi_timestamp_utc,
-        "latest_ngi_age_hours": round(latest_ngi_age_hours, 4),
+        "latest_ngi_age_hours": latest_ngi_age_hours_display,
         "latest_ngi_threshold_hours": FRESHNESS_THRESHOLD_HOURS,
         "latest_ngi_stale": latest_ngi_stale,
-        "divergence_pp": round(divergence_pp, 4),
+        "divergence_pp": divergence_pp_display,
         "divergence_threshold_pp": DIVERGENCE_THRESHOLD_PP,
         "divergence_blocking": divergence_blocking,
         "first_principles_probability": first_principles_probability,
         "market_yes_probability": market_yes_probability,
-        "first_principles_minus_market_pp": round(first_principles_minus_market_pp, 4),
+        "first_principles_minus_market_pp": first_principles_minus_market_pp_display,
         "direction": compute_signed_divergence_direction(first_principles_minus_market_pp),
         "probability_mode": probability_mode,
         "market_target_id": market_target.get("market_id") or target_detail.get("market_id"),

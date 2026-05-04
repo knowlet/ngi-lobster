@@ -118,6 +118,15 @@ def _validate_delivery_proof_fields(proof: dict[str, Any]) -> None:
     _read_non_empty_string(proof, "sink_message_id")
 
 
+def _canonicalize_delivery_proof(proof: dict[str, Any]) -> dict[str, Any]:
+    canonical = dict(proof)
+    for key in ("boundary", "proof_id", "sink_message_id"):
+        value = canonical.get(key)
+        if isinstance(value, str):
+            canonical[key] = value.strip()
+    return canonical
+
+
 def _require_delivery_proof(alert_disposition: dict[str, Any]) -> dict[str, Any] | None:
     proof = alert_disposition.get("delivery_proof")
     if proof is not None and not isinstance(proof, dict):
@@ -125,7 +134,7 @@ def _require_delivery_proof(alert_disposition: dict[str, Any]) -> dict[str, Any]
     if proof is not None:
         _validate_delivery_proof_fields(proof)
     if not _is_positive_delivery(alert_disposition):
-        return proof
+        return _canonicalize_delivery_proof(proof) if proof is not None else None
     if _as_bool(alert_disposition.get("target_contract_match")) is not True:
         raise RuntimeError("positive latest_ngi.alert_disposition.target_contract_match must be true")
     if proof is None:
@@ -142,7 +151,7 @@ def _require_delivery_proof(alert_disposition: dict[str, Any]) -> dict[str, Any]
     )
     if proof_id is None:
         raise RuntimeError("missing latest_ngi.alert_disposition.delivery_proof.proof_id")
-    return proof
+    return _canonicalize_delivery_proof(proof)
 
 
 def _validate_non_positive_contract_match(alert_disposition: dict[str, Any]) -> None:

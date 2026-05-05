@@ -300,6 +300,7 @@ def test_build_live_progress_sync_payload_uses_state_config_fallback_when_runtim
         "market_id": "1517835",
         "market_slug": "fallback-market",
         "market_name": "Fallback target",
+        "market_question": "Fallback target",
         "probability_mode": "yes_is_peace",
         "source": "state_config_fallback",
         "state": "ACTIVE_TRUCE",

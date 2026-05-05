@@ -411,12 +411,11 @@ def _load_rollover_candidate_from_state_config(latest_ngi_path: Path) -> dict[st
         "market_id": market_id,
         "market_slug": market_slug,
         "market_name": market_name,
+        "market_question": market_question or market_name,
         "probability_mode": probability_mode,
         "source": "state_config_fallback",
         "state": current_state,
     }
-    if market_question is not None:
-        candidate["market_question"] = market_question
     if target_type is not None:
         candidate["target_type"] = target_type
     if topic_slug is not None:

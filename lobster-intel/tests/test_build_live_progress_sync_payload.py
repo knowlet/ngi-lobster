@@ -224,6 +224,93 @@ def test_build_live_progress_sync_payload_exports_active_target_reselection_acce
     }
 
 
+def test_build_live_progress_sync_payload_uses_state_config_fallback_when_runtime_source_has_no_successor(
+    tmp_path: Path,
+):
+    state_path = tmp_path / "STATE.yaml"
+    state_path.write_text('dq_status: "pass"\n', encoding="utf-8")
+    db_path = tmp_path / "intelligence_store.sqlite"
+    write_db(db_path, "2099-01-01T00:00:00+00:00")
+    latest_ngi_path = tmp_path / "latest_ngi.json"
+    write_latest_ngi(
+        latest_ngi_path,
+        first_principles_probability=0.12,
+        market_yes_probability=0.54,
+    )
+    latest_ngi = json.loads(latest_ngi_path.read_text(encoding="utf-8"))
+    latest_ngi["target_detail"]["market_closed"] = True
+    latest_ngi["target_detail"]["market_accepting_orders"] = False
+    latest_ngi["alert_disposition"]["decision"] = "suppressed"
+    latest_ngi["alert_disposition"]["should_send"] = False
+    latest_ngi["alert_disposition"].pop("delivery_proof")
+    latest_ngi_path.write_text(json.dumps(latest_ngi), encoding="utf-8")
+    runtime_source_path = tmp_path / "polymarket-runtime.json"
+    write_runtime_source(
+        runtime_source_path,
+        items=[
+            {
+                "external_id": "1517836",
+                "title": "Closed target",
+                "url": "closed-target",
+                "collected_at_utc": "2099-01-01T00:00:00+00:00",
+                "metadata": {
+                    "market_id": "1517836",
+                    "slug": "closed-target",
+                    "yes_probability": 1.0,
+                    "active": True,
+                    "closed": True,
+                    "accepting_orders": False,
+                    "source_config": {"label": "Closed target"},
+                },
+            }
+        ],
+    )
+    state_config_path = tmp_path / "state_config.json"
+    state_config_path.write_text(
+        json.dumps(
+            {
+                "current_state": "ACTIVE_TRUCE",
+                "states": {
+                    "ACTIVE_TRUCE": {
+                        "fallback_target": {
+                            "market_id": "1517835",
+                            "market_slug": "fallback-market",
+                            "market_name": "Fallback target",
+                            "probability_mode": "yes_is_peace",
+                        }
+                    }
+                },
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    result = subprocess.run(
+        [sys.executable, str(SCRIPT), str(state_path), str(db_path), str(latest_ngi_path), str(runtime_source_path)],
+        cwd=REPO,
+        text=True,
+        capture_output=True,
+        check=False,
+        env={**__import__("os").environ, "LOBSTER_STATE_CONFIG_PATH": str(state_config_path)},
+    )
+
+    assert result.returncode == 0, result.stderr
+    payload = json.loads(result.stdout)
+    assert payload["active_target_reselection"]["rollover_candidate"] == {
+        "market_id": "1517835",
+        "market_slug": "fallback-market",
+        "market_name": "Fallback target",
+        "market_question": "Fallback target",
+        "probability_mode": "yes_is_peace",
+        "source": "state_config_fallback",
+        "state": "ACTIVE_TRUCE",
+    }
+    assert (
+        payload["active_target_reselection"]["rollover_candidate_blocker"]
+        == "configured_successor_pending_validation"
+    )
+
+
 def test_build_live_progress_sync_payload_requires_operator_market_question(
     tmp_path: Path,
 ):

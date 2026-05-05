@@ -56,6 +56,16 @@ def _build_basis_lines(*, latest_ngi: dict[str, Any], ops_health: dict[str, Any]
     }
 
 
+def _add_rollover_candidate_diagnostics(
+    payload: dict[str, Any],
+    ops_health: dict[str, Any],
+) -> dict[str, Any]:
+    diagnostics = ops_health.get("rollover_candidate_diagnostics")
+    if diagnostics is not None:
+        payload["rollover_candidate_diagnostics"] = diagnostics
+    return payload
+
+
 def _require_mapping(payload: dict[str, Any], key: str) -> dict[str, Any]:
     value = payload.get(key)
     if not isinstance(value, dict):
@@ -241,14 +251,17 @@ def build_live_progress_sync_payload(
     return {
         "sync_status": "blocking" if ops_health["status"] != "pass" else "ready",
         "sync_blocked": ops_health["status"] != "pass",
-        "blocking_summary": {
-            "runtime_target_id": ops_health["market_target_id"],
-            "market_question": market_question,
-            "reselection_required": ops_health["reselection_required"],
-            "next_contract_action": ops_health["next_contract_action"],
-            "rollover_candidate_blocker": ops_health["rollover_candidate_blocker"],
-            "rollover_candidate": ops_health["rollover_candidate"],
-        },
+        "blocking_summary": _add_rollover_candidate_diagnostics(
+            {
+                "runtime_target_id": ops_health["market_target_id"],
+                "market_question": market_question,
+                "reselection_required": ops_health["reselection_required"],
+                "next_contract_action": ops_health["next_contract_action"],
+                "rollover_candidate_blocker": ops_health["rollover_candidate_blocker"],
+                "rollover_candidate": ops_health["rollover_candidate"],
+            },
+            ops_health,
+        ),
         "market_target": {
             "market_id": ops_health["market_target_id"],
             "market_name": ops_health["market_target_name"],
@@ -267,15 +280,18 @@ def build_live_progress_sync_payload(
             "threshold_pp": ops_health["divergence_threshold_pp"],
             "blocking": ops_health["divergence_blocking"],
         },
-        "active_target": {
-            "market_closed": ops_health["market_closed"],
-            "market_accepting_orders": ops_health["market_accepting_orders"],
-            "closed_target_blocking": ops_health["closed_target_blocking"],
-            "reselection_required": ops_health["reselection_required"],
-            "next_contract_action": ops_health["next_contract_action"],
-            "rollover_candidate_blocker": ops_health["rollover_candidate_blocker"],
-            "rollover_candidate": ops_health["rollover_candidate"],
-        },
+        "active_target": _add_rollover_candidate_diagnostics(
+            {
+                "market_closed": ops_health["market_closed"],
+                "market_accepting_orders": ops_health["market_accepting_orders"],
+                "closed_target_blocking": ops_health["closed_target_blocking"],
+                "reselection_required": ops_health["reselection_required"],
+                "next_contract_action": ops_health["next_contract_action"],
+                "rollover_candidate_blocker": ops_health["rollover_candidate_blocker"],
+                "rollover_candidate": ops_health["rollover_candidate"],
+            },
+            ops_health,
+        ),
         "active_target_reselection": ops_health["active_target_reselection"],
         "freshness": {
             "dq_status": ops_health["dq_status"],
@@ -288,12 +304,15 @@ def build_live_progress_sync_payload(
             "latest_ngi_threshold_hours": ops_health["latest_ngi_threshold_hours"],
             "latest_ngi_stale": ops_health["latest_ngi_stale"],
         },
-        "contract_action": {
-            "reselection_required": ops_health["reselection_required"],
-            "next_contract_action": ops_health["next_contract_action"],
-            "rollover_candidate": ops_health["rollover_candidate"],
-            "rollover_candidate_blocker": ops_health["rollover_candidate_blocker"],
-        },
+        "contract_action": _add_rollover_candidate_diagnostics(
+            {
+                "reselection_required": ops_health["reselection_required"],
+                "next_contract_action": ops_health["next_contract_action"],
+                "rollover_candidate": ops_health["rollover_candidate"],
+                "rollover_candidate_blocker": ops_health["rollover_candidate_blocker"],
+            },
+            ops_health,
+        ),
         "blockers": list(ops_health["blockers"]),
         "basis_lines": basis,
     }

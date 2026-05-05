@@ -1332,3 +1332,11 @@
 - [x] 2026-05-06 04:03:57+0800: Advanced the adjacent ops-health freshness source timestamp boundary so parsed timestamps whose `tzinfo` exists but `utcoffset()` is missing now raise stable `timestamp must include timezone` instead of letting `astimezone()` treat them as local time.
 - [x] 2026-05-06 04:03:57+0800: Added a red-green regression proving offset-less parsed source timestamps now fail through the stable freshness parser boundary.
 - [ ] Retry GitHub access, publish `codex/ops-health-freshness-timezone-guard`, open or update the PR chain to `main`, and continue post-PR62 runtime work only after remote state is confirmed.
+
+### Task 152: 2026-05-06 05:03+08:00 ops-health optional timestamp offset guard
+- [x] 2026-05-06 05:03:15+0800: Current branch remained `codex/ops-health-freshness-timezone-guard`; local refs show the branch and its remote-tracking ref at `a3eba3b`, stacked on post-PR62 freshness hardening commits.
+- [x] 2026-05-06 05:03:15+0800: `git fetch --prune origin` failed (`Could not resolve host: github.com`, rc=128), so upstream freshness cannot be verified beyond existing local refs.
+- [x] 2026-05-06 05:03:15+0800: `gh pr list --state all --limit 20` and `gh issue list --state all --limit 20` failed with `error connecting to api.github.com`, so PR comments/issues could not be refreshed.
+- [x] 2026-05-06 05:03:15+0800: Advanced the adjacent ops-health optional timestamp validator boundary so `_parse_ts()` rejects parsed datetimes whose `tzinfo` exists but `utcoffset()` is missing instead of allowing optional timestamp fields to bypass the freshness parser offset guard.
+- [x] 2026-05-06 05:03:15+0800: Added a red-green regression proving `validate_optional_timestamp()` now fails closed when the parser returns an offset-less datetime.
+- [ ] Retry GitHub access, publish `codex/ops-health-freshness-timezone-guard`, open or update the PR chain to `main`, and continue post-PR62 runtime work only after remote state is confirmed.

@@ -228,6 +228,8 @@ def _parse_ts(value: Any) -> datetime | None:
     if not value:
         return None
     text = str(value)
+    if "T" not in text:
+        return None
     if text.endswith("Z"):
         text = text[:-1] + "+00:00"
     try:

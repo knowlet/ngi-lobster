@@ -1244,3 +1244,12 @@
 - [x] 2026-05-05 17:04:03+0800: Advanced the positive-delivery contract-match parser boundary so ambiguous values such as `target_contract_match="unknown"` return the boolean-equivalent schema error instead of the explicit mismatch `must be true` error.
 - [x] 2026-05-05 17:04:03+0800: Added a red-green live-sync regression proving ambiguous positive-delivery contract evidence now preserves the parser-boundary explanation.
 - [ ] Retry GitHub access, publish `codex/live-sync-contract-match-error-boundary`, open PR to `main`, and continue post-PR58 runtime work only after remote state is confirmed.
+
+### Task 141: 2026-05-05 18:03+08:00 ops-health date-only timestamp guard
+- [x] 2026-05-05 18:03:25+0800: Current branch started on local `main` at `2e02b5c`, matching local `origin/main` from PR #59 in the existing local refs.
+- [x] 2026-05-05 18:03:25+0800: `git fetch --prune origin` retried and failed (`Could not resolve host: github.com`, rc=128), so upstream freshness cannot be verified beyond existing local refs.
+- [x] 2026-05-05 18:03:25+0800: `gh pr list --state all --limit 20` and `gh issue list --state all --limit 20` failed with `error connecting to api.github.com`, so PR/issue/comment queues cannot be refreshed.
+- [x] 2026-05-05 18:03:25+0800: Created fresh branch `codex/ops-health-timestamp-datetime-guard` from local `main` to keep the next ops-health parser hardening slice isolated.
+- [x] 2026-05-05 18:03:25+0800: Advanced the ops-health timestamp parser boundary so date-only runtime-source successor timestamps are rejected instead of being sorted and projected as rollover evidence.
+- [x] 2026-05-05 18:03:25+0800: Added a red-green ops-health regression proving `collected_at_utc="2099-01-01"` now fails with the stable ISO-8601 timestamp schema error.
+- [ ] Retry GitHub access, publish `codex/ops-health-timestamp-datetime-guard`, open PR to `main`, and continue post-PR59 runtime work only after remote state is confirmed.

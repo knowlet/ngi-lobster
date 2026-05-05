@@ -177,6 +177,21 @@ def test_verify_runtime_ops_health_fails_on_latest_ngi_staleness(tmp_path: Path)
     assert payload["blockers"] == [f"latest_ngi_stale={payload['latest_ngi_age_hours']:.2f}h"]
 
 
+def test_verify_runtime_ops_health_rejects_malformed_latest_ngi_json(tmp_path: Path):
+    state_path = tmp_path / "STATE.yaml"
+    state_path.write_text('dq_status: "pass"\n', encoding="utf-8")
+    db_path = tmp_path / "intelligence_store.sqlite"
+    write_db(db_path, "2099-01-01T00:00:00+00:00")
+    latest_ngi_path = tmp_path / "latest_ngi.json"
+    latest_ngi_path.write_text("{", encoding="utf-8")
+
+    result = run_cli(state_path, db_path, latest_ngi_path)
+
+    assert result.returncode == 1
+    assert result.stdout == ""
+    assert result.stderr.strip() == "latest_ngi payload must be valid JSON"
+
+
 def test_verify_runtime_ops_health_fails_when_latest_ngi_is_stale_and_divergence_is_blocking(tmp_path: Path):
     state_path = tmp_path / "STATE.yaml"
     state_path.write_text('dq_status: "pass"\n', encoding="utf-8")

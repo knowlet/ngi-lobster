@@ -3,6 +3,7 @@ import json
 import os
 import subprocess
 import sys
+from datetime import tzinfo
 from pathlib import Path
 
 import pytest
@@ -152,6 +153,20 @@ def test_compute_freshness_rejects_non_datetime_reference_time():
 
     with pytest.raises(ValueError, match="reference timestamp must be a datetime"):
         module.compute_freshness_hours("2099-01-01T00:00:00+00:00", now=123)
+
+
+def test_compute_freshness_rejects_reference_without_utc_offset():
+    module = load_verify_runtime_ops_health_module()
+
+    class MissingOffset(tzinfo):
+        def utcoffset(self, dt):
+            return None
+
+    with pytest.raises(ValueError, match="reference timestamp must include timezone"):
+        module.compute_freshness_hours(
+            "2099-01-01T00:00:00+00:00",
+            now=module.datetime(2099, 1, 1, 1, 0, 0, tzinfo=MissingOffset()),
+        )
 
 
 def test_verify_runtime_ops_health_fails_on_dq_and_reports_divergence(tmp_path: Path):

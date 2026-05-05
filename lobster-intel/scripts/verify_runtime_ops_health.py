@@ -38,7 +38,7 @@ def compute_freshness_hours(snapshot_at_utc: str, now: datetime | None = None) -
     reference = now or datetime.now(timezone.utc)
     if not isinstance(reference, datetime):
         raise ValueError("reference timestamp must be a datetime")
-    if reference.tzinfo is None:
+    if reference.tzinfo is None or reference.utcoffset() is None:
         raise ValueError("reference timestamp must include timezone")
     reference = reference.astimezone(timezone.utc)
     return (reference - parse_utc_timestamp(snapshot_at_utc)).total_seconds() / 3600.0

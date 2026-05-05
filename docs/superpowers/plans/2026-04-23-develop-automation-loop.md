@@ -6,7 +6,7 @@
 
 **Tech Stack:** Git, GitHub remote workflow, project plan docs.
 
-**Status:** In progress on local branch `codex/live-sync-schema-followup-8` after local `origin/main` advanced to PR #47 merge commit `e61a637`; remote confirmation/push remains blocked by GitHub DNS/API access.
+**Status:** In progress on local branch `codex/ops-health-schema-followup-9` after local `origin/main` advanced to PR #48 merge commit `5b956bd`; remote confirmation/push remains blocked by GitHub DNS/API access.
 
 > **PR29 checkpoint note:** This document is a clean PR29/PR30 docs-only handoff cut. Historical references to `codex/pr21-recut-dispatcher-receipt-guard` below are preserved as execution context from the original runtime branch, not as the active review branch for this replacement PR.
 
@@ -1163,3 +1163,12 @@
 - [x] 2026-05-05 08:04:03+0800: Advanced the ops-health latest NGI parser boundary by translating malformed `latest_ngi.json` decode failures into the stable schema error `latest_ngi payload must be valid JSON`.
 - [x] 2026-05-05 08:04:03+0800: Added a red-green ops-health regression proving malformed `latest_ngi.json` now exits nonzero with the explicit parser error instead of leaking Python JSONDecodeError text.
 - [ ] Retry GitHub access, publish `codex/live-sync-schema-followup-8`, open PR to `main`, and continue post-PR47 runtime work only after remote state is confirmed.
+
+### Task 132: 2026-05-05 09:03+08:00 ops-health runtime-source JSON parser guard
+- [x] 2026-05-05 09:03:06+0800: Current branch started on `codex/live-sync-schema-followup-8` at `34c3e3d`, but its upstream tracking ref was gone and local `origin/main` had advanced to `5b956bd` from PR #48.
+- [x] 2026-05-05 09:03:06+0800: `git fetch --prune origin` retried and failed (`Could not resolve host: github.com`, rc=128), so upstream freshness cannot be verified beyond existing local refs.
+- [x] 2026-05-05 09:03:06+0800: `gh pr list --state all --limit 20` and `gh issue list --state all --limit 20` failed with `error connecting to api.github.com`, so PR/issue/comment queues cannot be refreshed.
+- [x] 2026-05-05 09:03:06+0800: `git log --left-right --cherry-pick origin/main...HEAD` showed the previous latest NGI parser patch was already absorbed, then created fresh branch `codex/ops-health-schema-followup-9` from local `origin/main`.
+- [x] 2026-05-05 09:03:06+0800: Advanced the ops-health runtime-source parser boundary by translating malformed `runtime_source_polymarket.json` decode failures into the stable schema error `runtime_source payload must be valid JSON`.
+- [x] 2026-05-05 09:03:06+0800: Added a red-green ops-health regression proving malformed runtime-source JSON now exits nonzero with the explicit parser error instead of leaking Python JSONDecodeError text.
+- [ ] Retry GitHub access, publish `codex/ops-health-schema-followup-9`, open PR to `main`, and continue post-PR48 runtime work only after remote state is confirmed.

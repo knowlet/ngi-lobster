@@ -132,15 +132,13 @@ def _validate_delivery_proof_fields(proof: dict[str, Any]) -> None:
 
 
 def _canonicalize_delivery_proof(proof: dict[str, Any]) -> dict[str, Any]:
-    canonical = dict(proof)
+    canonical: dict[str, Any] = {}
     for key in ("boundary", "proof_id", "sink_message_id"):
-        value = canonical.get(key)
+        value = proof.get(key)
         if isinstance(value, str):
             stripped = value.strip()
             if stripped:
                 canonical[key] = stripped
-            else:
-                canonical.pop(key, None)
     return canonical
 
 

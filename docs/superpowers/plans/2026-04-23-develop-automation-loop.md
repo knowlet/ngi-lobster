@@ -1208,3 +1208,12 @@
 - [x] 2026-05-05 13:04:16+0800: Advanced the ops-health runtime-source rollover candidate projection boundary by stripping selected successor `market_id`, `market_slug`, `market_name`, and `market_question` after schema validation.
 - [x] 2026-05-05 13:04:16+0800: Added a red-green ops-health regression proving whitespace-padded tracker identity/display fields now emit canonical rollover candidate evidence at top level and inside `active_target_reselection`.
 - [ ] Retry GitHub access, publish `codex/live-sync-stale-latest-ngi-guard`, open PR to `main`, and continue post-PR54 runtime work only after remote state is confirmed.
+
+### Task 137: 2026-05-05 14:02+08:00 live-sync delivery proof allowlist projection
+- [x] 2026-05-05 14:02:50+0800: Current branch started on local `main` at `7317a16`, matching local `origin/main` from PR #55.
+- [x] 2026-05-05 14:02:50+0800: `git fetch --prune origin` retried and failed (`Could not resolve host: github.com`, rc=128), so upstream freshness cannot be verified beyond existing local refs.
+- [x] 2026-05-05 14:02:50+0800: `gh pr list --state all --limit 20` and `gh issue list --state all --limit 20` failed with `error connecting to api.github.com`, so PR/issue/comment queues cannot be refreshed.
+- [x] 2026-05-05 14:02:50+0800: Created fresh branch `codex/live-sync-proof-field-allowlist` from local `main` to keep the next live-sync projection hardening slice isolated.
+- [x] 2026-05-05 14:02:50+0800: Advanced the live-sync delivery proof projection boundary by emitting only canonical `boundary`, `proof_id`, and `sink_message_id` keys instead of copying raw proof metadata into operator-facing payloads.
+- [x] 2026-05-05 14:02:50+0800: Added a red-green live-sync regression proving extra proof metadata such as developer-local paths no longer leaks into `alert_disposition.delivery_proof`.
+- [ ] Retry GitHub access, publish `codex/live-sync-proof-field-allowlist`, open PR to `main`, and continue post-PR55 runtime work only after remote state is confirmed.

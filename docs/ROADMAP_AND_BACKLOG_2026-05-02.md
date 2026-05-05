@@ -184,6 +184,7 @@
 - ops-health runtime-source rollover candidate 的 `metadata.yes_probability` 若存在，也必須維持 0..1 JSON number schema，不能把字串、boolean 或超界值投影到 machine-readable successor 建議。
 - ops-health runtime-source rollover candidate 的 `collected_at_utc` / `published_at_utc` 若存在，也必須維持 ISO-8601 timestamp schema，不能把 malformed timestamp 投影到 operator-facing rollover guidance。
 - ops-health runtime-source timestamp 不能只提供 date-only 值；`collected_at_utc` / `published_at_utc` 必須是含時間部分的 ISO datetime，避免 date-only artifact 被排序並投影成 rollover evidence。
+- ops-health 的 UTC timestamp 欄位也必須帶 `Z` 或 timezone offset；不能把 timezone-less datetime 隱性當成 UTC 後排序或投影到 operator-facing evidence。
 - ops-health runtime-source rollover candidate 的 identity/display 欄位若存在，也必須維持 non-empty string schema，不能把 malformed target id、slug、title、url 或 label 投影到 operator-facing rollover guidance。
 - ops-health runtime-source rollover candidate 的 identity/display 欄位通過 schema 後也必須 canonicalize；selected successor 的 `market_id`、`market_slug`、`market_name` 與 `market_question` 不能保留 tracker artifact 前後空白。
 - ops-health runtime-source successor selection 也必須使用 canonical current-market id 比對；帶前後空白的 current market id 不能被誤判為 successor，也不能污染 `rollover_candidate_blocker` 或 `rollover_candidate_diagnostics`。

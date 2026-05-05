@@ -6,7 +6,7 @@
 
 **Tech Stack:** Git, GitHub remote workflow, project plan docs.
 
-**Status:** In progress on local branch `codex/live-sync-contract-match-error-boundary` after local `main` matched local `origin/main` at PR #58 merge commit `c79d9ee`; remote confirmation/push remains blocked by GitHub DNS/API access.
+**Status:** In progress on local branch `codex/ops-health-timezone-timestamp-guard` after local `main` matched local `origin/main` at PR #62 merge commit `ddaf267`; remote confirmation/push remains blocked by GitHub DNS/API access.
 
 > **PR29 checkpoint note:** This document is a clean PR29/PR30 docs-only handoff cut. Historical references to `codex/pr21-recut-dispatcher-receipt-guard` below are preserved as execution context from the original runtime branch, not as the active review branch for this replacement PR.
 
@@ -1262,3 +1262,12 @@
 - [x] 2026-05-05 19:05:53+0800: Local refs then showed `main` / `origin/main` at PR #61 merge commit `3619bed`, so the resolved code slice was already absorbed into local main before this checkpoint branch.
 - [x] 2026-05-05 19:05:53+0800: `git fetch --prune origin` failed with `Could not resolve host: github.com`, and `gh pr list --state all --limit 20` / `gh issue list --state all --limit 20` failed with `error connecting to api.github.com`.
 - [ ] Retry GitHub access, publish `codex/develop-20260505-1905-checkpoint`, verify PR #61 remote state, and resume Task 1/2/4 sync flow.
+
+### Task 143: 2026-05-05 20:03+08:00 ops-health timezone-aware timestamp guard
+- [x] 2026-05-05 20:03:56+0800: Current branch started on local `main` at `ddaf267`, matching local `origin/main` from PR #62 in the existing local refs.
+- [x] 2026-05-05 20:03:56+0800: `git fetch --prune origin` retried and failed (`Could not resolve host: github.com`, rc=128), so upstream freshness cannot be verified beyond existing local refs.
+- [x] 2026-05-05 20:03:56+0800: `gh pr list --state all --limit 20` and `gh issue list --state all --limit 20` failed with `error connecting to api.github.com`, so PR/issue/comment queues cannot be refreshed.
+- [x] 2026-05-05 20:03:56+0800: Created fresh branch `codex/ops-health-timezone-timestamp-guard` from local `main` to keep the next ops-health parser hardening slice isolated.
+- [x] 2026-05-05 20:03:56+0800: Advanced the shared ops-health timestamp parser boundary so timezone-less datetimes such as `2099-01-01T00:00:00` are rejected instead of being treated as implicit UTC.
+- [x] 2026-05-05 20:03:56+0800: Added a red-green ops-health regression proving timezone-less runtime-source rollover timestamps now fail with the stable ISO-8601 timestamp schema error.
+- [ ] Retry GitHub access, publish `codex/ops-health-timezone-timestamp-guard`, open PR to `main`, and continue post-PR62 runtime work only after remote state is confirmed.

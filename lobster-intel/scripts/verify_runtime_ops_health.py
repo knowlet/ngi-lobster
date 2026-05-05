@@ -327,6 +327,39 @@ def _describe_rollover_candidate_blocker(
     return "no_explicit_open_accepting_successor"
 
 
+def _build_rollover_candidate_diagnostics(
+    runtime_source_payload: dict[str, Any] | None,
+    *,
+    current_market_id: str | None,
+) -> dict[str, Any] | None:
+    if runtime_source_payload is None:
+        return None
+
+    evidence = runtime_source_payload.get("evidence") or {}
+    items = evidence.get("items") or []
+    successor_count = 0
+    explicit_open_accepting_count = 0
+    for item in items:
+        metadata = item.get("metadata") or {}
+        market_id = metadata.get("market_id") or item.get("external_id")
+        if current_market_id and str(market_id) == str(current_market_id):
+            continue
+        successor_count += 1
+        if (
+            _as_bool(metadata.get("closed")) is False
+            and _as_bool(metadata.get("accepting_orders")) is True
+        ):
+            explicit_open_accepting_count += 1
+
+    diagnostics: dict[str, Any] = {
+        "successor_count": successor_count,
+        "explicit_open_accepting_count": explicit_open_accepting_count,
+    }
+    if current_market_id is not None:
+        diagnostics["current_market_id"] = current_market_id
+    return diagnostics
+
+
 def _load_rollover_candidate_from_state_config(latest_ngi_path: Path) -> dict[str, object] | None:
     configured_path = os.environ.get("LOBSTER_STATE_CONFIG_PATH")
     if configured_path:
@@ -515,6 +548,7 @@ def build_summary(
         runtime_source_payload,
         current_market_id=current_market_id,
     )
+    rollover_candidate_diagnostics = None
     rollover_candidate_blocker = None
     if reselection_required:
         if rollover_candidate is None and runtime_source_payload is None:
@@ -526,6 +560,11 @@ def build_summary(
                 runtime_source_payload,
                 current_market_id=current_market_id,
                 rollover_candidate=rollover_candidate,
+            )
+        if rollover_candidate is None:
+            rollover_candidate_diagnostics = _build_rollover_candidate_diagnostics(
+                runtime_source_payload,
+                current_market_id=current_market_id,
             )
 
     status = "pass"
@@ -575,8 +614,10 @@ def build_summary(
         "rollover_candidate_blocker": rollover_candidate_blocker,
         "rollover_candidate": rollover_candidate,
     }
+    if rollover_candidate_diagnostics is not None:
+        active_target_reselection["rollover_candidate_diagnostics"] = rollover_candidate_diagnostics
 
-    return {
+    summary = {
         "status": status,
         "dq_status": dq_status,
         "latest_snapshot_at_utc": latest_snapshot_at_utc,
@@ -607,6 +648,9 @@ def build_summary(
         "active_target_reselection": active_target_reselection,
         "blockers": blockers,
     }
+    if rollover_candidate_diagnostics is not None:
+        summary["rollover_candidate_diagnostics"] = rollover_candidate_diagnostics
+    return summary
 
 
 def main(argv: list[str]) -> int:

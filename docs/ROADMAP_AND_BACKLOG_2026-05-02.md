@@ -43,6 +43,7 @@
    - 2026-05-03 02:03+08:00：已加固 ops-health runtime-source 輸入邊界；operator 明確傳入 polymarket runtime-source 檔案時，缺檔或非 JSON object 會直接 fail closed，不再靜默降級成「沒有 rollover evidence」。
    - 2026-05-05 09:03+08:00：已補齊 ops-health runtime-source JSON parser guard；`runtime_source_polymarket.json` 若不是 valid JSON 會 fail closed 並輸出穩定 schema error，不再把底層 JSONDecodeError 洩漏給 operator。
    - 2026-05-05 10:03+08:00：已補齊 ops-health runtime-source event metadata projection；Polymarket `event_sibling` successor 的 `relationship` / `event_id` / `event_slug` / `event_title` 通過 schema 後會以 canonical string 進入 `rollover_candidate`，讓 operator 能直接審核 successor 來源。
+   - 2026-05-05 11:03+08:00：已補齊 ops-health rollover candidate diagnostics；需要 reselection 但沒有明確 open/accepting successor 時，blocking output 會輸出 `rollover_candidate_diagnostics.successor_count` / `explicit_open_accepting_count` / `current_market_id`，讓 operator 能審核 null candidate 的依據。
    - 2026-05-03 03:03+08:00：已加固 ops-health runtime-source schema 邊界；明確傳入 tracker payload 時，`evidence.items` 必須是 list，不能用 malformed object 靜默變成 `rollover_candidate=null` 的健康摘要。
    - 2026-05-03 04:03+08:00：已加固 ops-health runtime-source item schema 邊界；`evidence.items` 內每個 item 與其 `metadata` 必須是 JSON object，避免 malformed tracker item 被靜默略過或以不清楚的 AttributeError 中斷。
    - 2026-05-03 05:03+08:00：已加固 ops-health latest NGI schema 邊界；`latest_ngi.market_target` 與 `target_detail` 必須是 JSON object，避免 malformed active-target payload 以 Python AttributeError 中斷。
@@ -152,6 +153,7 @@
 - live progress sync 也必須沿用 same latest NGI parser/object schema；malformed JSON、top-level 或 nested object malformed payload 不能洩漏底層 parser error，也不能被 required-key fallback 誤報成缺欄位。
 - live progress sync 若收到 `alert_disposition.delivery_proof`，該欄位必須是 JSON object；malformed proof 不能被靜默省略，即使該 alert 不是 positive delivery。
 - active-target reselection 摘要若 `rollover_candidate=null`，必須同時提供 `rollover_candidate_blocker`，避免 operator 只看到空 candidate 而不知道是缺 runtime source、沒有 successor，或 successor 不符合明確 open/accepting-orders 條件。
+- active-target reselection 摘要若 `rollover_candidate=null` 且 runtime source 已提供，也必須輸出 `rollover_candidate_diagnostics`，至少包含 successor 總數、明確 open/accepting successor 數量與 current market id，避免 operator 只能靠 blocker code 推測候選池狀態。
 - live progress sync 的 positive-delivery 偵測必須接受 explicit serialized booleans；`should_send="true"` 不能被當成 suppressed/non-positive 而繞過 delivery proof 或 contract-match gates。
 - live progress sync 的 delivery proof identifier 需支援 `proof_id` 或 `sink_message_id` 任一有效值；空白 `proof_id` 不能遮蔽同份 proof 裡可審計的 `sink_message_id`。
 - live progress sync 若收到 `alert_disposition.should_send`，該值必須是明確 boolean-equivalent；ambiguous send flag 不能被當成 suppressed/non-positive payload。

@@ -290,6 +290,13 @@ def test_verify_runtime_ops_health_exports_reselection_acceptance_when_stale_tar
         "reselection_required": True,
         "next_contract_action": "reselect_active_target",
         "rollover_candidate_blocker": None,
+        "rollover_candidate_diagnostics": {
+            "current_market_id": "1517836",
+            "successor_count": 1,
+            "open_successor_count": 1,
+            "accepting_orders_count": 1,
+            "explicit_open_accepting_count": 1,
+        },
         "rollover_candidate": {
             "market_id": "rollover-1518000",
             "market_slug": "open-successor",
@@ -1314,6 +1321,16 @@ def test_verify_runtime_ops_health_rejects_ambiguous_rollover_candidate(tmp_path
     assert payload["closed_target_blocking"] is True
     assert payload["rollover_candidate"] is None
     assert payload["rollover_candidate_blocker"] == "no_explicit_open_accepting_successor"
+    assert payload["rollover_candidate_diagnostics"] == {
+        "current_market_id": "1517836",
+        "successor_count": 1,
+        "open_successor_count": 1,
+        "accepting_orders_count": 0,
+        "explicit_open_accepting_count": 0,
+    }
+    assert payload["active_target_reselection"]["rollover_candidate_diagnostics"] == payload[
+        "rollover_candidate_diagnostics"
+    ]
 
 
 def test_verify_runtime_ops_health_strips_runtime_rollover_candidate_identity_fields(tmp_path: Path):
@@ -1500,6 +1517,8 @@ def test_verify_runtime_ops_health_explains_rollover_candidate_diagnostics(tmp_p
     assert payload["rollover_candidate_blocker"] == "no_explicit_open_accepting_successor"
     assert payload["rollover_candidate_diagnostics"] == {
         "successor_count": 2,
+        "open_successor_count": 1,
+        "accepting_orders_count": 0,
         "explicit_open_accepting_count": 0,
         "current_market_id": "1517836",
     }

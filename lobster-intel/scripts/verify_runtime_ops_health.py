@@ -266,22 +266,22 @@ def _select_rollover_candidate(
         metadata.get("market_id") or candidate.get("external_id"),
         "market_id",
         context="rollover_candidate",
-    )
+    ).strip()
     market_slug = require_non_empty_string(
         metadata.get("slug") or candidate.get("url"),
         "market_slug",
         context="rollover_candidate",
-    )
+    ).strip()
     market_name = require_non_empty_string(
         source_config.get("label") or candidate.get("title"),
         "market_name",
         context="rollover_candidate",
-    )
+    ).strip()
     market_question = require_non_empty_string(
         candidate.get("title"),
         "market_question",
         context="rollover_candidate",
-    )
+    ).strip()
     projected_candidate = {
         "market_id": market_id,
         "market_slug": market_slug,

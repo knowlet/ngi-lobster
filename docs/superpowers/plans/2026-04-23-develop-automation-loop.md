@@ -6,7 +6,7 @@
 
 **Tech Stack:** Git, GitHub remote workflow, project plan docs.
 
-**Status:** In progress on local branch `codex/ops-health-rollover-diagnostics` after local `origin/main` advanced to PR #51 merge commit `ea677d6`; remote confirmation/push remains blocked by GitHub DNS/API access.
+**Status:** In progress on local branch `codex/live-sync-stale-latest-ngi-guard` after local `main` matched local `origin/main` at PR #54 merge commit `0ac1c19`; remote confirmation/push remains blocked by GitHub DNS/API access.
 
 > **PR29 checkpoint note:** This document is a clean PR29/PR30 docs-only handoff cut. Historical references to `codex/pr21-recut-dispatcher-receipt-guard` below are preserved as execution context from the original runtime branch, not as the active review branch for this replacement PR.
 
@@ -1199,3 +1199,12 @@
 - [x] 2026-05-05 12:04:20+0800: Advanced the live-sync rollover diagnostics projection boundary by preserving ops-health `rollover_candidate_diagnostics` in `blocking_summary`, `active_target`, and `contract_action` when no explicit open/accepting successor exists.
 - [x] 2026-05-05 12:04:20+0800: Added a red-green live-sync regression proving downstream summary layers now carry successor count, explicit open/accepting count, and current market id instead of exposing only `rollover_candidate=null`.
 - [ ] Retry GitHub access, publish `codex/live-sync-rollover-diagnostics`, open PR to `main`, and continue post-PR52 runtime work only after remote state is confirmed.
+
+### Task 136: 2026-05-05 13:04+08:00 ops-health runtime rollover identity projection canonicalization
+- [x] 2026-05-05 13:04:16+0800: Current branch started on local `main` at `0ac1c19`, matching local `origin/main` from PR #54.
+- [x] 2026-05-05 13:04:16+0800: `git fetch --prune origin` retried and failed (`Could not resolve host: github.com`, rc=128), so upstream freshness cannot be verified beyond existing local refs.
+- [x] 2026-05-05 13:04:16+0800: `gh pr list --state all --limit 20` and `gh issue list --state all --limit 20` failed with `error connecting to api.github.com`, so PR/issue/comment queues cannot be refreshed.
+- [x] 2026-05-05 13:04:16+0800: Created fresh branch `codex/live-sync-stale-latest-ngi-guard` from local `main`; stale latest-NGI handling and ambiguous rollover booleans were already covered, so this run continued with the adjacent runtime-source projection boundary.
+- [x] 2026-05-05 13:04:16+0800: Advanced the ops-health runtime-source rollover candidate projection boundary by stripping selected successor `market_id`, `market_slug`, `market_name`, and `market_question` after schema validation.
+- [x] 2026-05-05 13:04:16+0800: Added a red-green ops-health regression proving whitespace-padded tracker identity/display fields now emit canonical rollover candidate evidence at top level and inside `active_target_reselection`.
+- [ ] Retry GitHub access, publish `codex/live-sync-stale-latest-ngi-guard`, open PR to `main`, and continue post-PR54 runtime work only after remote state is confirmed.

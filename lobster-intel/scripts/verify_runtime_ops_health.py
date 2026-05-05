@@ -185,6 +185,8 @@ def _parse_runtime_source_payload(path: Path | None) -> dict[str, Any] | None:
                     metadata.get("market_id"), "market_id", context=metadata_context
                 )
                 validate_optional_non_empty_string(metadata.get("slug"), "slug", context=metadata_context)
+                for key in ("relationship", "event_id", "event_slug", "event_title"):
+                    validate_optional_non_empty_string(metadata.get(key), key, context=metadata_context)
             if source_config is not None:
                 validate_optional_non_empty_string(
                     source_config.get("label"),
@@ -280,7 +282,7 @@ def _select_rollover_candidate(
         "market_question",
         context="rollover_candidate",
     )
-    return {
+    projected_candidate = {
         "market_id": market_id,
         "market_slug": market_slug,
         "market_name": market_name,
@@ -292,6 +294,11 @@ def _select_rollover_candidate(
         "collected_at_utc": candidate.get("collected_at_utc"),
         "published_at_utc": candidate.get("published_at_utc"),
     }
+    for key in ("relationship", "event_id", "event_slug", "event_title"):
+        value = canonical_optional_string(metadata.get(key))
+        if value is not None:
+            projected_candidate[key] = value
+    return projected_candidate
 
 
 def _describe_rollover_candidate_blocker(

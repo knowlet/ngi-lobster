@@ -6,7 +6,7 @@
 
 **Tech Stack:** Git, GitHub remote workflow, project plan docs.
 
-**Status:** In progress on local branch `codex/ops-health-schema-followup-9` after local `origin/main` advanced to PR #48 merge commit `5b956bd`; remote confirmation/push remains blocked by GitHub DNS/API access.
+**Status:** In progress on local branch `codex/ops-health-event-metadata` after local `origin/main` advanced to PR #50 merge commit `9096598`; remote confirmation/push remains blocked by GitHub DNS/API access.
 
 > **PR29 checkpoint note:** This document is a clean PR29/PR30 docs-only handoff cut. Historical references to `codex/pr21-recut-dispatcher-receipt-guard` below are preserved as execution context from the original runtime branch, not as the active review branch for this replacement PR.
 
@@ -1172,3 +1172,12 @@
 - [x] 2026-05-05 09:03:06+0800: Advanced the ops-health runtime-source parser boundary by translating malformed `runtime_source_polymarket.json` decode failures into the stable schema error `runtime_source payload must be valid JSON`.
 - [x] 2026-05-05 09:03:06+0800: Added a red-green ops-health regression proving malformed runtime-source JSON now exits nonzero with the explicit parser error instead of leaking Python JSONDecodeError text.
 - [ ] Retry GitHub access, publish `codex/ops-health-schema-followup-9`, open PR to `main`, and continue post-PR48 runtime work only after remote state is confirmed.
+
+### Task 133: 2026-05-05 10:03+08:00 ops-health rollover event metadata projection
+- [x] 2026-05-05 10:03:04+0800: Current branch started on local `main` at `9096598`, matching local `origin/main` from PR #50, with runtime tracker data already dirty before this implementation slice.
+- [x] 2026-05-05 10:03:04+0800: `git fetch --prune origin` retried and failed (`Could not resolve host: github.com`, rc=128), so upstream freshness cannot be verified beyond existing local refs.
+- [x] 2026-05-05 10:03:04+0800: `gh pr list --state all --limit 20` and `gh issue list --state all --limit 20` failed with `error connecting to api.github.com`, so PR/issue/comment queues cannot be refreshed.
+- [x] 2026-05-05 10:03:04+0800: Created fresh branch `codex/ops-health-event-metadata` from local `main` and left the pre-existing runtime tracker data changes unstaged.
+- [x] 2026-05-05 10:03:04+0800: Advanced the ops-health rollover candidate projection boundary by validating optional Polymarket event metadata and emitting canonical `relationship` / `event_id` / `event_slug` / `event_title` fields for event-sibling successors.
+- [x] 2026-05-05 10:03:04+0800: Added a red-green ops-health regression proving whitespace-padded event metadata now appears stripped in both `rollover_candidate` and `active_target_reselection.rollover_candidate`.
+- [ ] Retry GitHub access, publish `codex/ops-health-event-metadata`, open PR to `main`, and continue post-PR50 runtime work only after remote state is confirmed.

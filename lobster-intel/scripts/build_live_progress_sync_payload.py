@@ -153,7 +153,12 @@ def _require_delivery_proof(alert_disposition: dict[str, Any]) -> dict[str, Any]
             return None
         canonical_proof = _canonicalize_delivery_proof(proof)
         return canonical_proof or None
-    if _as_bool(alert_disposition.get("target_contract_match")) is not True:
+    target_contract_match = _as_bool(alert_disposition.get("target_contract_match"))
+    if "target_contract_match" in alert_disposition and target_contract_match is None:
+        raise RuntimeError(
+            "latest_ngi.alert_disposition.target_contract_match must be a boolean-equivalent value"
+        )
+    if target_contract_match is not True:
         raise RuntimeError("positive latest_ngi.alert_disposition.target_contract_match must be true")
     if proof is None:
         raise RuntimeError("missing latest_ngi.alert_disposition.delivery_proof")

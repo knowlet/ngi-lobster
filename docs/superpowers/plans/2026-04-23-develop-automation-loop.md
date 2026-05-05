@@ -6,7 +6,7 @@
 
 **Tech Stack:** Git, GitHub remote workflow, project plan docs.
 
-**Status:** In progress on local branch `codex/ops-health-current-market-canonical-match` after local `main` matched local `origin/main` at PR #57 merge commit `508be51`; remote confirmation/push remains blocked by GitHub DNS/API access.
+**Status:** In progress on local branch `codex/live-sync-contract-match-error-boundary` after local `main` matched local `origin/main` at PR #58 merge commit `c79d9ee`; remote confirmation/push remains blocked by GitHub DNS/API access.
 
 > **PR29 checkpoint note:** This document is a clean PR29/PR30 docs-only handoff cut. Historical references to `codex/pr21-recut-dispatcher-receipt-guard` below are preserved as execution context from the original runtime branch, not as the active review branch for this replacement PR.
 
@@ -1235,3 +1235,12 @@
 - [x] 2026-05-05 16:04:16+0800: Advanced the ops-health runtime-source current-market exclusion boundary by comparing canonical market ids in rollover selection, blocker explanation, and diagnostics.
 - [x] 2026-05-05 16:04:16+0800: Added a red-green ops-health regression proving a padded current market id is skipped and the real open successor is selected instead.
 - [ ] Retry GitHub access, publish `codex/ops-health-current-market-canonical-match`, open PR to `main`, and continue post-PR57 runtime work only after remote state is confirmed.
+
+### Task 140: 2026-05-05 17:04+08:00 live-sync ambiguous contract-match error boundary
+- [x] 2026-05-05 17:04:03+0800: Current branch started on local `main` at `c79d9ee`, matching local `origin/main` from PR #58.
+- [x] 2026-05-05 17:04:03+0800: `git fetch --prune origin` retried and failed (`Could not resolve host: github.com`, rc=128), so upstream freshness cannot be verified beyond existing local refs.
+- [x] 2026-05-05 17:04:03+0800: `gh pr list --state all --limit 20` and `gh issue list --state all --limit 20` failed with `error connecting to api.github.com`, so PR/issue/comment queues cannot be refreshed.
+- [x] 2026-05-05 17:04:03+0800: Created fresh branch `codex/live-sync-contract-match-error-boundary`; the initial probability-mode projection check already passed, so this run continued with the adjacent live-sync contract-match error boundary.
+- [x] 2026-05-05 17:04:03+0800: Advanced the positive-delivery contract-match parser boundary so ambiguous values such as `target_contract_match="unknown"` return the boolean-equivalent schema error instead of the explicit mismatch `must be true` error.
+- [x] 2026-05-05 17:04:03+0800: Added a red-green live-sync regression proving ambiguous positive-delivery contract evidence now preserves the parser-boundary explanation.
+- [ ] Retry GitHub access, publish `codex/live-sync-contract-match-error-boundary`, open PR to `main`, and continue post-PR58 runtime work only after remote state is confirmed.

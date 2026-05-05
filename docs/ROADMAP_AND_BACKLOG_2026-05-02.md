@@ -94,6 +94,7 @@
    - **Owner：姨太**（核心）
    - 2026-05-02 20:04+08:00：已加固 live progress sync 的 positive-delivery 分流邊界，`should_send=true` 或 positive decision 只有在 `target_contract_match` 明確為 true 時才接受 delivery proof；serialized `"false"` 會被視為 contract mismatch 並 fail closed。
    - 2026-05-02 22:04+08:00：已收緊 live progress sync 的 contract-match parser，positive delivery 只接受明確 true/false 等價值；`target_contract_match="unknown"` 這類 ambiguous truthy 字串會 fail closed。
+   - 2026-05-05 17:04+08:00：已補齊 positive-delivery contract-match parser error boundary；`target_contract_match="unknown"` 這類 ambiguous 值會回報 boolean-equivalent schema error，而不是混成 explicit false 的 `must be true` mismatch。
    - 2026-05-03 14:03+08:00：已收緊 live progress sync 的 positive-delivery 偵測；`should_send="true"` 這類 serialized true 值會被視為 positive delivery，必須同時通過 delivery proof 與 active-target contract match gates。
    - 2026-05-03 15:03+08:00：已修正 live progress sync delivery proof identifier fallback；當 `proof_id` 是空白但同份 proof 帶有效 `sink_message_id` 時，仍接受 `sink_message_id` 作為 machine-readable proof id，不再誤擋有效交付證明。
    - 2026-05-03 16:02+08:00：已收緊 live progress sync 的 `should_send` parser；欄位存在但不是明確 true/false 等價值（例如 `"unknown"`）時會 fail closed，不再被當成 non-positive summary 輸出。
@@ -139,6 +140,7 @@
 - positive delivery 不能繞過 active-target contract match。
   - 2026-05-02 20:04+08:00：已加固 `build_live_progress_sync_payload.py`，positive delivery 必須有 true-equivalent `alert_disposition.target_contract_match` 才能進入 sync payload；`"false"`/`0`/`no`/`off` 這類 serialized false 值會阻斷輸出。
   - 2026-05-02 22:04+08:00：已補上 ambiguous contract-match 邊界，`"unknown"` 或其他非明確 true/false 的值不再被 Python truthiness 接受為 positive delivery contract match。
+  - 2026-05-05 17:04+08:00：已補齊 ambiguous contract-match 的 operator-facing error boundary；positive delivery 遇到 `"unknown"` 會回報 boolean-equivalent schema error，讓 operator 能分辨 parser 輸入不明與 explicit contract mismatch。
 - active-target contract mismatch 與 outward reason 映射邊界。
   - 2026-05-02 12:04+08:00：已加固 `repair_latest_ngi_contract.py`，避免既有 `target_contract_match="false"` 被 Python truthiness 轉成 `True`，並以 regression test 覆蓋 outward reason mapping 仍保留 internal runtime reason。
 - live progress sync 不能輸出 stale `latest_ngi.json` 摘要。

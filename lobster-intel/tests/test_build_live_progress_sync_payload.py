@@ -806,7 +806,10 @@ def test_build_live_progress_sync_payload_rejects_ambiguous_contract_match(tmp_p
 
     assert result.returncode == 1
     assert result.stdout == ""
-    assert result.stderr.strip() == "positive latest_ngi.alert_disposition.target_contract_match must be true"
+    assert (
+        result.stderr.strip()
+        == "latest_ngi.alert_disposition.target_contract_match must be a boolean-equivalent value"
+    )
 
 
 def test_build_live_progress_sync_payload_rejects_ambiguous_non_positive_contract_match(

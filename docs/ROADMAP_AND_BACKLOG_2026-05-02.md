@@ -63,6 +63,7 @@
    - 2026-05-03 23:03+08:00：已加固 ops-health SQLite freshness timestamp schema guard；`market_snapshots.snapshot_at_utc` 必須是 ISO-8601 timestamp，避免 malformed store freshness timestamp 以底層 parser error 中斷 operator 摘要。
    - 2026-05-04 01:03+08:00：已加固 ops-health runtime-source rollover candidate identity schema guard；successor tracker item 的 `external_id`、`title`、`url`、`metadata.market_id`、`metadata.slug` 與 `metadata.source_config.label` 若存在就必須是 non-empty string，避免 malformed identity/display 欄位被投影成 operator-facing rollover guidance。
    - 2026-05-05 13:04+08:00：已加固 ops-health runtime-source rollover candidate identity projection；selected successor 的 `market_id`、`market_slug`、`market_name` 與 `market_question` 通過 schema 後會以 canonical non-empty string 投影，避免 tracker identity/display 前後空白流入 operator-facing reselection evidence。
+   - 2026-05-05 16:04+08:00：已加固 ops-health runtime-source current-market exclusion；successor selection、null-candidate blocker 與 diagnostics 會用 canonical market id 比對 current target，避免 padded current market 被誤選成 rollover candidate 或誤計入 successor pool。
    - 2026-05-04 02:03+08:00：已加固 ops-health runtime-source run timestamp schema guard；tracker payload 的 top-level `ran_at_utc` 若存在就必須是 ISO-8601 timestamp，避免 malformed source run timestamp 被接受進 operator 摘要。
    - 2026-05-04 03:02+08:00：已加固 ops-health latest NGI probability-mode schema guard；`target_detail.probability_mode` 與 top-level `latest_ngi.probability_mode` 若存在就必須是 non-empty string，避免 malformed mode 欄位被投影成 operator-facing 摘要。
    - 2026-05-04 04:03+08:00：已加固 ops-health latest NGI active-target identity schema guard；`market_target.market_id`、`market_target.market_name`、`target_detail.market_id` 與 `target_detail.market_question` 若存在就必須是 non-empty string，避免 malformed target identity/display 欄位被投影進 operator 摘要。
@@ -180,6 +181,7 @@
 - ops-health runtime-source rollover candidate 的 `collected_at_utc` / `published_at_utc` 若存在，也必須維持 ISO-8601 timestamp schema，不能把 malformed timestamp 投影到 operator-facing rollover guidance。
 - ops-health runtime-source rollover candidate 的 identity/display 欄位若存在，也必須維持 non-empty string schema，不能把 malformed target id、slug、title、url 或 label 投影到 operator-facing rollover guidance。
 - ops-health runtime-source rollover candidate 的 identity/display 欄位通過 schema 後也必須 canonicalize；selected successor 的 `market_id`、`market_slug`、`market_name` 與 `market_question` 不能保留 tracker artifact 前後空白。
+- ops-health runtime-source successor selection 也必須使用 canonical current-market id 比對；帶前後空白的 current market id 不能被誤判為 successor，也不能污染 `rollover_candidate_blocker` 或 `rollover_candidate_diagnostics`。
 - ops-health selected rollover candidate 的 projected identity/display 欄位必須解析為 non-empty string；即使 tracker item 本身通過 optional schema guard，也不能輸出缺少 `market_question` 等關鍵 acceptance 欄位的 candidate。
 - ops-health runtime-source payload 的 top-level `ran_at_utc` 若存在，也必須維持 ISO-8601 timestamp schema，不能把 malformed tracker run timestamp 帶進 operator 摘要。
 - ops-health runtime-source successor 的 event metadata 若存在，也必須維持 canonical non-empty string schema，並投影到 `rollover_candidate`，避免 `event_sibling` 來源證據只停在原始 tracker artifact。

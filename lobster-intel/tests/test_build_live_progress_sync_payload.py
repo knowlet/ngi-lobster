@@ -1038,6 +1038,13 @@ def test_build_live_progress_sync_payload_explains_missing_rollover_candidate(tm
         "reselection_required": True,
         "next_contract_action": "reselect_active_target",
         "rollover_candidate_blocker": "no_explicit_open_accepting_successor",
+        "rollover_candidate_diagnostics": {
+            "current_market_id": "1517836",
+            "successor_count": 1,
+            "open_successor_count": 1,
+            "accepting_orders_count": 0,
+            "explicit_open_accepting_count": 0,
+        },
         "rollover_candidate": None,
     }
     assert payload["active_target"]["reselection_required"] is True
@@ -1046,3 +1053,13 @@ def test_build_live_progress_sync_payload_explains_missing_rollover_candidate(tm
         payload["active_target"]["rollover_candidate_blocker"]
         == "no_explicit_open_accepting_successor"
     )
+    assert payload["active_target"]["rollover_candidate_diagnostics"] == {
+        "current_market_id": "1517836",
+        "successor_count": 1,
+        "open_successor_count": 1,
+        "accepting_orders_count": 0,
+        "explicit_open_accepting_count": 0,
+    }
+    assert payload["contract_action"]["rollover_candidate_diagnostics"] == payload["active_target"][
+        "rollover_candidate_diagnostics"
+    ]

@@ -1240,6 +1240,16 @@ def test_verify_runtime_ops_health_rejects_ambiguous_rollover_candidate(tmp_path
     assert payload["closed_target_blocking"] is True
     assert payload["rollover_candidate"] is None
     assert payload["rollover_candidate_blocker"] == "no_explicit_open_accepting_successor"
+    assert payload["rollover_candidate_diagnostics"] == {
+        "current_market_id": "1517836",
+        "successor_count": 1,
+        "open_successor_count": 1,
+        "accepting_orders_count": 0,
+        "explicit_open_accepting_count": 0,
+    }
+    assert payload["active_target_reselection"]["rollover_candidate_diagnostics"] == payload[
+        "rollover_candidate_diagnostics"
+    ]
 
 
 def test_verify_runtime_ops_health_rejects_malformed_rollover_candidate_identity(tmp_path: Path):

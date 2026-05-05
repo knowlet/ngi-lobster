@@ -247,6 +247,7 @@ def build_live_progress_sync_payload(
             "reselection_required": ops_health["reselection_required"],
             "next_contract_action": ops_health["next_contract_action"],
             "rollover_candidate_blocker": ops_health["rollover_candidate_blocker"],
+            "rollover_candidate_diagnostics": ops_health["rollover_candidate_diagnostics"],
             "rollover_candidate": ops_health["rollover_candidate"],
         },
         "market_target": {
@@ -274,6 +275,7 @@ def build_live_progress_sync_payload(
             "reselection_required": ops_health["reselection_required"],
             "next_contract_action": ops_health["next_contract_action"],
             "rollover_candidate_blocker": ops_health["rollover_candidate_blocker"],
+            "rollover_candidate_diagnostics": ops_health["rollover_candidate_diagnostics"],
             "rollover_candidate": ops_health["rollover_candidate"],
         },
         "active_target_reselection": ops_health["active_target_reselection"],
@@ -293,6 +295,7 @@ def build_live_progress_sync_payload(
             "next_contract_action": ops_health["next_contract_action"],
             "rollover_candidate": ops_health["rollover_candidate"],
             "rollover_candidate_blocker": ops_health["rollover_candidate_blocker"],
+            "rollover_candidate_diagnostics": ops_health["rollover_candidate_diagnostics"],
         },
         "blockers": list(ops_health["blockers"]),
         "basis_lines": basis,

@@ -225,19 +225,19 @@ def _parse_ts(value: Any) -> datetime | None:
         return None
 
 
-def _select_rollover_candidate(
+def _iter_successor_items(
     runtime_source_payload: dict[str, Any] | None,
     *,
     current_market_id: str | None,
-) -> dict[str, Any] | None:
+) -> list[dict[str, Any]]:
     if not runtime_source_payload:
-        return None
+        return []
     evidence = runtime_source_payload.get("evidence") or {}
     items = evidence.get("items") or []
     if not isinstance(items, list):
-        return None
+        return []
 
-    eligible: list[dict[str, Any]] = []
+    successors: list[dict[str, Any]] = []
     for item in items:
         if not isinstance(item, dict):
             continue
@@ -245,6 +245,21 @@ def _select_rollover_candidate(
         market_id = metadata.get("market_id") or item.get("external_id")
         if current_market_id and str(market_id) == str(current_market_id):
             continue
+        successors.append(item)
+    return successors
+
+
+def _select_rollover_candidate(
+    runtime_source_payload: dict[str, Any] | None,
+    *,
+    current_market_id: str | None,
+) -> dict[str, Any] | None:
+    eligible: list[dict[str, Any]] = []
+    for item in _iter_successor_items(
+        runtime_source_payload,
+        current_market_id=current_market_id,
+    ):
+        metadata = item.get("metadata") or {}
         if _as_bool(metadata.get("closed")) is not False:
             continue
         if _as_bool(metadata.get("accepting_orders")) is not True:
@@ -291,6 +306,37 @@ def _select_rollover_candidate(
     }
 
 
+def _build_rollover_candidate_diagnostics(
+    runtime_source_payload: dict[str, Any] | None,
+    *,
+    current_market_id: str | None,
+) -> dict[str, Any] | None:
+    if runtime_source_payload is None:
+        return None
+    successors = _iter_successor_items(
+        runtime_source_payload,
+        current_market_id=current_market_id,
+    )
+    explicit_open_accepting_count = 0
+    open_successor_count = 0
+    accepting_orders_count = 0
+    for item in successors:
+        metadata = item.get("metadata") or {}
+        if _as_bool(metadata.get("closed")) is False:
+            open_successor_count += 1
+        if _as_bool(metadata.get("accepting_orders")) is True:
+            accepting_orders_count += 1
+        if _as_bool(metadata.get("closed")) is False and _as_bool(metadata.get("accepting_orders")) is True:
+            explicit_open_accepting_count += 1
+    return {
+        "current_market_id": current_market_id,
+        "successor_count": len(successors),
+        "open_successor_count": open_successor_count,
+        "accepting_orders_count": accepting_orders_count,
+        "explicit_open_accepting_count": explicit_open_accepting_count,
+    }
+
+
 def _describe_rollover_candidate_blocker(
     runtime_source_payload: dict[str, Any] | None,
     *,
@@ -302,17 +348,11 @@ def _describe_rollover_candidate_blocker(
     if runtime_source_payload is None:
         return "runtime_source_not_provided"
 
-    evidence = runtime_source_payload.get("evidence") or {}
-    items = evidence.get("items") or []
-    successor_seen = False
-    for item in items:
-        metadata = item.get("metadata") or {}
-        market_id = metadata.get("market_id") or item.get("external_id")
-        if current_market_id and str(market_id) == str(current_market_id):
-            continue
-        successor_seen = True
-
-    if not successor_seen:
+    diagnostics = _build_rollover_candidate_diagnostics(
+        runtime_source_payload,
+        current_market_id=current_market_id,
+    )
+    if diagnostics is None or diagnostics["successor_count"] == 0:
         return "no_successor_market"
     return "no_explicit_open_accepting_successor"
 
@@ -502,7 +542,12 @@ def build_summary(
         current_market_id=current_market_id,
     )
     rollover_candidate_blocker = None
+    rollover_candidate_diagnostics = None
     if reselection_required:
+        rollover_candidate_diagnostics = _build_rollover_candidate_diagnostics(
+            runtime_source_payload,
+            current_market_id=current_market_id,
+        )
         if rollover_candidate is None:
             rollover_candidate = _load_rollover_candidate_from_state_config(latest_ngi_path)
             if rollover_candidate is not None:
@@ -559,6 +604,7 @@ def build_summary(
         "reselection_required": reselection_required,
         "next_contract_action": "reselect_active_target" if reselection_required else "keep_active_target",
         "rollover_candidate_blocker": rollover_candidate_blocker,
+        "rollover_candidate_diagnostics": rollover_candidate_diagnostics,
         "rollover_candidate": rollover_candidate,
     }
 
@@ -590,6 +636,7 @@ def build_summary(
         "next_contract_action": "reselect_active_target" if reselection_required else "keep_active_target",
         "rollover_candidate": rollover_candidate,
         "rollover_candidate_blocker": rollover_candidate_blocker,
+        "rollover_candidate_diagnostics": rollover_candidate_diagnostics,
         "active_target_reselection": active_target_reselection,
         "blockers": blockers,
     }

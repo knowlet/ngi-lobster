@@ -94,6 +94,12 @@ def canonical_optional_string(value: object) -> str | None:
     return value.strip()
 
 
+def _same_market_id(left: object, right: str | None) -> bool:
+    if right is None or left is None:
+        return False
+    return str(left).strip() == right
+
+
 def read_optional_object(payload: dict[str, object], key: str, *, context: str) -> dict[str, object]:
     value = payload.get(key)
     if value is None:
@@ -248,7 +254,7 @@ def _select_rollover_candidate(
             continue
         metadata = item.get("metadata") or {}
         market_id = metadata.get("market_id") or item.get("external_id")
-        if current_market_id and str(market_id) == str(current_market_id):
+        if _same_market_id(market_id, current_market_id):
             continue
         if _as_bool(metadata.get("closed")) is not False:
             continue
@@ -318,7 +324,7 @@ def _describe_rollover_candidate_blocker(
     for item in items:
         metadata = item.get("metadata") or {}
         market_id = metadata.get("market_id") or item.get("external_id")
-        if current_market_id and str(market_id) == str(current_market_id):
+        if _same_market_id(market_id, current_market_id):
             continue
         successor_seen = True
 
@@ -342,7 +348,7 @@ def _build_rollover_candidate_diagnostics(
     for item in items:
         metadata = item.get("metadata") or {}
         market_id = metadata.get("market_id") or item.get("external_id")
-        if current_market_id and str(market_id) == str(current_market_id):
+        if _same_market_id(market_id, current_market_id):
             continue
         successor_count += 1
         if (

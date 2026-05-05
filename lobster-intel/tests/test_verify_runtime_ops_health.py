@@ -1365,6 +1365,65 @@ def test_verify_runtime_ops_health_strips_runtime_rollover_candidate_identity_fi
     )
 
 
+def test_verify_runtime_ops_health_skips_current_market_with_padded_runtime_id(tmp_path: Path):
+    state_path = tmp_path / "STATE.yaml"
+    state_path.write_text('dq_status: "pass"\n', encoding="utf-8")
+    db_path = tmp_path / "intelligence_store.sqlite"
+    write_db(db_path, "2099-01-01T00:00:00+00:00")
+    latest_ngi_path = tmp_path / "latest_ngi.json"
+    write_latest_ngi(
+        latest_ngi_path,
+        first_principles_probability=0.52,
+        market_yes_probability=0.60,
+        market_closed=True,
+        market_accepting_orders=False,
+    )
+    runtime_source_path = tmp_path / "polymarket-runtime.json"
+    write_runtime_source(
+        runtime_source_path,
+        items=[
+            {
+                "external_id": "1517836",
+                "title": "Current market should not be selected",
+                "url": "current-market",
+                "collected_at_utc": "2099-01-01T00:10:00+00:00",
+                "metadata": {
+                    "market_id": " 1517836 ",
+                    "slug": "current-market",
+                    "yes_probability": 0.63,
+                    "active": True,
+                    "closed": False,
+                    "accepting_orders": True,
+                    "source_config": {"label": "Current market should not be selected"},
+                },
+            },
+            {
+                "external_id": "rollover-1518000",
+                "title": "Open successor market",
+                "url": "open-successor",
+                "collected_at_utc": "2099-01-01T00:05:00+00:00",
+                "metadata": {
+                    "market_id": "rollover-1518000",
+                    "slug": "open-successor",
+                    "yes_probability": 0.42,
+                    "active": True,
+                    "closed": False,
+                    "accepting_orders": True,
+                    "source_config": {"label": "Open successor market"},
+                },
+            },
+        ],
+    )
+
+    result = run_cli(state_path, db_path, latest_ngi_path, runtime_source_path)
+
+    assert result.returncode == 1
+    payload = json.loads(result.stdout)
+    assert payload["rollover_candidate"]["market_id"] == "rollover-1518000"
+    assert payload["rollover_candidate"]["market_question"] == "Open successor market"
+    assert payload["active_target_reselection"]["rollover_candidate"] == payload["rollover_candidate"]
+
+
 def test_verify_runtime_ops_health_explains_rollover_candidate_diagnostics(tmp_path: Path):
     state_path = tmp_path / "STATE.yaml"
     state_path.write_text('dq_status: "pass"\n', encoding="utf-8")

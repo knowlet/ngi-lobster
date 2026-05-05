@@ -6,7 +6,7 @@
 
 **Tech Stack:** Git, GitHub remote workflow, project plan docs.
 
-**Status:** In progress on local branch `codex/live-sync-stale-latest-ngi-guard` after local `main` matched local `origin/main` at PR #54 merge commit `0ac1c19`; remote confirmation/push remains blocked by GitHub DNS/API access.
+**Status:** In progress on local branch `codex/ops-health-current-market-canonical-match` after local `main` matched local `origin/main` at PR #57 merge commit `508be51`; remote confirmation/push remains blocked by GitHub DNS/API access.
 
 > **PR29 checkpoint note:** This document is a clean PR29/PR30 docs-only handoff cut. Historical references to `codex/pr21-recut-dispatcher-receipt-guard` below are preserved as execution context from the original runtime branch, not as the active review branch for this replacement PR.
 
@@ -1226,3 +1226,12 @@
 - [x] 2026-05-05 15:03:59+0800: Advanced the live-sync operator target identity boundary by requiring `latest_ngi.market_target.market_id` and `market_name` before emitting the operator-facing sync payload.
 - [x] 2026-05-05 15:03:59+0800: Added a red-green live-sync regression proving missing market target identity now fails closed instead of falling back to `target_detail` values and returning rc=0.
 - [ ] Retry GitHub access, publish `codex/live-sync-target-identity-canonicalization`, open PR to `main`, and continue post-PR56 runtime work only after remote state is confirmed.
+
+### Task 139: 2026-05-05 16:04+08:00 ops-health current market canonical match
+- [x] 2026-05-05 16:04:16+0800: Current branch started on local `main` at `508be51`, matching local `origin/main` from PR #57.
+- [x] 2026-05-05 16:04:16+0800: `git fetch --prune origin` retried and failed (`Could not resolve host: github.com`, rc=128), so upstream freshness cannot be verified beyond existing local refs.
+- [x] 2026-05-05 16:04:16+0800: `gh pr list --state all --limit 20` and `gh issue list --state all --limit 20` failed with `error connecting to api.github.com`, so PR/issue/comment queues cannot be refreshed.
+- [x] 2026-05-05 16:04:16+0800: Created fresh branch `codex/ops-health-current-market-canonical-match` from local `main` to keep the ops-health selection hardening slice isolated.
+- [x] 2026-05-05 16:04:16+0800: Advanced the ops-health runtime-source current-market exclusion boundary by comparing canonical market ids in rollover selection, blocker explanation, and diagnostics.
+- [x] 2026-05-05 16:04:16+0800: Added a red-green ops-health regression proving a padded current market id is skipped and the real open successor is selected instead.
+- [ ] Retry GitHub access, publish `codex/ops-health-current-market-canonical-match`, open PR to `main`, and continue post-PR57 runtime work only after remote state is confirmed.

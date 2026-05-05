@@ -1293,3 +1293,10 @@
 - [x] 2026-05-05 23:02:12+0800: Advanced the adjacent ops-health freshness parser type boundary so direct `compute_freshness_hours()` calls with non-string timestamp inputs raise stable `timestamp must be an ISO-8601 timestamp` instead of leaking Python `AttributeError`.
 - [x] 2026-05-05 23:02:12+0800: Added a red-green regression proving `compute_freshness_hours(123)` now fails through the stable timestamp parser boundary.
 - [ ] Retry GitHub access, publish `codex/ops-health-freshness-timezone-guard`, open or update the PR chain to `main`, and continue post-PR62 runtime work only after remote state is confirmed.
+
+### Task 147: 2026-05-06 00:02+08:00 ops-health freshness reference timezone guard
+- [x] 2026-05-06 00:02:32+0800: Current branch remained `codex/ops-health-freshness-timezone-guard`; local refs show the branch and its remote-tracking ref at `c07a75c`, but `git fetch --prune origin` still failed with `Could not resolve host: github.com`.
+- [x] 2026-05-06 00:02:32+0800: `gh pr list --state all --limit 20` and `gh issue list --state all --limit 20` failed with `error connecting to api.github.com`, so PR comments/issues could not be refreshed.
+- [x] 2026-05-06 00:02:32+0800: Advanced the adjacent ops-health freshness reference-time boundary so direct `compute_freshness_hours(..., now=...)` calls with timezone-less reference datetimes raise stable `reference timestamp must include timezone` instead of leaking Python aware/naive subtraction `TypeError`.
+- [x] 2026-05-06 00:02:32+0800: Added a red-green regression proving a timezone-less reference time now fails through the stable freshness helper boundary.
+- [ ] Retry GitHub access, publish `codex/ops-health-freshness-timezone-guard`, open or update the PR chain to `main`, and continue post-PR62 runtime work only after remote state is confirmed.

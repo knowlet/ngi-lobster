@@ -190,6 +190,7 @@
 - ops-health freshness helper 也必須維持同一個 timezone-aware 邊界；內部 `compute_freshness_hours()` 不能繞過 CLI schema guard 後把 timezone-less datetime 補成 UTC。
 - ops-health freshness helper 的 malformed timestamp error 也必須維持 stable parser boundary；直接呼叫 `compute_freshness_hours()` 不能把 Python `Invalid isoformat string` 洩漏給 operator-facing callers。
 - ops-health freshness helper 的 timestamp 輸入型別也必須維持 stable parser boundary；直接呼叫 `compute_freshness_hours()` 不能把非字串輸入洩漏成 Python `AttributeError`。
+- ops-health freshness helper 的 reference time 也必須維持 timezone-aware boundary；直接呼叫 `compute_freshness_hours(..., now=...)` 不能把 timezone-less reference 洩漏成 Python aware/naive subtraction `TypeError`。
 - ops-health runtime-source rollover candidate 的 identity/display 欄位若存在，也必須維持 non-empty string schema，不能把 malformed target id、slug、title、url 或 label 投影到 operator-facing rollover guidance。
 - ops-health runtime-source rollover candidate 的 identity/display 欄位通過 schema 後也必須 canonicalize；selected successor 的 `market_id`、`market_slug`、`market_name` 與 `market_question` 不能保留 tracker artifact 前後空白。
 - ops-health runtime-source successor selection 也必須使用 canonical current-market id 比對；帶前後空白的 current market id 不能被誤判為 successor，也不能污染 `rollover_candidate_blocker` 或 `rollover_candidate_diagnostics`。

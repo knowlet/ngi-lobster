@@ -34,6 +34,9 @@ def parse_utc_timestamp(raw: object) -> datetime:
 
 def compute_freshness_hours(snapshot_at_utc: str, now: datetime | None = None) -> float:
     reference = now or datetime.now(timezone.utc)
+    if reference.tzinfo is None:
+        raise ValueError("reference timestamp must include timezone")
+    reference = reference.astimezone(timezone.utc)
     return (reference - parse_utc_timestamp(snapshot_at_utc)).total_seconds() / 3600.0
 
 

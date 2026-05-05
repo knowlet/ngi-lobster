@@ -130,6 +130,16 @@ def test_compute_freshness_rejects_non_string_timestamp():
         module.compute_freshness_hours(123)
 
 
+def test_compute_freshness_rejects_timezone_less_reference_time():
+    module = load_verify_runtime_ops_health_module()
+
+    with pytest.raises(ValueError, match="reference timestamp must include timezone"):
+        module.compute_freshness_hours(
+            "2099-01-01T00:00:00+00:00",
+            now=module.datetime(2099, 1, 1, 1, 0, 0),
+        )
+
+
 def test_verify_runtime_ops_health_fails_on_dq_and_reports_divergence(tmp_path: Path):
     state_path = tmp_path / "STATE.yaml"
     state_path.write_text('dq_status: "fail"\n', encoding="utf-8")

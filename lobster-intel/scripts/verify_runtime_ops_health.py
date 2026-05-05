@@ -551,7 +551,7 @@ def build_summary(
     rollover_candidate_diagnostics = None
     rollover_candidate_blocker = None
     if reselection_required:
-        if rollover_candidate is None and runtime_source_payload is None:
+        if rollover_candidate is None:
             rollover_candidate = _load_rollover_candidate_from_state_config(latest_ngi_path)
             if rollover_candidate is not None:
                 rollover_candidate_blocker = "configured_successor_pending_validation"

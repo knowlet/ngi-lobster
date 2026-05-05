@@ -1280,3 +1280,11 @@
 - [x] 2026-05-06 06:03:45+0800: Advanced the ops-health freshness parser boundary so direct freshness calculations reject timezone-less datetimes instead of treating them as implicit UTC.
 - [x] 2026-05-06 06:03:45+0800: Added a red-green ops-health regression proving `compute_freshness_hours("2099-01-01T00:00:00")` now raises the stable timezone-required parser error.
 - [ ] Retry GitHub access, publish `codex/ops-health-freshness-offset-guard`, open PR to `main`, and continue post-PR63 runtime work only after remote state is confirmed.
+
+### Task 145: 2026-05-06 07:03+08:00 ops-health freshness reference guard
+- [x] 2026-05-06 07:03:30+0800: Current branch remained `codex/ops-health-freshness-offset-guard`, one local commit ahead of local `origin/main` / `main` at `c3fe149`.
+- [x] 2026-05-06 07:03:30+0800: `git fetch --prune origin` retried and failed (`Could not resolve host: github.com`, rc=128), so upstream freshness cannot be verified beyond existing local refs.
+- [x] 2026-05-06 07:03:30+0800: `gh pr list --state all --limit 20` and `gh issue list --state all --limit 20` failed with `error connecting to api.github.com`, so PR/issue/comment queues cannot be refreshed.
+- [x] 2026-05-06 07:03:30+0800: Advanced the adjacent ops-health freshness helper boundary so optional `now` references must be `datetime` objects and include a usable timezone offset.
+- [x] 2026-05-06 07:03:30+0800: Added red-green regressions proving naive reference datetimes and non-datetime reference values now raise stable freshness-reference parser errors instead of leaking Python `TypeError`.
+- [ ] Retry GitHub access, publish `codex/ops-health-freshness-offset-guard`, open PR to `main`, and continue post-PR63 runtime work only after remote state is confirmed.

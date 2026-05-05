@@ -2428,3 +2428,19 @@ def test_compute_freshness_rejects_timezone_less_timestamp():
             "2099-01-01T00:00:00",
             now=datetime(2099, 1, 1, 1, 0, tzinfo=timezone.utc),
         )
+
+
+def test_compute_freshness_rejects_timezone_less_reference_time():
+    with pytest.raises(ValueError, match="reference timestamp must include timezone"):
+        compute_freshness_hours(
+            "2099-01-01T00:00:00+00:00",
+            now=datetime(2099, 1, 1, 1, 0),
+        )
+
+
+def test_compute_freshness_rejects_non_datetime_reference_time():
+    with pytest.raises(ValueError, match="reference timestamp must be a datetime"):
+        compute_freshness_hours(
+            "2099-01-01T00:00:00+00:00",
+            now=123,
+        )

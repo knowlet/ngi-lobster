@@ -189,6 +189,7 @@
 - ops-health 的 UTC timestamp 欄位也必須帶 `Z` 或 timezone offset；不能把 timezone-less datetime 隱性當成 UTC 後排序或投影到 operator-facing evidence。
 - ops-health freshness helper 也必須維持同一個 timezone-aware 邊界；內部 `compute_freshness_hours()` 不能繞過 CLI schema guard 後把 timezone-less datetime 補成 UTC。
 - ops-health freshness helper 的 malformed timestamp error 也必須維持 stable parser boundary；直接呼叫 `compute_freshness_hours()` 不能把 Python `Invalid isoformat string` 洩漏給 operator-facing callers。
+- ops-health freshness helper 也必須拒絕 date-only timestamp；直接呼叫 `compute_freshness_hours("2099-01-01")` 不能把缺少時間部分的值分類成 timezone 問題，而要回報 stable ISO-8601 timestamp schema error。
 - ops-health freshness helper 的 timestamp 輸入型別也必須維持 stable parser boundary；直接呼叫 `compute_freshness_hours()` 不能把非字串輸入洩漏成 Python `AttributeError`。
 - ops-health freshness helper 的 reference time 也必須維持 timezone-aware boundary；直接呼叫 `compute_freshness_hours(..., now=...)` 不能把 timezone-less reference 洩漏成 Python aware/naive subtraction `TypeError`。
 - ops-health freshness helper 的 reference time 型別也必須維持 stable parser boundary；直接呼叫 `compute_freshness_hours(..., now=...)` 不能把非 datetime reference 洩漏成 Python `AttributeError`。

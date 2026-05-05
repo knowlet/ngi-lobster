@@ -116,6 +116,13 @@ def test_compute_freshness_rejects_timezone_less_timestamp():
         module.compute_freshness_hours("2099-01-01T00:00:00")
 
 
+def test_compute_freshness_rejects_malformed_timestamp():
+    module = load_verify_runtime_ops_health_module()
+
+    with pytest.raises(ValueError, match="timestamp must be an ISO-8601 timestamp"):
+        module.compute_freshness_hours("not-a-timestamp")
+
+
 def test_verify_runtime_ops_health_fails_on_dq_and_reports_divergence(tmp_path: Path):
     state_path = tmp_path / "STATE.yaml"
     state_path.write_text('dq_status: "fail"\n', encoding="utf-8")

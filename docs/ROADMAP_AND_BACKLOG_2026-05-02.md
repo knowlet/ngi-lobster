@@ -62,6 +62,7 @@
    - 2026-05-03 21:04+08:00：已加固 ops-health runtime-source timestamp schema guard；successor tracker item 若帶 `collected_at_utc` 或 `published_at_utc`，該值必須是 ISO-8601 timestamp，避免 malformed timestamp 被投影進 operator rollover guidance。
    - 2026-05-05 18:03+08:00：已收緊 ops-health runtime-source timestamp schema；date-only 值（例如 `2099-01-01`）不再被 Python `datetime.fromisoformat()` 當成可投影 timestamp，必須提供含時間部分的 ISO datetime。
    - 2026-05-05 21:04+08:00：已收緊 ops-health freshness timestamp parser；`compute_freshness_hours()` 不再把 timezone-less datetime 隱性補成 UTC，缺少 `Z` 或 offset 的 freshness timestamp 會直接拒絕。
+   - 2026-05-05 22:04+08:00：已收緊 ops-health freshness timestamp parser error boundary；`compute_freshness_hours()` 遇到 malformed timestamp 會回報穩定 `timestamp must be an ISO-8601 timestamp`，不再洩漏 Python `Invalid isoformat string`。
    - 2026-05-03 22:04+08:00：已加固 ops-health latest NGI timestamp schema guard；`latest_ngi` 的 timestamp 欄位若存在就必須是 ISO-8601 timestamp，避免 malformed timestamp 以底層 parser error 中斷 operator 摘要。
    - 2026-05-03 23:03+08:00：已加固 ops-health SQLite freshness timestamp schema guard；`market_snapshots.snapshot_at_utc` 必須是 ISO-8601 timestamp，避免 malformed store freshness timestamp 以底層 parser error 中斷 operator 摘要。
    - 2026-05-04 01:03+08:00：已加固 ops-health runtime-source rollover candidate identity schema guard；successor tracker item 的 `external_id`、`title`、`url`、`metadata.market_id`、`metadata.slug` 與 `metadata.source_config.label` 若存在就必須是 non-empty string，避免 malformed identity/display 欄位被投影成 operator-facing rollover guidance。
@@ -187,6 +188,7 @@
 - ops-health runtime-source timestamp 不能只提供 date-only 值；`collected_at_utc` / `published_at_utc` 必須是含時間部分的 ISO datetime，避免 date-only artifact 被排序並投影成 rollover evidence。
 - ops-health 的 UTC timestamp 欄位也必須帶 `Z` 或 timezone offset；不能把 timezone-less datetime 隱性當成 UTC 後排序或投影到 operator-facing evidence。
 - ops-health freshness helper 也必須維持同一個 timezone-aware 邊界；內部 `compute_freshness_hours()` 不能繞過 CLI schema guard 後把 timezone-less datetime 補成 UTC。
+- ops-health freshness helper 的 malformed timestamp error 也必須維持 stable parser boundary；直接呼叫 `compute_freshness_hours()` 不能把 Python `Invalid isoformat string` 洩漏給 operator-facing callers。
 - ops-health runtime-source rollover candidate 的 identity/display 欄位若存在，也必須維持 non-empty string schema，不能把 malformed target id、slug、title、url 或 label 投影到 operator-facing rollover guidance。
 - ops-health runtime-source rollover candidate 的 identity/display 欄位通過 schema 後也必須 canonicalize；selected successor 的 `market_id`、`market_slug`、`market_name` 與 `market_question` 不能保留 tracker artifact 前後空白。
 - ops-health runtime-source successor selection 也必須使用 canonical current-market id 比對；帶前後空白的 current market id 不能被誤判為 successor，也不能污染 `rollover_candidate_blocker` 或 `rollover_candidate_diagnostics`。

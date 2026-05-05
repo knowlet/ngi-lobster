@@ -233,9 +233,12 @@ def _parse_ts(value: Any) -> datetime | None:
     if text.endswith("Z"):
         text = text[:-1] + "+00:00"
     try:
-        return datetime.fromisoformat(text)
+        parsed = datetime.fromisoformat(text)
     except ValueError:
         return None
+    if parsed.tzinfo is None:
+        return None
+    return parsed
 
 
 def _iter_successor_items(

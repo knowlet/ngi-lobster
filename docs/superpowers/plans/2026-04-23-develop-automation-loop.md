@@ -1190,3 +1190,12 @@
 - [x] 2026-05-05 11:03:15+0800: Advanced the ops-health rollover null-candidate boundary by emitting `rollover_candidate_diagnostics` with successor count, explicit open/accepting count, and current market id when runtime source is present.
 - [x] 2026-05-05 11:03:15+0800: Added a red-green ops-health regression proving null rollover candidates now carry the same diagnostics at top-level and inside `active_target_reselection`.
 - [ ] Retry GitHub access, publish `codex/ops-health-rollover-diagnostics`, open PR to `main`, and continue post-PR51 runtime work only after remote state is confirmed.
+
+### Task 135: 2026-05-05 12:04+08:00 live-sync rollover diagnostics projection
+- [x] 2026-05-05 12:04:20+0800: Current branch started on local `main` at `1352699`, matching local `origin/main` from PR #52.
+- [x] 2026-05-05 12:04:20+0800: `git fetch --prune origin` retried and failed (`Could not resolve host: github.com`, rc=128), so upstream freshness cannot be verified beyond existing local refs.
+- [x] 2026-05-05 12:04:20+0800: `gh pr list --state all --limit 20` and `gh issue list --state all --limit 20` failed with `error connecting to api.github.com`, so PR/issue/comment queues cannot be refreshed.
+- [x] 2026-05-05 12:04:20+0800: Created fresh branch `codex/live-sync-rollover-diagnostics` from local `main` after the regression was written, keeping the implementation off the main branch before commit.
+- [x] 2026-05-05 12:04:20+0800: Advanced the live-sync rollover diagnostics projection boundary by preserving ops-health `rollover_candidate_diagnostics` in `blocking_summary`, `active_target`, and `contract_action` when no explicit open/accepting successor exists.
+- [x] 2026-05-05 12:04:20+0800: Added a red-green live-sync regression proving downstream summary layers now carry successor count, explicit open/accepting count, and current market id instead of exposing only `rollover_candidate=null`.
+- [ ] Retry GitHub access, publish `codex/live-sync-rollover-diagnostics`, open PR to `main`, and continue post-PR52 runtime work only after remote state is confirmed.

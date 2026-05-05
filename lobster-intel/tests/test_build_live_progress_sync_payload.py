@@ -311,6 +311,95 @@ def test_build_live_progress_sync_payload_uses_state_config_fallback_when_runtim
     )
 
 
+def test_build_live_progress_sync_payload_projects_rollover_candidate_diagnostics(
+    tmp_path: Path,
+):
+    state_path = tmp_path / "STATE.yaml"
+    state_path.write_text('dq_status: "pass"\n', encoding="utf-8")
+    db_path = tmp_path / "intelligence_store.sqlite"
+    write_db(db_path, "2099-01-01T00:00:00+00:00")
+    latest_ngi_path = tmp_path / "latest_ngi.json"
+    write_latest_ngi(
+        latest_ngi_path,
+        first_principles_probability=0.52,
+        market_yes_probability=0.60,
+    )
+    latest_ngi = json.loads(latest_ngi_path.read_text(encoding="utf-8"))
+    latest_ngi["target_detail"]["market_closed"] = True
+    latest_ngi["target_detail"]["market_accepting_orders"] = False
+    latest_ngi["alert_disposition"]["decision"] = "suppressed"
+    latest_ngi["alert_disposition"]["should_send"] = False
+    latest_ngi["alert_disposition"].pop("delivery_proof")
+    latest_ngi_path.write_text(json.dumps(latest_ngi), encoding="utf-8")
+    runtime_source_path = tmp_path / "polymarket-runtime.json"
+    write_runtime_source(
+        runtime_source_path,
+        items=[
+            {
+                "external_id": "1517836",
+                "title": "Current closed market",
+                "url": "current-closed-market",
+                "collected_at_utc": "2099-01-01T00:00:00+00:00",
+                "metadata": {
+                    "market_id": "1517836",
+                    "slug": "current-closed-market",
+                    "yes_probability": 1.0,
+                    "active": True,
+                    "closed": True,
+                    "accepting_orders": False,
+                    "relationship": "configured_market",
+                    "source_config": {"label": "Current closed market"},
+                },
+            },
+            {
+                "external_id": "closed-1518001",
+                "title": "Closed successor market",
+                "url": "closed-successor",
+                "collected_at_utc": "2099-01-01T00:10:00+00:00",
+                "metadata": {
+                    "market_id": "closed-1518001",
+                    "slug": "closed-successor",
+                    "yes_probability": 0.39,
+                    "active": True,
+                    "closed": True,
+                    "accepting_orders": False,
+                    "relationship": "event_sibling",
+                    "source_config": {"label": "Closed successor market"},
+                },
+            },
+            {
+                "external_id": "ambiguous-1518002",
+                "title": "Ambiguous successor market",
+                "url": "ambiguous-successor",
+                "collected_at_utc": "2099-01-01T00:11:00+00:00",
+                "metadata": {
+                    "market_id": "ambiguous-1518002",
+                    "slug": "ambiguous-successor",
+                    "yes_probability": 0.41,
+                    "active": True,
+                    "closed": False,
+                    "accepting_orders": "unknown",
+                    "relationship": "event_sibling",
+                    "source_config": {"label": "Ambiguous successor market"},
+                },
+            },
+        ],
+    )
+
+    result = run_cli(state_path, db_path, latest_ngi_path, runtime_source_path)
+
+    assert result.returncode == 0, result.stderr
+    payload = json.loads(result.stdout)
+    expected = {
+        "successor_count": 2,
+        "explicit_open_accepting_count": 0,
+        "current_market_id": "1517836",
+    }
+    assert payload["blocking_summary"]["rollover_candidate_diagnostics"] == expected
+    assert payload["active_target"]["rollover_candidate_diagnostics"] == expected
+    assert payload["contract_action"]["rollover_candidate_diagnostics"] == expected
+
+
 def test_build_live_progress_sync_payload_requires_operator_market_question(
     tmp_path: Path,
 ):
@@ -1039,6 +1128,11 @@ def test_build_live_progress_sync_payload_explains_missing_rollover_candidate(tm
         "next_contract_action": "reselect_active_target",
         "rollover_candidate_blocker": "no_explicit_open_accepting_successor",
         "rollover_candidate": None,
+        "rollover_candidate_diagnostics": {
+            "successor_count": 1,
+            "explicit_open_accepting_count": 0,
+            "current_market_id": "1517836",
+        },
     }
     assert payload["active_target"]["reselection_required"] is True
     assert payload["active_target"]["rollover_candidate"] is None

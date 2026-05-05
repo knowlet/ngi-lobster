@@ -20,7 +20,9 @@ DEFAULT_STATE_CONFIG_PATH = REPO_ROOT / "legacy" / "intelligence-model" / "state
 DEFAULT_LIVE_LATEST_NGI_PATH = WORKSPACE_ROOT / "shared-projects" / "intelligence-model" / "latest_ngi.json"
 
 
-def parse_utc_timestamp(raw: str) -> datetime:
+def parse_utc_timestamp(raw: object) -> datetime:
+    if not isinstance(raw, str):
+        raise ValueError("timestamp must be an ISO-8601 timestamp")
     try:
         parsed = datetime.fromisoformat(raw.replace("Z", "+00:00"))
     except ValueError as exc:

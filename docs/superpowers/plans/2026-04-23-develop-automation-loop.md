@@ -1286,3 +1286,10 @@
 - [x] 2026-05-05 22:04:00+0800: Advanced the adjacent ops-health freshness parser error boundary so direct `compute_freshness_hours()` calls with malformed timestamp strings raise stable `timestamp must be an ISO-8601 timestamp` instead of leaking Python `Invalid isoformat string`.
 - [x] 2026-05-05 22:04:00+0800: Added a red-green regression proving `compute_freshness_hours("not-a-timestamp")` now fails with the stable malformed timestamp parser error.
 - [ ] Retry GitHub access, publish `codex/ops-health-freshness-timezone-guard`, open or update the PR chain to `main`, and continue post-PR62 runtime work only after remote state is confirmed.
+
+### Task 146: 2026-05-05 23:02+08:00 ops-health freshness non-string timestamp guard
+- [x] 2026-05-05 23:02:12+0800: Current branch remained `codex/ops-health-freshness-timezone-guard`; local refs still show `main` / `origin/main` at PR #62 (`ddaf267`) and the branch stacked on the recent freshness hardening commits.
+- [x] 2026-05-05 23:02:12+0800: `git fetch --prune origin` failed (`Could not resolve host: github.com`, rc=128), and `gh pr list --state all --limit 20` / `gh issue list --state all --limit 20` failed with `error connecting to api.github.com`.
+- [x] 2026-05-05 23:02:12+0800: Advanced the adjacent ops-health freshness parser type boundary so direct `compute_freshness_hours()` calls with non-string timestamp inputs raise stable `timestamp must be an ISO-8601 timestamp` instead of leaking Python `AttributeError`.
+- [x] 2026-05-05 23:02:12+0800: Added a red-green regression proving `compute_freshness_hours(123)` now fails through the stable timestamp parser boundary.
+- [ ] Retry GitHub access, publish `codex/ops-health-freshness-timezone-guard`, open or update the PR chain to `main`, and continue post-PR62 runtime work only after remote state is confirmed.

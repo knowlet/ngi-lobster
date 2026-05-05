@@ -41,6 +41,7 @@
    - 2026-05-03 00:04+08:00：已收緊 ops-health rollover candidate eligibility，只有 runtime source 明確回報 `closed=false` 且 `accepting_orders=true` 的 successor 才會輸出成 machine-readable candidate；只有 ambiguous successor 時會保留 blocked 狀態但不建議切換目標。
    - 2026-05-03 01:03+08:00：已加固 ops-health active-target status guard；當 `target_detail.market_closed` 或 `market_accepting_orders` 明確存在但值為 ambiguous（例如 `"unknown"`）時會 fail closed，要求重新選 active target，不再輸出健康摘要。
    - 2026-05-03 02:03+08:00：已加固 ops-health runtime-source 輸入邊界；operator 明確傳入 polymarket runtime-source 檔案時，缺檔或非 JSON object 會直接 fail closed，不再靜默降級成「沒有 rollover evidence」。
+   - 2026-05-05 09:03+08:00：已補齊 ops-health runtime-source JSON parser guard；`runtime_source_polymarket.json` 若不是 valid JSON 會 fail closed 並輸出穩定 schema error，不再把底層 JSONDecodeError 洩漏給 operator。
    - 2026-05-03 03:03+08:00：已加固 ops-health runtime-source schema 邊界；明確傳入 tracker payload 時，`evidence.items` 必須是 list，不能用 malformed object 靜默變成 `rollover_candidate=null` 的健康摘要。
    - 2026-05-03 04:03+08:00：已加固 ops-health runtime-source item schema 邊界；`evidence.items` 內每個 item 與其 `metadata` 必須是 JSON object，避免 malformed tracker item 被靜默略過或以不清楚的 AttributeError 中斷。
    - 2026-05-03 05:03+08:00：已加固 ops-health latest NGI schema 邊界；`latest_ngi.market_target` 與 `target_detail` 必須是 JSON object，避免 malformed active-target payload 以 Python AttributeError 中斷。
@@ -144,7 +145,7 @@
 - tracker runtime source 的 boolean 欄位若非明確 true/false，ops-health 會以 unknown 處理；後續插件接線需維持同一 parser 契約。
 - rollover candidate 必須是明確 open 且 accepting-orders 的 tracker item，不能把 ambiguous successor 投影成可執行建議。
 - active target 自身若回報 ambiguous closed/accepting-orders 狀態，ops-health 必須視為需要 reselection，不能只因欄位存在就當成健康目標。
-- ops-health 若明確收到 runtime-source path，該 payload 必須存在且為 JSON object；缺檔、malformed top-level payload、非 list 的 `evidence.items`、非 object item、非 object `metadata`，或非 object `metadata.source_config` 不能靜默省略 rollover evidence。
+- ops-health 若明確收到 runtime-source path，該 payload 必須存在、為 valid JSON 且為 JSON object；缺檔、malformed JSON、malformed top-level payload、非 list 的 `evidence.items`、非 object item、非 object `metadata`，或非 object `metadata.source_config` 不能靜默省略 rollover evidence，也不能洩漏底層 parser error。
 - latest NGI 的 payload 必須維持 object schema；top-level、`market_target` 或 `target_detail` 不是 JSON object 時，ops-health 必須 fail closed 並回報明確 schema error。
 - ops-health 的 latest NGI parser 也必須維持穩定 schema boundary；malformed `latest_ngi.json` 不能把底層 JSONDecodeError 直接洩漏給 operator。
 - live progress sync 也必須沿用 same latest NGI parser/object schema；malformed JSON、top-level 或 nested object malformed payload 不能洩漏底層 parser error，也不能被 required-key fallback 誤報成缺欄位。

@@ -169,6 +169,25 @@ def test_compute_freshness_rejects_reference_without_utc_offset():
         )
 
 
+def test_parse_utc_timestamp_rejects_timestamp_without_utc_offset(monkeypatch):
+    module = load_verify_runtime_ops_health_module()
+    real_datetime = module.datetime
+
+    class MissingOffset(tzinfo):
+        def utcoffset(self, dt):
+            return None
+
+    class FakeDateTime:
+        @staticmethod
+        def fromisoformat(value):
+            return real_datetime(2099, 1, 1, 0, 0, 0, tzinfo=MissingOffset())
+
+    monkeypatch.setattr(module, "datetime", FakeDateTime)
+
+    with pytest.raises(ValueError, match="timestamp must include timezone"):
+        module.parse_utc_timestamp("2099-01-01T00:00:00+00:00")
+
+
 def test_verify_runtime_ops_health_fails_on_dq_and_reports_divergence(tmp_path: Path):
     state_path = tmp_path / "STATE.yaml"
     state_path.write_text('dq_status: "fail"\n', encoding="utf-8")

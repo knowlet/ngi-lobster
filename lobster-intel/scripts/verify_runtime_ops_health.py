@@ -29,7 +29,7 @@ def parse_utc_timestamp(raw: object) -> datetime:
         parsed = datetime.fromisoformat(raw.replace("Z", "+00:00"))
     except ValueError as exc:
         raise ValueError("timestamp must be an ISO-8601 timestamp") from exc
-    if parsed.tzinfo is None:
+    if parsed.tzinfo is None or parsed.utcoffset() is None:
         raise ValueError("timestamp must include timezone")
     return parsed.astimezone(timezone.utc)
 

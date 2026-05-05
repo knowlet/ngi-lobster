@@ -1324,3 +1324,11 @@
 - [x] 2026-05-06 03:03:49+0800: Advanced the adjacent ops-health freshness reference-time boundary so direct `compute_freshness_hours(..., now=...)` calls reject datetime references whose `tzinfo` exists but `utcoffset()` is missing instead of letting `astimezone()` treat them as local time.
 - [x] 2026-05-06 03:03:49+0800: Added a red-green regression proving offset-less reference datetimes now fail through the stable `reference timestamp must include timezone` helper boundary.
 - [ ] Retry GitHub access, publish `codex/ops-health-freshness-timezone-guard`, open or update the PR chain to `main`, and continue post-PR62 runtime work only after remote state is confirmed.
+
+### Task 151: 2026-05-06 04:03+08:00 ops-health freshness source offset guard
+- [x] 2026-05-06 04:03:57+0800: Current branch remained `codex/ops-health-freshness-timezone-guard`; local refs show the branch and its remote-tracking ref at `83c3fbe`, stacked on post-PR62 freshness hardening commits.
+- [x] 2026-05-06 04:03:57+0800: `git fetch --prune origin` failed (`Could not resolve host: github.com`, rc=128), so upstream freshness cannot be verified beyond existing local refs.
+- [x] 2026-05-06 04:03:57+0800: `gh pr list --state all --limit 20` and `gh issue list --state all --limit 20` failed with `error connecting to api.github.com`, so PR comments/issues could not be refreshed.
+- [x] 2026-05-06 04:03:57+0800: Advanced the adjacent ops-health freshness source timestamp boundary so parsed timestamps whose `tzinfo` exists but `utcoffset()` is missing now raise stable `timestamp must include timezone` instead of letting `astimezone()` treat them as local time.
+- [x] 2026-05-06 04:03:57+0800: Added a red-green regression proving offset-less parsed source timestamps now fail through the stable freshness parser boundary.
+- [ ] Retry GitHub access, publish `codex/ops-health-freshness-timezone-guard`, open or update the PR chain to `main`, and continue post-PR62 runtime work only after remote state is confirmed.

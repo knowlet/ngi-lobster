@@ -64,6 +64,7 @@
    - 2026-05-05 21:04+08:00：已收緊 ops-health freshness timestamp parser；`compute_freshness_hours()` 不再把 timezone-less datetime 隱性補成 UTC，缺少 `Z` 或 offset 的 freshness timestamp 會直接拒絕。
    - 2026-05-05 22:04+08:00：已收緊 ops-health freshness timestamp parser error boundary；`compute_freshness_hours()` 遇到 malformed timestamp 會回報穩定 `timestamp must be an ISO-8601 timestamp`，不再洩漏 Python `Invalid isoformat string`。
    - 2026-05-06 03:03+08:00：已收緊 ops-health freshness reference-time parser；`compute_freshness_hours(..., now=...)` 遇到 `tzinfo` 存在但 `utcoffset()` 缺失的 reference datetime 會回報穩定 timezone schema error，不再讓 Python 以 local timezone 處理。
+   - 2026-05-06 04:03+08:00：已收緊 ops-health freshness source timestamp parser；parsed timestamp 若帶 `tzinfo` 但沒有可用 `utcoffset()`，會回報穩定 timezone schema error，不再讓 Python 以 local timezone 處理。
    - 2026-05-03 22:04+08:00：已加固 ops-health latest NGI timestamp schema guard；`latest_ngi` 的 timestamp 欄位若存在就必須是 ISO-8601 timestamp，避免 malformed timestamp 以底層 parser error 中斷 operator 摘要。
    - 2026-05-03 23:03+08:00：已加固 ops-health SQLite freshness timestamp schema guard；`market_snapshots.snapshot_at_utc` 必須是 ISO-8601 timestamp，避免 malformed store freshness timestamp 以底層 parser error 中斷 operator 摘要。
    - 2026-05-04 01:03+08:00：已加固 ops-health runtime-source rollover candidate identity schema guard；successor tracker item 的 `external_id`、`title`、`url`、`metadata.market_id`、`metadata.slug` 與 `metadata.source_config.label` 若存在就必須是 non-empty string，避免 malformed identity/display 欄位被投影成 operator-facing rollover guidance。
@@ -195,6 +196,7 @@
 - ops-health freshness helper 的 reference time 也必須維持 timezone-aware boundary；直接呼叫 `compute_freshness_hours(..., now=...)` 不能把 timezone-less reference 洩漏成 Python aware/naive subtraction `TypeError`。
 - ops-health freshness helper 的 reference time 型別也必須維持 stable parser boundary；直接呼叫 `compute_freshness_hours(..., now=...)` 不能把非 datetime reference 洩漏成 Python `AttributeError`。
 - ops-health freshness helper 的 reference time 必須帶可用 UTC offset；`tzinfo` 存在但 `utcoffset()` 為 `None` 的 datetime 也要 fail closed，不能被 `astimezone()` 當成本地時間處理。
+- ops-health freshness helper 的 source timestamp 也必須帶可用 UTC offset；parser 回傳 `tzinfo` 存在但 `utcoffset()` 為 `None` 的 datetime 時也要 fail closed，不能被 `astimezone()` 當成本地時間處理。
 - ops-health runtime-source rollover candidate 的 identity/display 欄位若存在，也必須維持 non-empty string schema，不能把 malformed target id、slug、title、url 或 label 投影到 operator-facing rollover guidance。
 - ops-health runtime-source rollover candidate 的 identity/display 欄位通過 schema 後也必須 canonicalize；selected successor 的 `market_id`、`market_slug`、`market_name` 與 `market_question` 不能保留 tracker artifact 前後空白。
 - ops-health runtime-source successor selection 也必須使用 canonical current-market id 比對；帶前後空白的 current market id 不能被誤判為 successor，也不能污染 `rollover_candidate_blocker` 或 `rollover_candidate_diagnostics`。

@@ -208,6 +208,12 @@ def build_live_progress_sync_payload(
     )
     delivery_proof = _require_delivery_proof(alert_disposition)
     _validate_non_positive_contract_match(alert_disposition)
+    market_target_id = _require_non_empty_string(
+        market_target, "market_id", context="latest_ngi.market_target"
+    )
+    market_target_name = _require_non_empty_string(
+        market_target, "market_name", context="latest_ngi.market_target"
+    )
     reason_code = _require_non_empty_string(
         alert_disposition, "reason_code", context="latest_ngi.alert_disposition"
     )
@@ -261,8 +267,8 @@ def build_live_progress_sync_payload(
             ops_health,
         ),
         "market_target": {
-            "market_id": ops_health["market_target_id"],
-            "market_name": ops_health["market_target_name"],
+            "market_id": market_target_id,
+            "market_name": market_target_name,
             "market_question": market_question,
             "probability_mode": ops_health["probability_mode"],
         },

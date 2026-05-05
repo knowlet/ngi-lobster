@@ -1217,3 +1217,12 @@
 - [x] 2026-05-05 14:02:50+0800: Advanced the live-sync delivery proof projection boundary by emitting only canonical `boundary`, `proof_id`, and `sink_message_id` keys instead of copying raw proof metadata into operator-facing payloads.
 - [x] 2026-05-05 14:02:50+0800: Added a red-green live-sync regression proving extra proof metadata such as developer-local paths no longer leaks into `alert_disposition.delivery_proof`.
 - [ ] Retry GitHub access, publish `codex/live-sync-proof-field-allowlist`, open PR to `main`, and continue post-PR55 runtime work only after remote state is confirmed.
+
+### Task 138: 2026-05-05 15:03+08:00 live-sync market target identity guard
+- [x] 2026-05-05 15:03:59+0800: Current branch started on local `main` at `c984df2`, matching local `origin/main` from PR #56.
+- [x] 2026-05-05 15:03:59+0800: `git fetch --prune origin` retried and failed (`Could not resolve host: github.com`, rc=128), so upstream freshness cannot be verified beyond existing local refs.
+- [x] 2026-05-05 15:03:59+0800: `gh pr list --state all --limit 20` and `gh issue list --state all --limit 20` failed with `error connecting to api.github.com`, so PR/issue/comment queues cannot be refreshed.
+- [x] 2026-05-05 15:03:59+0800: Created fresh branch `codex/live-sync-target-identity-canonicalization` from local `main` to keep the next live-sync schema guard isolated.
+- [x] 2026-05-05 15:03:59+0800: Advanced the live-sync operator target identity boundary by requiring `latest_ngi.market_target.market_id` and `market_name` before emitting the operator-facing sync payload.
+- [x] 2026-05-05 15:03:59+0800: Added a red-green live-sync regression proving missing market target identity now fails closed instead of falling back to `target_detail` values and returning rc=0.
+- [ ] Retry GitHub access, publish `codex/live-sync-target-identity-canonicalization`, open PR to `main`, and continue post-PR56 runtime work only after remote state is confirmed.

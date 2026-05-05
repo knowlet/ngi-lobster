@@ -103,6 +103,7 @@
    - 2026-05-04 10:04+08:00：已補齊 live progress sync 的 alert decision schema guard；`alert_disposition.decision` 必須是 non-empty string，避免 malformed decision JSON 被投影進 operator sync payload。
    - 2026-05-04 11:03+08:00：已收緊 non-positive live sync 的 contract-match schema guard；suppressed payload 若仍攜帶 `target_contract_match`，該值必須是明確 boolean-equivalent，避免 ambiguous contract evidence 被投影給 operator。
    - 2026-05-05 01:02+08:00：已補齊 live progress sync 的 operator target display canonicalization；`target_detail.market_question` 通過 non-empty schema 後會以 stripped string 投影到 `blocking_summary` / `market_target`，避免 operator-facing 摘要帶前後空白。
+   - 2026-05-05 15:03+08:00：已補齊 live progress sync 的 operator target identity guard；`market_target.market_id` 與 `market_name` 必須是 non-empty string，且投影使用 canonical 值，避免 sync payload 用 fallback/空 target identity 進入 operator 摘要。
    - 2026-05-05 02:02+08:00：已補齊 live progress sync 的 delivery proof canonicalization；`boundary`、`proof_id` 與 `sink_message_id` 通過 schema 後會以 stripped string 投影，避免 operator-facing machine-readable proof 帶前後空白。
    - 2026-05-05 05:02+08:00：已補齊 live progress sync 的 delivery proof blank-field canonicalization；`proof_id` 空白但 `sink_message_id` 有效時，payload 會保留可審計 sink id 並省略空白 `proof_id`，避免 operator-facing proof 帶無意義空欄位。
    - 2026-05-05 14:02+08:00：已補齊 live progress sync 的 delivery proof allowlist projection；operator-facing payload 只輸出 canonical `boundary` / `proof_id` / `sink_message_id`，避免 raw proof metadata 或 developer-local path 流入同步摘要。
@@ -169,6 +170,7 @@
 - live progress sync 若收到 `alert_disposition.target_contract_match`，即使 payload 是 suppressed/non-positive，也必須是明確 boolean-equivalent；ambiguous contract evidence 不能被投影進 operator-facing sync payload。
 - live progress sync 的 operator target display 欄位必須維持 string schema；`target_detail.market_question` 不能缺失或空白，避免 `blocking_summary` / `market_target` 輸出不可審核的空 question。
 - live progress sync 的 operator target display 欄位通過 schema 後也必須 canonicalize；`target_detail.market_question` 的前後空白不能原樣投影進 `blocking_summary` / `market_target`。
+- live progress sync 的 operator target identity 欄位也必須維持 required string schema；`market_target.market_id` 與 `market_name` 不能缺失後由 fallback 值補成看似完整的 operator-facing target。
 - live progress sync 的 delivery proof 欄位通過 schema 後也必須 canonicalize；`boundary`、`proof_id` 與 `sink_message_id` 的前後空白不能原樣投影進 operator-facing machine-readable proof。
 - live progress sync 的 delivery proof 空白欄位不能原樣投影；當 `proof_id` 空白且 `sink_message_id` 有效時，operator-facing proof 必須省略空白 `proof_id` 並保留可審計 sink id。
 - 2026-05-05 07:02+08:00：已補齊 live progress sync non-positive delivery proof projection；suppressed/non-positive payload 若只帶空白 proof 欄位，canonicalization 會把空 proof 整體省略，避免 operator-facing `delivery_proof={}` 被誤認為可審計證據。

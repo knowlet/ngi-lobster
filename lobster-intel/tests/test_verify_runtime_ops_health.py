@@ -2,10 +2,16 @@ import json
 import os
 import subprocess
 import sys
+from datetime import datetime, timezone
 from pathlib import Path
 
+import pytest
 
 REPO = Path(__file__).resolve().parents[2]
+sys.path.append(str(REPO / "lobster-intel" / "scripts"))
+from verify_runtime_ops_health import compute_freshness_hours
+
+
 SCRIPT = REPO / "lobster-intel" / "scripts" / "verify_runtime_ops_health.py"
 
 
@@ -2414,3 +2420,11 @@ def test_verify_runtime_ops_health_fails_when_market_snapshot_timestamp_is_malfo
     assert result.returncode == 1
     assert result.stdout == ""
     assert result.stderr.strip() == "market_snapshots.snapshot_at_utc must be an ISO-8601 timestamp"
+
+
+def test_compute_freshness_rejects_timezone_less_timestamp():
+    with pytest.raises(ValueError, match="timestamp must include timezone"):
+        compute_freshness_hours(
+            "2099-01-01T00:00:00",
+            now=datetime(2099, 1, 1, 1, 0, tzinfo=timezone.utc),
+        )

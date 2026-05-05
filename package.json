@@ -14,7 +14,7 @@
     "test:ops-health-cut": "PYTHONPATH=lobster-intel/scripts ./.venv/bin/python -m pytest lobster-intel/tests/test_verify_runtime_ops_health.py -q",
     "test:live-sync-cut": "PYTHONPATH=lobster-intel/scripts ./.venv/bin/python -m pytest lobster-intel/tests/test_build_live_progress_sync_payload.py -q",
     "check:ops-health-live": "./.venv/bin/python lobster-intel/scripts/verify_runtime_ops_health.py /Users/knowlet/.openclaw/workspace/shared-projects/twse-close-report/STATE.yaml /Users/knowlet/.openclaw/workspace/intelligence_store.sqlite /Users/knowlet/.openclaw/workspace/shared-projects/intelligence-model/latest_ngi.json ./lobster-intel/data/runtime/sources/polymarket-tracker/latest.json",
-    "build:live-sync-payload": "./.venv/bin/python lobster-intel/scripts/build_live_progress_sync_payload.py /Users/knowlet/.openclaw/workspace/shared-projects/twse-close-report/STATE.yaml /Users/knowlet/.openclaw/workspace/intelligence_store.sqlite /Users/knowlet/.openclaw/workspace/shared-projects/intelligence-model/latest_ngi.json"
+    "build:live-sync-payload": "./.venv/bin/python lobster-intel/scripts/build_live_progress_sync_payload.py /Users/knowlet/.openclaw/workspace/shared-projects/twse-close-report/STATE.yaml /Users/knowlet/.openclaw/workspace/intelligence_store.sqlite /Users/knowlet/.openclaw/workspace/shared-projects/intelligence-model/latest_ngi.json ./lobster-intel/data/runtime/sources/polymarket-tracker/latest.json"
   },
   "openclaw": {
     "extensions": [

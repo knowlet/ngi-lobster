@@ -42,6 +42,7 @@
    - 2026-05-03 01:03+08:00：已加固 ops-health active-target status guard；當 `target_detail.market_closed` 或 `market_accepting_orders` 明確存在但值為 ambiguous（例如 `"unknown"`）時會 fail closed，要求重新選 active target，不再輸出健康摘要。
    - 2026-05-03 02:03+08:00：已加固 ops-health runtime-source 輸入邊界；operator 明確傳入 polymarket runtime-source 檔案時，缺檔或非 JSON object 會直接 fail closed，不再靜默降級成「沒有 rollover evidence」。
    - 2026-05-05 09:03+08:00：已補齊 ops-health runtime-source JSON parser guard；`runtime_source_polymarket.json` 若不是 valid JSON 會 fail closed 並輸出穩定 schema error，不再把底層 JSONDecodeError 洩漏給 operator。
+   - 2026-05-05 10:03+08:00：已補齊 ops-health runtime-source event metadata projection；Polymarket `event_sibling` successor 的 `relationship` / `event_id` / `event_slug` / `event_title` 通過 schema 後會以 canonical string 進入 `rollover_candidate`，讓 operator 能直接審核 successor 來源。
    - 2026-05-03 03:03+08:00：已加固 ops-health runtime-source schema 邊界；明確傳入 tracker payload 時，`evidence.items` 必須是 list，不能用 malformed object 靜默變成 `rollover_candidate=null` 的健康摘要。
    - 2026-05-03 04:03+08:00：已加固 ops-health runtime-source item schema 邊界；`evidence.items` 內每個 item 與其 `metadata` 必須是 JSON object，避免 malformed tracker item 被靜默略過或以不清楚的 AttributeError 中斷。
    - 2026-05-03 05:03+08:00：已加固 ops-health latest NGI schema 邊界；`latest_ngi.market_target` 與 `target_detail` 必須是 JSON object，避免 malformed active-target payload 以 Python AttributeError 中斷。
@@ -171,6 +172,7 @@
 - ops-health runtime-source rollover candidate 的 identity/display 欄位若存在，也必須維持 non-empty string schema，不能把 malformed target id、slug、title、url 或 label 投影到 operator-facing rollover guidance。
 - ops-health selected rollover candidate 的 projected identity/display 欄位必須解析為 non-empty string；即使 tracker item 本身通過 optional schema guard，也不能輸出缺少 `market_question` 等關鍵 acceptance 欄位的 candidate。
 - ops-health runtime-source payload 的 top-level `ran_at_utc` 若存在，也必須維持 ISO-8601 timestamp schema，不能把 malformed tracker run timestamp 帶進 operator 摘要。
+- ops-health runtime-source successor 的 event metadata 若存在，也必須維持 canonical non-empty string schema，並投影到 `rollover_candidate`，避免 `event_sibling` 來源證據只停在原始 tracker artifact。
 - ops-health latest NGI 的 `probability_mode` 若存在，也必須維持 non-empty string schema，不能把 malformed mode 欄位投影到 operator-facing 摘要。
 - ops-health latest NGI 的 active-target identity/display 欄位若存在，也必須維持 non-empty string schema，不能把 malformed `market_target` / `target_detail` target id、name 或 question 投影到 operator-facing 摘要。
 - ops-health blocking output 必須提供 dedicated `active_target_reselection` object，讓 stale/closed/divergent target 狀態也能直接供 heartbeat / review / upstream 驗收，不必由 operator 重新拼接零散欄位。

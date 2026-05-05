@@ -434,7 +434,10 @@ def build_summary(
     latest_snapshot_at_utc = load_latest_snapshot_at_utc(db_path)
     freshness_hours = compute_freshness_hours(latest_snapshot_at_utc)
 
-    latest_ngi = json.loads(latest_ngi_path.read_text(encoding="utf-8"))
+    try:
+        latest_ngi = json.loads(latest_ngi_path.read_text(encoding="utf-8"))
+    except json.JSONDecodeError as exc:
+        raise RuntimeError("latest_ngi payload must be valid JSON") from exc
     if not isinstance(latest_ngi, dict):
         raise RuntimeError("latest_ngi payload must be a JSON object")
     latest_ngi_timestamp_utc = load_latest_ngi_timestamp_utc(latest_ngi)

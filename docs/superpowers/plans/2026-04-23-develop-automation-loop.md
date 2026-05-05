@@ -1253,3 +1253,12 @@
 - [x] 2026-05-05 18:03:25+0800: Advanced the ops-health timestamp parser boundary so date-only runtime-source successor timestamps are rejected instead of being sorted and projected as rollover evidence.
 - [x] 2026-05-05 18:03:25+0800: Added a red-green ops-health regression proving `collected_at_utc="2099-01-01"` now fails with the stable ISO-8601 timestamp schema error.
 - [ ] Retry GitHub access, publish `codex/ops-health-timestamp-datetime-guard`, open PR to `main`, and continue post-PR59 runtime work only after remote state is confirmed.
+
+### Task 142: 2026-05-05 19:05+08:00 rollover diagnostics rebase conflict resolution
+- [x] 2026-05-05 19:05:53+0800: Run started inside an in-progress rebase of `codex/rollover-candidate-diagnostics` with conflicts in `build_live_progress_sync_payload.py` and `verify_runtime_ops_health.py`.
+- [x] 2026-05-05 19:05:53+0800: Resolved the conflict by preserving canonical current-market matching from main and the richer `rollover_candidate_diagnostics` contract from the rebased branch.
+- [x] 2026-05-05 19:05:53+0800: Updated legacy acceptance expectations so actionable rollover candidates also carry diagnostics through ops-health and live-sync projection layers.
+- [x] 2026-05-05 19:05:53+0800: Verified `PYTHONPATH=lobster-intel/scripts ./.venv/bin/python -m pytest lobster-intel/tests/test_verify_runtime_ops_health.py -q` (58 passed) and `PYTHONPATH=lobster-intel/scripts ./.venv/bin/python -m pytest lobster-intel/tests/test_build_live_progress_sync_payload.py -q` (35 passed).
+- [x] 2026-05-05 19:05:53+0800: Local refs then showed `main` / `origin/main` at PR #61 merge commit `3619bed`, so the resolved code slice was already absorbed into local main before this checkpoint branch.
+- [x] 2026-05-05 19:05:53+0800: `git fetch --prune origin` failed with `Could not resolve host: github.com`, and `gh pr list --state all --limit 20` / `gh issue list --state all --limit 20` failed with `error connecting to api.github.com`.
+- [ ] Retry GitHub access, publish `codex/develop-20260505-1905-checkpoint`, verify PR #61 remote state, and resume Task 1/2/4 sync flow.

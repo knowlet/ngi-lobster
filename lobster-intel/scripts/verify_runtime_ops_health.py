@@ -23,7 +23,7 @@ DEFAULT_LIVE_LATEST_NGI_PATH = WORKSPACE_ROOT / "shared-projects" / "intelligenc
 def parse_utc_timestamp(raw: str) -> datetime:
     parsed = datetime.fromisoformat(raw.replace("Z", "+00:00"))
     if parsed.tzinfo is None:
-        parsed = parsed.replace(tzinfo=timezone.utc)
+        raise ValueError("timestamp must include timezone")
     return parsed.astimezone(timezone.utc)
 
 

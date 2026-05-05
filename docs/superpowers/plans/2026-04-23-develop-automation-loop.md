@@ -6,7 +6,7 @@
 
 **Tech Stack:** Git, GitHub remote workflow, project plan docs.
 
-**Status:** In progress on local branch `codex/ops-health-timezone-timestamp-guard` after local `main` matched local `origin/main` at PR #62 merge commit `ddaf267`; remote confirmation/push remains blocked by GitHub DNS/API access.
+**Status:** In progress on local branch `codex/ops-health-freshness-timezone-guard`, stacked on `codex/ops-health-timezone-timestamp-guard` after local `main` matched local `origin/main` at PR #62 merge commit `ddaf267`; remote confirmation/push remains blocked by GitHub DNS/API access.
 
 > **PR29 checkpoint note:** This document is a clean PR29/PR30 docs-only handoff cut. Historical references to `codex/pr21-recut-dispatcher-receipt-guard` below are preserved as execution context from the original runtime branch, not as the active review branch for this replacement PR.
 
@@ -1271,3 +1271,11 @@
 - [x] 2026-05-05 20:03:56+0800: Advanced the shared ops-health timestamp parser boundary so timezone-less datetimes such as `2099-01-01T00:00:00` are rejected instead of being treated as implicit UTC.
 - [x] 2026-05-05 20:03:56+0800: Added a red-green ops-health regression proving timezone-less runtime-source rollover timestamps now fail with the stable ISO-8601 timestamp schema error.
 - [ ] Retry GitHub access, publish `codex/ops-health-timezone-timestamp-guard`, open PR to `main`, and continue post-PR62 runtime work only after remote state is confirmed.
+
+### Task 144: 2026-05-05 21:04+08:00 ops-health freshness timezone parser guard
+- [x] 2026-05-05 21:04:24+0800: Current branch started from `codex/ops-health-timezone-timestamp-guard` at `9614da0` because GitHub DNS/API remained unavailable and the prior timestamp branch could not be confirmed as PR-merged.
+- [x] 2026-05-05 21:04:24+0800: `git fetch --prune origin` failed (`Could not resolve host: github.com`, rc=128), so upstream freshness cannot be verified beyond existing local refs.
+- [x] 2026-05-05 21:04:24+0800: `gh pr list --state all --limit 20` and `gh issue list --state all --limit 20` failed with `error connecting to api.github.com`, so PR/issue/comment queues cannot be refreshed.
+- [x] 2026-05-05 21:04:24+0800: Created stack branch `codex/ops-health-freshness-timezone-guard` and advanced the shared freshness parser boundary so direct `compute_freshness_hours()` calls reject timezone-less datetime strings instead of treating them as implicit UTC.
+- [x] 2026-05-05 21:04:24+0800: Added a red-green regression proving `compute_freshness_hours("2099-01-01T00:00:00")` raises a timezone-required parser error.
+- [ ] Retry GitHub access, publish `codex/ops-health-freshness-timezone-guard`, open or update the PR chain to `main`, and continue post-PR62 runtime work only after remote state is confirmed.

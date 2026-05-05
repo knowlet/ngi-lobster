@@ -1,12 +1,24 @@
+import importlib.util
 import json
 import os
 import subprocess
 import sys
 from pathlib import Path
 
+import pytest
+
 
 REPO = Path(__file__).resolve().parents[2]
 SCRIPT = REPO / "lobster-intel" / "scripts" / "verify_runtime_ops_health.py"
+
+
+def load_verify_runtime_ops_health_module():
+    spec = importlib.util.spec_from_file_location("verify_runtime_ops_health", SCRIPT)
+    assert spec is not None
+    module = importlib.util.module_from_spec(spec)
+    assert spec.loader is not None
+    spec.loader.exec_module(module)
+    return module
 
 
 def write_db(db_path: Path, snapshot_at_utc: str):
@@ -95,6 +107,13 @@ def run_cli(
         check=False,
         env=effective_env,
     )
+
+
+def test_compute_freshness_rejects_timezone_less_timestamp():
+    module = load_verify_runtime_ops_health_module()
+
+    with pytest.raises(ValueError, match="timestamp must include timezone"):
+        module.compute_freshness_hours("2099-01-01T00:00:00")
 
 
 def test_verify_runtime_ops_health_fails_on_dq_and_reports_divergence(tmp_path: Path):

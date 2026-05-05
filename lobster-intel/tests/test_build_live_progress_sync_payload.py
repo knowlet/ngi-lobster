@@ -119,6 +119,7 @@ def test_build_live_progress_sync_payload_keeps_target_divergence_and_blockers_t
         "reselection_required": False,
         "next_contract_action": "keep_active_target",
         "rollover_candidate_blocker": None,
+        "rollover_candidate_diagnostics": None,
         "rollover_candidate": None,
     }
     assert payload["market_target"] == {
@@ -209,6 +210,23 @@ def test_build_live_progress_sync_payload_exports_active_target_reselection_acce
         "reselection_required": True,
         "next_contract_action": "reselect_active_target",
         "rollover_candidate_blocker": None,
+        "rollover_candidate_diagnostics": {
+            "current_market_id": "1517836",
+            "successor_count": 1,
+            "open_successor_count": 1,
+            "accepting_orders_count": 1,
+            "explicit_open_accepting_count": 1,
+            "sample_successors": [
+                {
+                    "market_id": "rollover-1518000",
+                    "market_slug": "open-successor",
+                    "market_question": "Open successor market",
+                    "market_yes_probability": 0.42,
+                    "market_closed": False,
+                    "market_accepting_orders": True,
+                }
+            ],
+        },
         "rollover_candidate": {
             "market_id": "rollover-1518000",
             "market_slug": "open-successor",
@@ -959,6 +977,23 @@ def test_build_live_progress_sync_payload_exports_rollover_candidate_when_target
         "reselection_required": True,
         "next_contract_action": "reselect_active_target",
         "rollover_candidate_blocker": None,
+        "rollover_candidate_diagnostics": {
+            "current_market_id": "1517836",
+            "successor_count": 1,
+            "open_successor_count": 1,
+            "accepting_orders_count": 1,
+            "explicit_open_accepting_count": 1,
+            "sample_successors": [
+                {
+                    "market_id": "rollover-1518000",
+                    "market_slug": "open-successor",
+                    "market_question": "Open successor market",
+                    "market_yes_probability": 0.42,
+                    "market_closed": False,
+                    "market_accepting_orders": True,
+                }
+            ],
+        },
         "rollover_candidate": {
             "market_id": "rollover-1518000",
             "market_slug": "open-successor",
@@ -979,6 +1014,23 @@ def test_build_live_progress_sync_payload_exports_rollover_candidate_when_target
         "reselection_required": True,
         "next_contract_action": "reselect_active_target",
         "rollover_candidate_blocker": None,
+        "rollover_candidate_diagnostics": {
+            "current_market_id": "1517836",
+            "successor_count": 1,
+            "open_successor_count": 1,
+            "accepting_orders_count": 1,
+            "explicit_open_accepting_count": 1,
+            "sample_successors": [
+                {
+                    "market_id": "rollover-1518000",
+                    "market_slug": "open-successor",
+                    "market_question": "Open successor market",
+                    "market_yes_probability": 0.42,
+                    "market_closed": False,
+                    "market_accepting_orders": True,
+                }
+            ],
+        },
         "rollover_candidate": {
             "market_id": "rollover-1518000",
             "market_slug": "open-successor",
@@ -1044,6 +1096,16 @@ def test_build_live_progress_sync_payload_explains_missing_rollover_candidate(tm
             "open_successor_count": 1,
             "accepting_orders_count": 0,
             "explicit_open_accepting_count": 0,
+            "sample_successors": [
+                {
+                    "market_id": "ambiguous-1518001",
+                    "market_slug": "ambiguous-successor",
+                    "market_question": "Ambiguous successor market",
+                    "market_yes_probability": 0.39,
+                    "market_closed": False,
+                    "market_accepting_orders": None,
+                }
+            ],
         },
         "rollover_candidate": None,
     }
@@ -1059,6 +1121,16 @@ def test_build_live_progress_sync_payload_explains_missing_rollover_candidate(tm
         "open_successor_count": 1,
         "accepting_orders_count": 0,
         "explicit_open_accepting_count": 0,
+        "sample_successors": [
+            {
+                "market_id": "ambiguous-1518001",
+                "market_slug": "ambiguous-successor",
+                "market_question": "Ambiguous successor market",
+                "market_yes_probability": 0.39,
+                "market_closed": False,
+                "market_accepting_orders": None,
+            }
+        ],
     }
     assert payload["contract_action"]["rollover_candidate_diagnostics"] == payload["active_target"][
         "rollover_candidate_diagnostics"

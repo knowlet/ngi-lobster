@@ -293,6 +293,16 @@ def test_verify_runtime_ops_health_exports_reselection_acceptance_when_stale_tar
             "open_successor_count": 1,
             "accepting_orders_count": 1,
             "explicit_open_accepting_count": 1,
+            "sample_successors": [
+                {
+                    "market_id": "rollover-1518000",
+                    "market_slug": "open-successor",
+                    "market_question": "Open successor market",
+                    "market_yes_probability": 0.42,
+                    "market_closed": False,
+                    "market_accepting_orders": True,
+                }
+            ],
         },
     }
 
@@ -1253,6 +1263,16 @@ def test_verify_runtime_ops_health_rejects_ambiguous_rollover_candidate(tmp_path
         "open_successor_count": 1,
         "accepting_orders_count": 0,
         "explicit_open_accepting_count": 0,
+        "sample_successors": [
+            {
+                "market_id": "ambiguous-1518001",
+                "market_slug": "ambiguous-successor",
+                "market_question": "Ambiguous successor market",
+                "market_yes_probability": 0.39,
+                "market_closed": False,
+                "market_accepting_orders": None,
+            }
+        ],
     }
     assert payload["active_target_reselection"]["rollover_candidate_diagnostics"] == payload[
         "rollover_candidate_diagnostics"

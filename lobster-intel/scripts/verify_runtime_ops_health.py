@@ -320,6 +320,7 @@ def _build_rollover_candidate_diagnostics(
     explicit_open_accepting_count = 0
     open_successor_count = 0
     accepting_orders_count = 0
+    sample_successors: list[dict[str, Any]] = []
     for item in successors:
         metadata = item.get("metadata") or {}
         if _as_bool(metadata.get("closed")) is False:
@@ -328,12 +329,25 @@ def _build_rollover_candidate_diagnostics(
             accepting_orders_count += 1
         if _as_bool(metadata.get("closed")) is False and _as_bool(metadata.get("accepting_orders")) is True:
             explicit_open_accepting_count += 1
+    for item in sorted(successors, key=_market_item_rank, reverse=True)[:3]:
+        metadata = item.get("metadata") or {}
+        sample_successors.append(
+            {
+                "market_id": metadata.get("market_id") or item.get("external_id"),
+                "market_slug": metadata.get("slug") or item.get("url"),
+                "market_question": item.get("title"),
+                "market_yes_probability": metadata.get("yes_probability"),
+                "market_closed": _as_bool(metadata.get("closed")),
+                "market_accepting_orders": _as_bool(metadata.get("accepting_orders")),
+            }
+        )
     return {
         "current_market_id": current_market_id,
         "successor_count": len(successors),
         "open_successor_count": open_successor_count,
         "accepting_orders_count": accepting_orders_count,
         "explicit_open_accepting_count": explicit_open_accepting_count,
+        "sample_successors": sample_successors,
     }
 
 

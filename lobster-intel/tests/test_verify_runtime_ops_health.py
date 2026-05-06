@@ -2423,6 +2423,28 @@ def test_verify_runtime_ops_health_fails_when_latest_ngi_timestamp_is_blank(
     assert result.stderr.strip() == "latest_ngi.timestamp_utc must be an ISO-8601 timestamp"
 
 
+def test_verify_runtime_ops_health_canonicalizes_latest_ngi_timestamp_to_utc(
+    tmp_path: Path,
+):
+    state_path = tmp_path / "STATE.yaml"
+    state_path.write_text('dq_status: "pass"\n', encoding="utf-8")
+    db_path = tmp_path / "intelligence_store.sqlite"
+    write_db(db_path, "2099-01-01T00:00:00+00:00")
+    latest_ngi_path = tmp_path / "latest_ngi.json"
+    write_latest_ngi(
+        latest_ngi_path,
+        timestamp_utc="2099-01-01T01:00:00+01:00",
+        first_principles_probability=0.52,
+        market_yes_probability=0.60,
+    )
+
+    result = run_cli(state_path, db_path, latest_ngi_path)
+
+    assert result.returncode == 0
+    payload = json.loads(result.stdout)
+    assert payload["latest_ngi_timestamp_utc"] == "2099-01-01T00:00:00+00:00"
+
+
 def test_verify_runtime_ops_health_fails_when_market_snapshot_timestamp_is_malformed(
     tmp_path: Path,
 ):

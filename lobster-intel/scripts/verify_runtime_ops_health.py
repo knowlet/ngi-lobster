@@ -130,7 +130,7 @@ def load_latest_ngi_timestamp_utc(latest_ngi: dict[str, object]) -> str:
         if value is None or value == "":
             raise RuntimeError(f"latest_ngi.{key} must be an ISO-8601 timestamp")
         validate_optional_timestamp(value, key, context="latest_ngi")
-        return str(value)
+        return parse_utc_timestamp(str(value)).isoformat()
     raise RuntimeError(
         "missing latest_ngi timestamp (expected one of: timestamp_utc, generated_at_utc, created_at_utc, updated_at_utc, snapshot_at_utc)"
     )

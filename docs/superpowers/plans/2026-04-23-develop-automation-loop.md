@@ -1305,3 +1305,12 @@
 - [x] 2026-05-06 09:05:01+0800: Advanced the adjacent ops-health latest NGI timestamp boundary so a present-but-blank timestamp candidate fails with the field-specific ISO-8601 schema error instead of falling through to the generic missing timestamp message.
 - [x] 2026-05-06 09:05:01+0800: Added a red-green regression proving `timestamp_utc=""` now reports `latest_ngi.timestamp_utc must be an ISO-8601 timestamp`.
 - [ ] Retry GitHub access, publish `codex/ops-health-freshness-offset-guard`, open PR to `main`, and continue post-PR63 runtime work only after remote state is confirmed.
+
+### Task 148: 2026-05-06 10:04+08:00 ops-health latest NGI UTC projection
+- [x] 2026-05-06 10:04:56+0800: Current branch remained `codex/ops-health-freshness-offset-guard`, clean at `5f21a78` before this slice and tracking `origin/codex/ops-health-freshness-offset-guard`.
+- [x] 2026-05-06 10:04:56+0800: `git fetch --prune origin` retried and failed (`Could not resolve host: github.com`, rc=128), so upstream freshness cannot be verified beyond existing local refs.
+- [x] 2026-05-06 10:04:56+0800: `gh pr list --state all --limit 20` and `gh issue list --state all --limit 20` failed with `error connecting to api.github.com`, so PR/issue/comment queues cannot be refreshed.
+- [x] 2026-05-06 10:04:56+0800: `git rebase --fork-point origin/main` completed as a local-tracking-ref-only sanity check and reported the branch was up to date.
+- [x] 2026-05-06 10:04:56+0800: Advanced the adjacent ops-health latest NGI timestamp projection boundary so `latest_ngi_timestamp_utc` is emitted as canonical UTC even when the accepted input timestamp uses another offset.
+- [x] 2026-05-06 10:04:56+0800: Added a red-green regression proving `timestamp_utc="2099-01-01T01:00:00+01:00"` now projects `latest_ngi_timestamp_utc="2099-01-01T00:00:00+00:00"`.
+- [ ] Retry GitHub access, publish `codex/ops-health-freshness-offset-guard`, open PR to `main`, and continue post-PR63 runtime work only after remote state is confirmed.

@@ -211,6 +211,7 @@
 - ops-health state-config fallback source metadata 若提供 `type` / `topic_slug`，也必須維持 canonical non-empty string schema，並投影進 pending-validation rollover candidate。
 - ops-health state-config fallback 檔案也必須是 valid JSON；malformed configured fallback 不能把底層 JSONDecodeError 直接洩漏到 operator-facing schema boundary。
 - ops-health 的 latest NGI timestamp 欄位若存在，也必須維持 ISO-8601 schema，不能把 malformed timestamp 洩漏成底層 parser error。
+- ops-health 的 latest NGI timestamp candidate 若明確存在但為空值，必須回報該欄位的 ISO-8601 schema error，不能 fall through 成 generic missing timestamp。
 - ops-health 的 SQLite freshness timestamp `market_snapshots.snapshot_at_utc` 也必須維持 ISO-8601 schema，不能把 malformed store timestamp 洩漏成底層 parser error。
 
 ### P2（改善與擴充）

@@ -124,10 +124,13 @@ def read_optional_object(payload: dict[str, object], key: str, *, context: str) 
 
 def load_latest_ngi_timestamp_utc(latest_ngi: dict[str, object]) -> str:
     for key in ("timestamp_utc", "generated_at_utc", "created_at_utc", "updated_at_utc", "snapshot_at_utc"):
+        if key not in latest_ngi:
+            continue
         value = latest_ngi.get(key)
-        if value:
-            validate_optional_timestamp(value, key, context="latest_ngi")
-            return str(value)
+        if value is None or value == "":
+            raise RuntimeError(f"latest_ngi.{key} must be an ISO-8601 timestamp")
+        validate_optional_timestamp(value, key, context="latest_ngi")
+        return str(value)
     raise RuntimeError(
         "missing latest_ngi timestamp (expected one of: timestamp_utc, generated_at_utc, created_at_utc, updated_at_utc, snapshot_at_utc)"
     )

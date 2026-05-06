@@ -21,7 +21,12 @@ DEFAULT_LIVE_LATEST_NGI_PATH = WORKSPACE_ROOT / "shared-projects" / "intelligenc
 
 
 def parse_utc_timestamp(raw: str) -> datetime:
-    parsed = datetime.fromisoformat(raw.replace("Z", "+00:00"))
+    if not isinstance(raw, str) or "T" not in raw:
+        raise ValueError("timestamp must be an ISO-8601 timestamp")
+    try:
+        parsed = datetime.fromisoformat(raw.replace("Z", "+00:00"))
+    except ValueError as exc:
+        raise ValueError("timestamp must be an ISO-8601 timestamp") from exc
     if parsed.tzinfo is None:
         raise ValueError("timestamp must include timezone")
     if parsed.utcoffset() is None:

@@ -9,7 +9,7 @@ import pytest
 
 REPO = Path(__file__).resolve().parents[2]
 sys.path.append(str(REPO / "lobster-intel" / "scripts"))
-from verify_runtime_ops_health import compute_freshness_hours
+from verify_runtime_ops_health import compute_freshness_hours, parse_utc_timestamp
 
 
 SCRIPT = REPO / "lobster-intel" / "scripts" / "verify_runtime_ops_health.py"
@@ -2428,6 +2428,21 @@ def test_compute_freshness_rejects_timezone_less_timestamp():
             "2099-01-01T00:00:00",
             now=datetime(2099, 1, 1, 1, 0, tzinfo=timezone.utc),
         )
+
+
+def test_parse_utc_timestamp_rejects_malformed_timestamp():
+    with pytest.raises(ValueError, match="timestamp must be an ISO-8601 timestamp"):
+        parse_utc_timestamp("not-a-timestamp")
+
+
+def test_parse_utc_timestamp_rejects_non_string_timestamp():
+    with pytest.raises(ValueError, match="timestamp must be an ISO-8601 timestamp"):
+        parse_utc_timestamp(123)  # type: ignore[arg-type]
+
+
+def test_parse_utc_timestamp_rejects_date_only_timestamp():
+    with pytest.raises(ValueError, match="timestamp must be an ISO-8601 timestamp"):
+        parse_utc_timestamp("2099-01-01")
 
 
 def test_compute_freshness_rejects_timezone_less_reference_time():

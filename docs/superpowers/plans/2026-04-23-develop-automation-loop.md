@@ -1288,3 +1288,12 @@
 - [x] 2026-05-06 07:03:30+0800: Advanced the adjacent ops-health freshness helper boundary so optional `now` references must be `datetime` objects and include a usable timezone offset.
 - [x] 2026-05-06 07:03:30+0800: Added red-green regressions proving naive reference datetimes and non-datetime reference values now raise stable freshness-reference parser errors instead of leaking Python `TypeError`.
 - [ ] Retry GitHub access, publish `codex/ops-health-freshness-offset-guard`, open PR to `main`, and continue post-PR63 runtime work only after remote state is confirmed.
+
+### Task 146: 2026-05-06 08:04+08:00 ops-health freshness parser error normalization
+- [x] 2026-05-06 08:04:25+0800: Current branch remained `codex/ops-health-freshness-offset-guard`, two local commits ahead of local `origin/main` / `main` at `c3fe149`.
+- [x] 2026-05-06 08:04:25+0800: `git fetch --prune origin` retried and failed (`Could not resolve host: github.com`, rc=128), so upstream freshness cannot be verified beyond existing local refs.
+- [x] 2026-05-06 08:04:25+0800: `gh pr list --state all --limit 20` and `gh issue list --state all --limit 20` failed with `error connecting to api.github.com`, so PR/issue/comment queues cannot be refreshed.
+- [x] 2026-05-06 08:04:25+0800: `git rebase --fork-point origin/main` completed as a local-tracking-ref-only sanity check and reported the branch was up to date.
+- [x] 2026-05-06 08:04:25+0800: Advanced the adjacent ops-health freshness parser boundary so malformed, non-string, and date-only direct timestamps raise stable `timestamp must be an ISO-8601 timestamp` errors.
+- [x] 2026-05-06 08:04:25+0800: Added red-green regressions proving `parse_utc_timestamp()` no longer leaks Python `Invalid isoformat string`, `AttributeError`, or date-only timezone misclassification.
+- [ ] Retry GitHub access, publish `codex/ops-health-freshness-offset-guard`, open PR to `main`, and continue post-PR63 runtime work only after remote state is confirmed.

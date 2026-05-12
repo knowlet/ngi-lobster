@@ -119,7 +119,6 @@ def test_build_live_progress_sync_payload_keeps_target_divergence_and_blockers_t
         "reselection_required": False,
         "next_contract_action": "keep_active_target",
         "rollover_candidate_blocker": None,
-        "rollover_candidate_diagnostics": None,
         "rollover_candidate": None,
     }
     assert payload["market_target"] == {
@@ -329,6 +328,115 @@ def test_build_live_progress_sync_payload_uses_state_config_fallback_when_runtim
     )
 
 
+def test_build_live_progress_sync_payload_projects_rollover_candidate_diagnostics(
+    tmp_path: Path,
+):
+    state_path = tmp_path / "STATE.yaml"
+    state_path.write_text('dq_status: "pass"\n', encoding="utf-8")
+    db_path = tmp_path / "intelligence_store.sqlite"
+    write_db(db_path, "2099-01-01T00:00:00+00:00")
+    latest_ngi_path = tmp_path / "latest_ngi.json"
+    write_latest_ngi(
+        latest_ngi_path,
+        first_principles_probability=0.52,
+        market_yes_probability=0.60,
+    )
+    latest_ngi = json.loads(latest_ngi_path.read_text(encoding="utf-8"))
+    latest_ngi["target_detail"]["market_closed"] = True
+    latest_ngi["target_detail"]["market_accepting_orders"] = False
+    latest_ngi["alert_disposition"]["decision"] = "suppressed"
+    latest_ngi["alert_disposition"]["should_send"] = False
+    latest_ngi["alert_disposition"].pop("delivery_proof")
+    latest_ngi_path.write_text(json.dumps(latest_ngi), encoding="utf-8")
+    runtime_source_path = tmp_path / "polymarket-runtime.json"
+    write_runtime_source(
+        runtime_source_path,
+        items=[
+            {
+                "external_id": "1517836",
+                "title": "Current closed market",
+                "url": "current-closed-market",
+                "collected_at_utc": "2099-01-01T00:00:00+00:00",
+                "metadata": {
+                    "market_id": "1517836",
+                    "slug": "current-closed-market",
+                    "yes_probability": 1.0,
+                    "active": True,
+                    "closed": True,
+                    "accepting_orders": False,
+                    "relationship": "configured_market",
+                    "source_config": {"label": "Current closed market"},
+                },
+            },
+            {
+                "external_id": "closed-1518001",
+                "title": "Closed successor market",
+                "url": "closed-successor",
+                "collected_at_utc": "2099-01-01T00:10:00+00:00",
+                "metadata": {
+                    "market_id": "closed-1518001",
+                    "slug": "closed-successor",
+                    "yes_probability": 0.39,
+                    "active": True,
+                    "closed": True,
+                    "accepting_orders": False,
+                    "relationship": "event_sibling",
+                    "source_config": {"label": "Closed successor market"},
+                },
+            },
+            {
+                "external_id": "ambiguous-1518002",
+                "title": "Ambiguous successor market",
+                "url": "ambiguous-successor",
+                "collected_at_utc": "2099-01-01T00:11:00+00:00",
+                "metadata": {
+                    "market_id": "ambiguous-1518002",
+                    "slug": "ambiguous-successor",
+                    "yes_probability": 0.41,
+                    "active": True,
+                    "closed": False,
+                    "accepting_orders": "unknown",
+                    "relationship": "event_sibling",
+                    "source_config": {"label": "Ambiguous successor market"},
+                },
+            },
+        ],
+    )
+
+    result = run_cli(state_path, db_path, latest_ngi_path, runtime_source_path)
+
+    assert result.returncode == 0, result.stderr
+    payload = json.loads(result.stdout)
+    expected = {
+        "successor_count": 2,
+        "open_successor_count": 1,
+        "accepting_orders_count": 0,
+        "explicit_open_accepting_count": 0,
+        "current_market_id": "1517836",
+        "sample_successors": [
+            {
+                "market_id": "ambiguous-1518002",
+                "market_slug": "ambiguous-successor",
+                "market_question": "Ambiguous successor market",
+                "market_yes_probability": 0.41,
+                "market_closed": False,
+                "market_accepting_orders": None,
+            },
+            {
+                "market_id": "closed-1518001",
+                "market_slug": "closed-successor",
+                "market_question": "Closed successor market",
+                "market_yes_probability": 0.39,
+                "market_closed": True,
+                "market_accepting_orders": False,
+            },
+        ],
+    }
+    assert payload["blocking_summary"]["rollover_candidate_diagnostics"] == expected
+    assert payload["active_target"]["rollover_candidate_diagnostics"] == expected
+    assert payload["contract_action"]["rollover_candidate_diagnostics"] == expected
+
+
 def test_build_live_progress_sync_payload_requires_operator_market_question(
     tmp_path: Path,
 ):
@@ -380,6 +488,32 @@ def test_build_live_progress_sync_payload_strips_operator_market_question(
         payload["market_target"]["market_question"]
         == "Trump announces end of military operations against Iran by June 30th?"
     )
+
+
+def test_build_live_progress_sync_payload_requires_market_target_identity(
+    tmp_path: Path,
+):
+    for field in ("market_id", "market_name"):
+        case_dir = tmp_path / field
+        case_dir.mkdir()
+        state_path = case_dir / "STATE.yaml"
+        state_path.write_text('dq_status: "pass"\n', encoding="utf-8")
+        db_path = case_dir / "intelligence_store.sqlite"
+        write_db(db_path, "2099-01-01T00:00:00+00:00")
+        latest_ngi_path = case_dir / "latest_ngi.json"
+        write_latest_ngi(latest_ngi_path)
+        latest_ngi = json.loads(latest_ngi_path.read_text(encoding="utf-8"))
+        latest_ngi["market_target"].pop(field)
+        latest_ngi_path.write_text(json.dumps(latest_ngi), encoding="utf-8")
+
+        result = run_cli(state_path, db_path, latest_ngi_path)
+
+        assert result.returncode == 1
+        assert result.stdout == ""
+        assert (
+            result.stderr.strip()
+            == f"latest_ngi.market_target.{field} must be a non-empty string"
+        )
 
 
 def test_build_live_progress_sync_payload_requires_delivery_proof_for_positive_delivery(tmp_path: Path):
@@ -709,7 +843,10 @@ def test_build_live_progress_sync_payload_rejects_ambiguous_contract_match(tmp_p
 
     assert result.returncode == 1
     assert result.stdout == ""
-    assert result.stderr.strip() == "positive latest_ngi.alert_disposition.target_contract_match must be true"
+    assert (
+        result.stderr.strip()
+        == "latest_ngi.alert_disposition.target_contract_match must be a boolean-equivalent value"
+    )
 
 
 def test_build_live_progress_sync_payload_rejects_ambiguous_non_positive_contract_match(
@@ -789,6 +926,30 @@ def test_build_live_progress_sync_payload_strips_delivery_proof_fields(tmp_path:
         "proof_id": " heartbeat:legacy-monitor-20260501T002054.879803Z ",
         "sink_message_id": " heartbeat:legacy-monitor-20260501T002054.879803Z ",
     }
+    latest_ngi_path.write_text(json.dumps(latest_ngi), encoding="utf-8")
+
+    result = run_cli(state_path, db_path, latest_ngi_path)
+
+    assert result.returncode == 0, result.stderr
+    sync_payload = json.loads(result.stdout)
+    assert sync_payload["alert_disposition"]["delivery_proof"] == {
+        "boundary": "openclaw_heartbeat",
+        "proof_id": "heartbeat:legacy-monitor-20260501T002054.879803Z",
+        "sink_message_id": "heartbeat:legacy-monitor-20260501T002054.879803Z",
+    }
+
+
+def test_build_live_progress_sync_payload_omits_raw_delivery_proof_extras(tmp_path: Path):
+    state_path = tmp_path / "STATE.yaml"
+    state_path.write_text('dq_status: "pass"\n', encoding="utf-8")
+    db_path = tmp_path / "intelligence_store.sqlite"
+    write_db(db_path, "2099-01-01T00:00:00+00:00")
+    latest_ngi_path = tmp_path / "latest_ngi.json"
+    write_latest_ngi(latest_ngi_path)
+    latest_ngi = json.loads(latest_ngi_path.read_text(encoding="utf-8"))
+    latest_ngi["alert_disposition"]["delivery_proof"]["developer_local_path"] = (
+        "/Users/example/private/receipt.json"
+    )
     latest_ngi_path.write_text(json.dumps(latest_ngi), encoding="utf-8")
 
     result = run_cli(state_path, db_path, latest_ngi_path)
@@ -1115,23 +1276,9 @@ def test_build_live_progress_sync_payload_explains_missing_rollover_candidate(tm
         payload["active_target"]["rollover_candidate_blocker"]
         == "no_explicit_open_accepting_successor"
     )
-    assert payload["active_target"]["rollover_candidate_diagnostics"] == {
-        "current_market_id": "1517836",
-        "successor_count": 1,
-        "open_successor_count": 1,
-        "accepting_orders_count": 0,
-        "explicit_open_accepting_count": 0,
-        "sample_successors": [
-            {
-                "market_id": "ambiguous-1518001",
-                "market_slug": "ambiguous-successor",
-                "market_question": "Ambiguous successor market",
-                "market_yes_probability": 0.39,
-                "market_closed": False,
-                "market_accepting_orders": None,
-            }
-        ],
-    }
+    assert payload["active_target"]["rollover_candidate_diagnostics"] == payload["blocking_summary"][
+        "rollover_candidate_diagnostics"
+    ]
     assert payload["contract_action"]["rollover_candidate_diagnostics"] == payload["active_target"][
         "rollover_candidate_diagnostics"
     ]

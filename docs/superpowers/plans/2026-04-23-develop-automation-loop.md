@@ -6,7 +6,7 @@
 
 **Tech Stack:** Git, GitHub remote workflow, project plan docs.
 
-**Status:** In progress on local branch `codex/live-sync-schema-followup-7` after local `origin/main` advanced to PR #46 merge commit `376cff9`; remote confirmation/push remains blocked by GitHub DNS/API access.
+**Status:** In progress on local branch `codex/ops-health-timezone-timestamp-guard` after local `main` matched local `origin/main` at PR #62 merge commit `ddaf267`; remote confirmation/push remains blocked by GitHub DNS/API access.
 
 > **PR29 checkpoint note:** This document is a clean PR29/PR30 docs-only handoff cut. Historical references to `codex/pr21-recut-dispatcher-receipt-guard` below are preserved as execution context from the original runtime branch, not as the active review branch for this replacement PR.
 
@@ -1154,3 +1154,120 @@
 - [x] 2026-05-05 07:02:45+0800: Advanced the live-sync delivery proof projection boundary by omitting suppressed/non-positive `delivery_proof` when canonicalization removes all blank proof fields.
 - [x] 2026-05-05 07:02:45+0800: Added a red-green live-sync regression proving suppressed payloads with only blank proof fields no longer emit operator-facing `delivery_proof={}`.
 - [ ] Retry GitHub access, publish `codex/live-sync-schema-followup-7`, open PR to `main`, and continue post-PR46 runtime work only after remote state is confirmed.
+
+### Task 131: 2026-05-05 08:04+08:00 ops-health latest NGI JSON parser guard
+- [x] 2026-05-05 08:04:03+0800: Current branch started on `codex/live-sync-schema-followup-7` at `4da2a96`, but its upstream tracking ref was gone and local `origin/main` had advanced to `e61a637` from PR #47.
+- [x] 2026-05-05 08:04:03+0800: `git fetch --prune origin` retried and failed (`Could not resolve host: github.com`, rc=128), so upstream freshness cannot be verified beyond existing local refs.
+- [x] 2026-05-05 08:04:03+0800: `gh pr list --state all --limit 20` and `gh issue list --state all --limit 20` failed with `error connecting to api.github.com`, so PR/issue/comment queues cannot be refreshed.
+- [x] 2026-05-05 08:04:03+0800: `git log --left-right --cherry-pick origin/main...HEAD` showed the previous live-sync proof omission patch was already absorbed, then created fresh branch `codex/live-sync-schema-followup-8` from local `origin/main`.
+- [x] 2026-05-05 08:04:03+0800: Advanced the ops-health latest NGI parser boundary by translating malformed `latest_ngi.json` decode failures into the stable schema error `latest_ngi payload must be valid JSON`.
+- [x] 2026-05-05 08:04:03+0800: Added a red-green ops-health regression proving malformed `latest_ngi.json` now exits nonzero with the explicit parser error instead of leaking Python JSONDecodeError text.
+- [ ] Retry GitHub access, publish `codex/live-sync-schema-followup-8`, open PR to `main`, and continue post-PR47 runtime work only after remote state is confirmed.
+
+### Task 132: 2026-05-05 09:03+08:00 ops-health runtime-source JSON parser guard
+- [x] 2026-05-05 09:03:06+0800: Current branch started on `codex/live-sync-schema-followup-8` at `34c3e3d`, but its upstream tracking ref was gone and local `origin/main` had advanced to `5b956bd` from PR #48.
+- [x] 2026-05-05 09:03:06+0800: `git fetch --prune origin` retried and failed (`Could not resolve host: github.com`, rc=128), so upstream freshness cannot be verified beyond existing local refs.
+- [x] 2026-05-05 09:03:06+0800: `gh pr list --state all --limit 20` and `gh issue list --state all --limit 20` failed with `error connecting to api.github.com`, so PR/issue/comment queues cannot be refreshed.
+- [x] 2026-05-05 09:03:06+0800: `git log --left-right --cherry-pick origin/main...HEAD` showed the previous latest NGI parser patch was already absorbed, then created fresh branch `codex/ops-health-schema-followup-9` from local `origin/main`.
+- [x] 2026-05-05 09:03:06+0800: Advanced the ops-health runtime-source parser boundary by translating malformed `runtime_source_polymarket.json` decode failures into the stable schema error `runtime_source payload must be valid JSON`.
+- [x] 2026-05-05 09:03:06+0800: Added a red-green ops-health regression proving malformed runtime-source JSON now exits nonzero with the explicit parser error instead of leaking Python JSONDecodeError text.
+- [ ] Retry GitHub access, publish `codex/ops-health-schema-followup-9`, open PR to `main`, and continue post-PR48 runtime work only after remote state is confirmed.
+
+### Task 133: 2026-05-05 10:03+08:00 ops-health rollover event metadata projection
+- [x] 2026-05-05 10:03:04+0800: Current branch started on local `main` at `9096598`, matching local `origin/main` from PR #50, with runtime tracker data already dirty before this implementation slice.
+- [x] 2026-05-05 10:03:04+0800: `git fetch --prune origin` retried and failed (`Could not resolve host: github.com`, rc=128), so upstream freshness cannot be verified beyond existing local refs.
+- [x] 2026-05-05 10:03:04+0800: `gh pr list --state all --limit 20` and `gh issue list --state all --limit 20` failed with `error connecting to api.github.com`, so PR/issue/comment queues cannot be refreshed.
+- [x] 2026-05-05 10:03:04+0800: Created fresh branch `codex/ops-health-event-metadata` from local `main` and left the pre-existing runtime tracker data changes unstaged.
+- [x] 2026-05-05 10:03:04+0800: Advanced the ops-health rollover candidate projection boundary by validating optional Polymarket event metadata and emitting canonical `relationship` / `event_id` / `event_slug` / `event_title` fields for event-sibling successors.
+- [x] 2026-05-05 10:03:04+0800: Added a red-green ops-health regression proving whitespace-padded event metadata now appears stripped in both `rollover_candidate` and `active_target_reselection.rollover_candidate`.
+- [ ] Retry GitHub access, publish `codex/ops-health-event-metadata`, open PR to `main`, and continue post-PR50 runtime work only after remote state is confirmed.
+
+### Task 134: 2026-05-05 11:03+08:00 ops-health rollover candidate diagnostics
+- [x] 2026-05-05 11:03:15+0800: Current branch started on local `main` at `ea677d6`, matching local `origin/main` from PR #51, with runtime tracker data already dirty before this implementation slice.
+- [x] 2026-05-05 11:03:15+0800: `git fetch --prune origin` retried and failed (`Could not resolve host: github.com`, rc=128), so upstream freshness cannot be verified beyond existing local refs.
+- [x] 2026-05-05 11:03:15+0800: `gh pr list --state all --limit 20` and `gh issue list --state all --limit 20` failed with `error connecting to api.github.com`, so PR/issue/comment queues cannot be refreshed.
+- [x] 2026-05-05 11:03:15+0800: Created fresh branch `codex/ops-health-rollover-diagnostics` from local `main` and left the pre-existing runtime tracker data changes unstaged.
+- [x] 2026-05-05 11:03:15+0800: Advanced the ops-health rollover null-candidate boundary by emitting `rollover_candidate_diagnostics` with successor count, explicit open/accepting count, and current market id when runtime source is present.
+- [x] 2026-05-05 11:03:15+0800: Added a red-green ops-health regression proving null rollover candidates now carry the same diagnostics at top-level and inside `active_target_reselection`.
+- [ ] Retry GitHub access, publish `codex/ops-health-rollover-diagnostics`, open PR to `main`, and continue post-PR51 runtime work only after remote state is confirmed.
+
+### Task 135: 2026-05-05 12:04+08:00 live-sync rollover diagnostics projection
+- [x] 2026-05-05 12:04:20+0800: Current branch started on local `main` at `1352699`, matching local `origin/main` from PR #52.
+- [x] 2026-05-05 12:04:20+0800: `git fetch --prune origin` retried and failed (`Could not resolve host: github.com`, rc=128), so upstream freshness cannot be verified beyond existing local refs.
+- [x] 2026-05-05 12:04:20+0800: `gh pr list --state all --limit 20` and `gh issue list --state all --limit 20` failed with `error connecting to api.github.com`, so PR/issue/comment queues cannot be refreshed.
+- [x] 2026-05-05 12:04:20+0800: Created fresh branch `codex/live-sync-rollover-diagnostics` from local `main` after the regression was written, keeping the implementation off the main branch before commit.
+- [x] 2026-05-05 12:04:20+0800: Advanced the live-sync rollover diagnostics projection boundary by preserving ops-health `rollover_candidate_diagnostics` in `blocking_summary`, `active_target`, and `contract_action` when no explicit open/accepting successor exists.
+- [x] 2026-05-05 12:04:20+0800: Added a red-green live-sync regression proving downstream summary layers now carry successor count, explicit open/accepting count, and current market id instead of exposing only `rollover_candidate=null`.
+- [ ] Retry GitHub access, publish `codex/live-sync-rollover-diagnostics`, open PR to `main`, and continue post-PR52 runtime work only after remote state is confirmed.
+
+### Task 136: 2026-05-05 13:04+08:00 ops-health runtime rollover identity projection canonicalization
+- [x] 2026-05-05 13:04:16+0800: Current branch started on local `main` at `0ac1c19`, matching local `origin/main` from PR #54.
+- [x] 2026-05-05 13:04:16+0800: `git fetch --prune origin` retried and failed (`Could not resolve host: github.com`, rc=128), so upstream freshness cannot be verified beyond existing local refs.
+- [x] 2026-05-05 13:04:16+0800: `gh pr list --state all --limit 20` and `gh issue list --state all --limit 20` failed with `error connecting to api.github.com`, so PR/issue/comment queues cannot be refreshed.
+- [x] 2026-05-05 13:04:16+0800: Created fresh branch `codex/live-sync-stale-latest-ngi-guard` from local `main`; stale latest-NGI handling and ambiguous rollover booleans were already covered, so this run continued with the adjacent runtime-source projection boundary.
+- [x] 2026-05-05 13:04:16+0800: Advanced the ops-health runtime-source rollover candidate projection boundary by stripping selected successor `market_id`, `market_slug`, `market_name`, and `market_question` after schema validation.
+- [x] 2026-05-05 13:04:16+0800: Added a red-green ops-health regression proving whitespace-padded tracker identity/display fields now emit canonical rollover candidate evidence at top level and inside `active_target_reselection`.
+- [ ] Retry GitHub access, publish `codex/live-sync-stale-latest-ngi-guard`, open PR to `main`, and continue post-PR54 runtime work only after remote state is confirmed.
+
+### Task 137: 2026-05-05 14:02+08:00 live-sync delivery proof allowlist projection
+- [x] 2026-05-05 14:02:50+0800: Current branch started on local `main` at `7317a16`, matching local `origin/main` from PR #55.
+- [x] 2026-05-05 14:02:50+0800: `git fetch --prune origin` retried and failed (`Could not resolve host: github.com`, rc=128), so upstream freshness cannot be verified beyond existing local refs.
+- [x] 2026-05-05 14:02:50+0800: `gh pr list --state all --limit 20` and `gh issue list --state all --limit 20` failed with `error connecting to api.github.com`, so PR/issue/comment queues cannot be refreshed.
+- [x] 2026-05-05 14:02:50+0800: Created fresh branch `codex/live-sync-proof-field-allowlist` from local `main` to keep the next live-sync projection hardening slice isolated.
+- [x] 2026-05-05 14:02:50+0800: Advanced the live-sync delivery proof projection boundary by emitting only canonical `boundary`, `proof_id`, and `sink_message_id` keys instead of copying raw proof metadata into operator-facing payloads.
+- [x] 2026-05-05 14:02:50+0800: Added a red-green live-sync regression proving extra proof metadata such as developer-local paths no longer leaks into `alert_disposition.delivery_proof`.
+- [ ] Retry GitHub access, publish `codex/live-sync-proof-field-allowlist`, open PR to `main`, and continue post-PR55 runtime work only after remote state is confirmed.
+
+### Task 138: 2026-05-05 15:03+08:00 live-sync market target identity guard
+- [x] 2026-05-05 15:03:59+0800: Current branch started on local `main` at `c984df2`, matching local `origin/main` from PR #56.
+- [x] 2026-05-05 15:03:59+0800: `git fetch --prune origin` retried and failed (`Could not resolve host: github.com`, rc=128), so upstream freshness cannot be verified beyond existing local refs.
+- [x] 2026-05-05 15:03:59+0800: `gh pr list --state all --limit 20` and `gh issue list --state all --limit 20` failed with `error connecting to api.github.com`, so PR/issue/comment queues cannot be refreshed.
+- [x] 2026-05-05 15:03:59+0800: Created fresh branch `codex/live-sync-target-identity-canonicalization` from local `main` to keep the next live-sync schema guard isolated.
+- [x] 2026-05-05 15:03:59+0800: Advanced the live-sync operator target identity boundary by requiring `latest_ngi.market_target.market_id` and `market_name` before emitting the operator-facing sync payload.
+- [x] 2026-05-05 15:03:59+0800: Added a red-green live-sync regression proving missing market target identity now fails closed instead of falling back to `target_detail` values and returning rc=0.
+- [ ] Retry GitHub access, publish `codex/live-sync-target-identity-canonicalization`, open PR to `main`, and continue post-PR56 runtime work only after remote state is confirmed.
+
+### Task 139: 2026-05-05 16:04+08:00 ops-health current market canonical match
+- [x] 2026-05-05 16:04:16+0800: Current branch started on local `main` at `508be51`, matching local `origin/main` from PR #57.
+- [x] 2026-05-05 16:04:16+0800: `git fetch --prune origin` retried and failed (`Could not resolve host: github.com`, rc=128), so upstream freshness cannot be verified beyond existing local refs.
+- [x] 2026-05-05 16:04:16+0800: `gh pr list --state all --limit 20` and `gh issue list --state all --limit 20` failed with `error connecting to api.github.com`, so PR/issue/comment queues cannot be refreshed.
+- [x] 2026-05-05 16:04:16+0800: Created fresh branch `codex/ops-health-current-market-canonical-match` from local `main` to keep the ops-health selection hardening slice isolated.
+- [x] 2026-05-05 16:04:16+0800: Advanced the ops-health runtime-source current-market exclusion boundary by comparing canonical market ids in rollover selection, blocker explanation, and diagnostics.
+- [x] 2026-05-05 16:04:16+0800: Added a red-green ops-health regression proving a padded current market id is skipped and the real open successor is selected instead.
+- [ ] Retry GitHub access, publish `codex/ops-health-current-market-canonical-match`, open PR to `main`, and continue post-PR57 runtime work only after remote state is confirmed.
+
+### Task 140: 2026-05-05 17:04+08:00 live-sync ambiguous contract-match error boundary
+- [x] 2026-05-05 17:04:03+0800: Current branch started on local `main` at `c79d9ee`, matching local `origin/main` from PR #58.
+- [x] 2026-05-05 17:04:03+0800: `git fetch --prune origin` retried and failed (`Could not resolve host: github.com`, rc=128), so upstream freshness cannot be verified beyond existing local refs.
+- [x] 2026-05-05 17:04:03+0800: `gh pr list --state all --limit 20` and `gh issue list --state all --limit 20` failed with `error connecting to api.github.com`, so PR/issue/comment queues cannot be refreshed.
+- [x] 2026-05-05 17:04:03+0800: Created fresh branch `codex/live-sync-contract-match-error-boundary`; the initial probability-mode projection check already passed, so this run continued with the adjacent live-sync contract-match error boundary.
+- [x] 2026-05-05 17:04:03+0800: Advanced the positive-delivery contract-match parser boundary so ambiguous values such as `target_contract_match="unknown"` return the boolean-equivalent schema error instead of the explicit mismatch `must be true` error.
+- [x] 2026-05-05 17:04:03+0800: Added a red-green live-sync regression proving ambiguous positive-delivery contract evidence now preserves the parser-boundary explanation.
+- [ ] Retry GitHub access, publish `codex/live-sync-contract-match-error-boundary`, open PR to `main`, and continue post-PR58 runtime work only after remote state is confirmed.
+
+### Task 141: 2026-05-05 18:03+08:00 ops-health date-only timestamp guard
+- [x] 2026-05-05 18:03:25+0800: Current branch started on local `main` at `2e02b5c`, matching local `origin/main` from PR #59 in the existing local refs.
+- [x] 2026-05-05 18:03:25+0800: `git fetch --prune origin` retried and failed (`Could not resolve host: github.com`, rc=128), so upstream freshness cannot be verified beyond existing local refs.
+- [x] 2026-05-05 18:03:25+0800: `gh pr list --state all --limit 20` and `gh issue list --state all --limit 20` failed with `error connecting to api.github.com`, so PR/issue/comment queues cannot be refreshed.
+- [x] 2026-05-05 18:03:25+0800: Created fresh branch `codex/ops-health-timestamp-datetime-guard` from local `main` to keep the next ops-health parser hardening slice isolated.
+- [x] 2026-05-05 18:03:25+0800: Advanced the ops-health timestamp parser boundary so date-only runtime-source successor timestamps are rejected instead of being sorted and projected as rollover evidence.
+- [x] 2026-05-05 18:03:25+0800: Added a red-green ops-health regression proving `collected_at_utc="2099-01-01"` now fails with the stable ISO-8601 timestamp schema error.
+- [ ] Retry GitHub access, publish `codex/ops-health-timestamp-datetime-guard`, open PR to `main`, and continue post-PR59 runtime work only after remote state is confirmed.
+
+### Task 142: 2026-05-05 19:05+08:00 rollover diagnostics rebase conflict resolution
+- [x] 2026-05-05 19:05:53+0800: Run started inside an in-progress rebase of `codex/rollover-candidate-diagnostics` with conflicts in `build_live_progress_sync_payload.py` and `verify_runtime_ops_health.py`.
+- [x] 2026-05-05 19:05:53+0800: Resolved the conflict by preserving canonical current-market matching from main and the richer `rollover_candidate_diagnostics` contract from the rebased branch.
+- [x] 2026-05-05 19:05:53+0800: Updated legacy acceptance expectations so actionable rollover candidates also carry diagnostics through ops-health and live-sync projection layers.
+- [x] 2026-05-05 19:05:53+0800: Verified `PYTHONPATH=lobster-intel/scripts ./.venv/bin/python -m pytest lobster-intel/tests/test_verify_runtime_ops_health.py -q` (58 passed) and `PYTHONPATH=lobster-intel/scripts ./.venv/bin/python -m pytest lobster-intel/tests/test_build_live_progress_sync_payload.py -q` (35 passed).
+- [x] 2026-05-05 19:05:53+0800: Local refs then showed `main` / `origin/main` at PR #61 merge commit `3619bed`, so the resolved code slice was already absorbed into local main before this checkpoint branch.
+- [x] 2026-05-05 19:05:53+0800: `git fetch --prune origin` failed with `Could not resolve host: github.com`, and `gh pr list --state all --limit 20` / `gh issue list --state all --limit 20` failed with `error connecting to api.github.com`.
+- [ ] Retry GitHub access, publish `codex/develop-20260505-1905-checkpoint`, verify PR #61 remote state, and resume Task 1/2/4 sync flow.
+
+### Task 143: 2026-05-05 20:03+08:00 ops-health timezone-aware timestamp guard
+- [x] 2026-05-05 20:03:56+0800: Current branch started on local `main` at `ddaf267`, matching local `origin/main` from PR #62 in the existing local refs.
+- [x] 2026-05-05 20:03:56+0800: `git fetch --prune origin` retried and failed (`Could not resolve host: github.com`, rc=128), so upstream freshness cannot be verified beyond existing local refs.
+- [x] 2026-05-05 20:03:56+0800: `gh pr list --state all --limit 20` and `gh issue list --state all --limit 20` failed with `error connecting to api.github.com`, so PR/issue/comment queues cannot be refreshed.
+- [x] 2026-05-05 20:03:56+0800: Created fresh branch `codex/ops-health-timezone-timestamp-guard` from local `main` to keep the next ops-health parser hardening slice isolated.
+- [x] 2026-05-05 20:03:56+0800: Advanced the shared ops-health timestamp parser boundary so timezone-less datetimes such as `2099-01-01T00:00:00` are rejected instead of being treated as implicit UTC.
+- [x] 2026-05-05 20:03:56+0800: Added a red-green ops-health regression proving timezone-less runtime-source rollover timestamps now fail with the stable ISO-8601 timestamp schema error.
+- [ ] Retry GitHub access, publish `codex/ops-health-timezone-timestamp-guard`, open PR to `main`, and continue post-PR62 runtime work only after remote state is confirmed.

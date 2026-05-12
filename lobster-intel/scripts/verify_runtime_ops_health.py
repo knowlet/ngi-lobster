@@ -94,6 +94,12 @@ def canonical_optional_string(value: object) -> str | None:
     return value.strip()
 
 
+def _same_market_id(left: object, right: str | None) -> bool:
+    if right is None or left is None:
+        return False
+    return str(left).strip() == right
+
+
 def read_optional_object(payload: dict[str, object], key: str, *, context: str) -> dict[str, object]:
     value = payload.get(key)
     if value is None:
@@ -147,7 +153,10 @@ def _parse_runtime_source_payload(path: Path | None) -> dict[str, Any] | None:
         return None
     if not path.exists():
         raise RuntimeError("missing runtime_source payload")
-    payload = json.loads(path.read_text(encoding="utf-8"))
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+    except json.JSONDecodeError as exc:
+        raise RuntimeError("runtime_source payload must be valid JSON") from exc
     if not isinstance(payload, dict):
         raise RuntimeError("runtime_source payload must be a JSON object")
     validate_optional_timestamp(payload.get("ran_at_utc"), "ran_at_utc", context="runtime_source")
@@ -182,6 +191,8 @@ def _parse_runtime_source_payload(path: Path | None) -> dict[str, Any] | None:
                     metadata.get("market_id"), "market_id", context=metadata_context
                 )
                 validate_optional_non_empty_string(metadata.get("slug"), "slug", context=metadata_context)
+                for key in ("relationship", "event_id", "event_slug", "event_title"):
+                    validate_optional_non_empty_string(metadata.get(key), key, context=metadata_context)
             if source_config is not None:
                 validate_optional_non_empty_string(
                     source_config.get("label"),
@@ -217,12 +228,17 @@ def _parse_ts(value: Any) -> datetime | None:
     if not value:
         return None
     text = str(value)
+    if "T" not in text:
+        return None
     if text.endswith("Z"):
         text = text[:-1] + "+00:00"
     try:
-        return datetime.fromisoformat(text)
+        parsed = datetime.fromisoformat(text)
     except ValueError:
         return None
+    if parsed.tzinfo is None:
+        return None
+    return parsed
 
 
 def _iter_successor_items(
@@ -243,7 +259,7 @@ def _iter_successor_items(
             continue
         metadata = item.get("metadata") or {}
         market_id = metadata.get("market_id") or item.get("external_id")
-        if current_market_id and str(market_id) == str(current_market_id):
+        if _same_market_id(market_id, current_market_id):
             continue
         successors.append(item)
     return successors
@@ -276,23 +292,23 @@ def _select_rollover_candidate(
         metadata.get("market_id") or candidate.get("external_id"),
         "market_id",
         context="rollover_candidate",
-    )
+    ).strip()
     market_slug = require_non_empty_string(
         metadata.get("slug") or candidate.get("url"),
         "market_slug",
         context="rollover_candidate",
-    )
+    ).strip()
     market_name = require_non_empty_string(
         source_config.get("label") or candidate.get("title"),
         "market_name",
         context="rollover_candidate",
-    )
+    ).strip()
     market_question = require_non_empty_string(
         candidate.get("title"),
         "market_question",
         context="rollover_candidate",
-    )
-    return {
+    ).strip()
+    projected_candidate = {
         "market_id": market_id,
         "market_slug": market_slug,
         "market_name": market_name,
@@ -304,6 +320,11 @@ def _select_rollover_candidate(
         "collected_at_utc": candidate.get("collected_at_utc"),
         "published_at_utc": candidate.get("published_at_utc"),
     }
+    for key in ("relationship", "event_id", "event_slug", "event_title"):
+        value = canonical_optional_string(metadata.get(key))
+        if value is not None:
+            projected_candidate[key] = value
+    return projected_candidate
 
 
 def _build_rollover_candidate_diagnostics(
@@ -487,7 +508,10 @@ def build_summary(
     latest_snapshot_at_utc = load_latest_snapshot_at_utc(db_path)
     freshness_hours = compute_freshness_hours(latest_snapshot_at_utc)
 
-    latest_ngi = json.loads(latest_ngi_path.read_text(encoding="utf-8"))
+    try:
+        latest_ngi = json.loads(latest_ngi_path.read_text(encoding="utf-8"))
+    except json.JSONDecodeError as exc:
+        raise RuntimeError("latest_ngi payload must be valid JSON") from exc
     if not isinstance(latest_ngi, dict):
         raise RuntimeError("latest_ngi payload must be a JSON object")
     latest_ngi_timestamp_utc = load_latest_ngi_timestamp_utc(latest_ngi)
@@ -555,8 +579,8 @@ def build_summary(
         runtime_source_payload,
         current_market_id=current_market_id,
     )
-    rollover_candidate_blocker = None
     rollover_candidate_diagnostics = None
+    rollover_candidate_blocker = None
     if reselection_required:
         rollover_candidate_diagnostics = _build_rollover_candidate_diagnostics(
             runtime_source_payload,
@@ -571,6 +595,11 @@ def build_summary(
                 runtime_source_payload,
                 current_market_id=current_market_id,
                 rollover_candidate=rollover_candidate,
+            )
+        if rollover_candidate is None:
+            rollover_candidate_diagnostics = _build_rollover_candidate_diagnostics(
+                runtime_source_payload,
+                current_market_id=current_market_id,
             )
 
     status = "pass"
@@ -618,11 +647,12 @@ def build_summary(
         "reselection_required": reselection_required,
         "next_contract_action": "reselect_active_target" if reselection_required else "keep_active_target",
         "rollover_candidate_blocker": rollover_candidate_blocker,
-        "rollover_candidate_diagnostics": rollover_candidate_diagnostics,
         "rollover_candidate": rollover_candidate,
     }
+    if rollover_candidate_diagnostics is not None:
+        active_target_reselection["rollover_candidate_diagnostics"] = rollover_candidate_diagnostics
 
-    return {
+    summary = {
         "status": status,
         "dq_status": dq_status,
         "latest_snapshot_at_utc": latest_snapshot_at_utc,
@@ -650,10 +680,12 @@ def build_summary(
         "next_contract_action": "reselect_active_target" if reselection_required else "keep_active_target",
         "rollover_candidate": rollover_candidate,
         "rollover_candidate_blocker": rollover_candidate_blocker,
-        "rollover_candidate_diagnostics": rollover_candidate_diagnostics,
         "active_target_reselection": active_target_reselection,
         "blockers": blockers,
     }
+    if rollover_candidate_diagnostics is not None:
+        summary["rollover_candidate_diagnostics"] = rollover_candidate_diagnostics
+    return summary
 
 
 def main(argv: list[str]) -> int:

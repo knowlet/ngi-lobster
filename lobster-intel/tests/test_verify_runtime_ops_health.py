@@ -177,6 +177,21 @@ def test_verify_runtime_ops_health_fails_on_latest_ngi_staleness(tmp_path: Path)
     assert payload["blockers"] == [f"latest_ngi_stale={payload['latest_ngi_age_hours']:.2f}h"]
 
 
+def test_verify_runtime_ops_health_rejects_malformed_latest_ngi_json(tmp_path: Path):
+    state_path = tmp_path / "STATE.yaml"
+    state_path.write_text('dq_status: "pass"\n', encoding="utf-8")
+    db_path = tmp_path / "intelligence_store.sqlite"
+    write_db(db_path, "2099-01-01T00:00:00+00:00")
+    latest_ngi_path = tmp_path / "latest_ngi.json"
+    latest_ngi_path.write_text("{", encoding="utf-8")
+
+    result = run_cli(state_path, db_path, latest_ngi_path)
+
+    assert result.returncode == 1
+    assert result.stdout == ""
+    assert result.stderr.strip() == "latest_ngi payload must be valid JSON"
+
+
 def test_verify_runtime_ops_health_fails_when_latest_ngi_is_stale_and_divergence_is_blocking(tmp_path: Path):
     state_path = tmp_path / "STATE.yaml"
     state_path.write_text('dq_status: "pass"\n', encoding="utf-8")
@@ -275,18 +290,6 @@ def test_verify_runtime_ops_health_exports_reselection_acceptance_when_stale_tar
         "reselection_required": True,
         "next_contract_action": "reselect_active_target",
         "rollover_candidate_blocker": None,
-        "rollover_candidate": {
-            "market_id": "rollover-1518000",
-            "market_slug": "open-successor",
-            "market_name": "Open successor market",
-            "market_question": "Open successor market",
-            "market_yes_probability": 0.42,
-            "market_closed": False,
-            "market_active": True,
-            "market_accepting_orders": True,
-            "collected_at_utc": "2099-01-01T00:05:00+00:00",
-            "published_at_utc": None,
-        },
         "rollover_candidate_diagnostics": {
             "current_market_id": "1517836",
             "successor_count": 1,
@@ -303,6 +306,18 @@ def test_verify_runtime_ops_health_exports_reselection_acceptance_when_stale_tar
                     "market_accepting_orders": True,
                 }
             ],
+        },
+        "rollover_candidate": {
+            "market_id": "rollover-1518000",
+            "market_slug": "open-successor",
+            "market_name": "Open successor market",
+            "market_question": "Open successor market",
+            "market_yes_probability": 0.42,
+            "market_closed": False,
+            "market_active": True,
+            "market_accepting_orders": True,
+            "collected_at_utc": "2099-01-01T00:05:00+00:00",
+            "published_at_utc": None,
         },
     }
 
@@ -429,6 +444,65 @@ def test_verify_runtime_ops_health_fails_closed_when_market_is_closed(tmp_path: 
         "published_at_utc": None,
     }
     assert payload["blockers"] == ["market_closed=true", "market_accepting_orders=false"]
+
+
+def test_verify_runtime_ops_health_projects_rollover_event_metadata(tmp_path: Path):
+    state_path = tmp_path / "STATE.yaml"
+    state_path.write_text('dq_status: "pass"\n', encoding="utf-8")
+    db_path = tmp_path / "intelligence_store.sqlite"
+    write_db(db_path, "2099-01-01T00:00:00+00:00")
+    latest_ngi_path = tmp_path / "latest_ngi.json"
+    write_latest_ngi(
+        latest_ngi_path,
+        first_principles_probability=0.52,
+        market_yes_probability=0.60,
+        market_closed=True,
+        market_accepting_orders=False,
+    )
+    runtime_source_path = tmp_path / "polymarket-runtime.json"
+    write_runtime_source(
+        runtime_source_path,
+        items=[
+            {
+                "external_id": "rollover-1518000",
+                "title": "Open successor market",
+                "url": "open-successor",
+                "collected_at_utc": "2099-01-01T00:05:00+00:00",
+                "metadata": {
+                    "market_id": "rollover-1518000",
+                    "slug": "open-successor",
+                    "yes_probability": 0.42,
+                    "active": True,
+                    "closed": False,
+                    "accepting_orders": True,
+                    "relationship": " event_sibling ",
+                    "event_id": " 236992 ",
+                    "event_slug": " trump-announces-end-of-military-operations-against-iran-by ",
+                    "event_title": " Trump announces end of military operations against Iran by ...? ",
+                    "source_config": {"label": "Open successor market"},
+                },
+            }
+        ],
+    )
+
+    result = run_cli(state_path, db_path, latest_ngi_path, runtime_source_path)
+
+    assert result.returncode == 1
+    payload = json.loads(result.stdout)
+    assert payload["rollover_candidate"]["relationship"] == "event_sibling"
+    assert payload["rollover_candidate"]["event_id"] == "236992"
+    assert (
+        payload["rollover_candidate"]["event_slug"]
+        == "trump-announces-end-of-military-operations-against-iran-by"
+    )
+    assert (
+        payload["rollover_candidate"]["event_title"]
+        == "Trump announces end of military operations against Iran by ...?"
+    )
+    assert (
+        payload["active_target_reselection"]["rollover_candidate"]
+        == payload["rollover_candidate"]
+    )
 
 
 def test_verify_runtime_ops_health_uses_state_config_fallback_for_live_reselection_cut(
@@ -1279,6 +1353,219 @@ def test_verify_runtime_ops_health_rejects_ambiguous_rollover_candidate(tmp_path
     ]
 
 
+def test_verify_runtime_ops_health_strips_runtime_rollover_candidate_identity_fields(tmp_path: Path):
+    state_path = tmp_path / "STATE.yaml"
+    state_path.write_text('dq_status: "pass"\n', encoding="utf-8")
+    db_path = tmp_path / "intelligence_store.sqlite"
+    write_db(db_path, "2099-01-01T00:00:00+00:00")
+    latest_ngi_path = tmp_path / "latest_ngi.json"
+    write_latest_ngi(
+        latest_ngi_path,
+        first_principles_probability=0.52,
+        market_yes_probability=0.60,
+        market_closed=True,
+        market_accepting_orders=False,
+    )
+    runtime_source_path = tmp_path / "polymarket-runtime.json"
+    write_runtime_source(
+        runtime_source_path,
+        items=[
+            {
+                "external_id": "rollover-1518000",
+                "title": " Open successor market? ",
+                "url": " open-successor ",
+                "collected_at_utc": "2099-01-01T00:05:00+00:00",
+                "metadata": {
+                    "market_id": " rollover-1518000 ",
+                    "slug": " open-successor ",
+                    "yes_probability": 0.42,
+                    "active": True,
+                    "closed": False,
+                    "accepting_orders": True,
+                    "source_config": {"label": " Open successor market "},
+                },
+            }
+        ],
+    )
+
+    result = run_cli(state_path, db_path, latest_ngi_path, runtime_source_path)
+
+    assert result.returncode == 1
+    payload = json.loads(result.stdout)
+    assert payload["rollover_candidate"]["market_id"] == "rollover-1518000"
+    assert payload["rollover_candidate"]["market_slug"] == "open-successor"
+    assert payload["rollover_candidate"]["market_name"] == "Open successor market"
+    assert payload["rollover_candidate"]["market_question"] == "Open successor market?"
+    assert (
+        payload["active_target_reselection"]["rollover_candidate"]
+        == payload["rollover_candidate"]
+    )
+
+
+def test_verify_runtime_ops_health_skips_current_market_with_padded_runtime_id(tmp_path: Path):
+    state_path = tmp_path / "STATE.yaml"
+    state_path.write_text('dq_status: "pass"\n', encoding="utf-8")
+    db_path = tmp_path / "intelligence_store.sqlite"
+    write_db(db_path, "2099-01-01T00:00:00+00:00")
+    latest_ngi_path = tmp_path / "latest_ngi.json"
+    write_latest_ngi(
+        latest_ngi_path,
+        first_principles_probability=0.52,
+        market_yes_probability=0.60,
+        market_closed=True,
+        market_accepting_orders=False,
+    )
+    runtime_source_path = tmp_path / "polymarket-runtime.json"
+    write_runtime_source(
+        runtime_source_path,
+        items=[
+            {
+                "external_id": "1517836",
+                "title": "Current market should not be selected",
+                "url": "current-market",
+                "collected_at_utc": "2099-01-01T00:10:00+00:00",
+                "metadata": {
+                    "market_id": " 1517836 ",
+                    "slug": "current-market",
+                    "yes_probability": 0.63,
+                    "active": True,
+                    "closed": False,
+                    "accepting_orders": True,
+                    "source_config": {"label": "Current market should not be selected"},
+                },
+            },
+            {
+                "external_id": "rollover-1518000",
+                "title": "Open successor market",
+                "url": "open-successor",
+                "collected_at_utc": "2099-01-01T00:05:00+00:00",
+                "metadata": {
+                    "market_id": "rollover-1518000",
+                    "slug": "open-successor",
+                    "yes_probability": 0.42,
+                    "active": True,
+                    "closed": False,
+                    "accepting_orders": True,
+                    "source_config": {"label": "Open successor market"},
+                },
+            },
+        ],
+    )
+
+    result = run_cli(state_path, db_path, latest_ngi_path, runtime_source_path)
+
+    assert result.returncode == 1
+    payload = json.loads(result.stdout)
+    assert payload["rollover_candidate"]["market_id"] == "rollover-1518000"
+    assert payload["rollover_candidate"]["market_question"] == "Open successor market"
+    assert payload["active_target_reselection"]["rollover_candidate"] == payload["rollover_candidate"]
+
+
+def test_verify_runtime_ops_health_explains_rollover_candidate_diagnostics(tmp_path: Path):
+    state_path = tmp_path / "STATE.yaml"
+    state_path.write_text('dq_status: "pass"\n', encoding="utf-8")
+    db_path = tmp_path / "intelligence_store.sqlite"
+    write_db(db_path, "2099-01-01T00:00:00+00:00")
+    latest_ngi_path = tmp_path / "latest_ngi.json"
+    write_latest_ngi(
+        latest_ngi_path,
+        first_principles_probability=0.52,
+        market_yes_probability=0.60,
+        market_closed=True,
+        market_accepting_orders=False,
+    )
+    runtime_source_path = tmp_path / "polymarket-runtime.json"
+    write_runtime_source(
+        runtime_source_path,
+        items=[
+            {
+                "external_id": "1517836",
+                "title": "Current closed market",
+                "url": "current-closed-market",
+                "collected_at_utc": "2099-01-01T00:00:00+00:00",
+                "metadata": {
+                    "market_id": "1517836",
+                    "slug": "current-closed-market",
+                    "yes_probability": 1.0,
+                    "active": True,
+                    "closed": True,
+                    "accepting_orders": False,
+                    "relationship": "configured_market",
+                    "source_config": {"label": "Current closed market"},
+                },
+            },
+            {
+                "external_id": "closed-1518001",
+                "title": "Closed successor market",
+                "url": "closed-successor",
+                "collected_at_utc": "2099-01-01T00:10:00+00:00",
+                "metadata": {
+                    "market_id": "closed-1518001",
+                    "slug": "closed-successor",
+                    "yes_probability": 0.39,
+                    "active": True,
+                    "closed": True,
+                    "accepting_orders": False,
+                    "relationship": "event_sibling",
+                    "source_config": {"label": "Closed successor market"},
+                },
+            },
+            {
+                "external_id": "ambiguous-1518002",
+                "title": "Ambiguous successor market",
+                "url": "ambiguous-successor",
+                "collected_at_utc": "2099-01-01T00:11:00+00:00",
+                "metadata": {
+                    "market_id": "ambiguous-1518002",
+                    "slug": "ambiguous-successor",
+                    "yes_probability": 0.41,
+                    "active": True,
+                    "closed": False,
+                    "accepting_orders": "unknown",
+                    "relationship": "event_sibling",
+                    "source_config": {"label": "Ambiguous successor market"},
+                },
+            },
+        ],
+    )
+
+    result = run_cli(state_path, db_path, latest_ngi_path, runtime_source_path)
+
+    assert result.returncode == 1
+    payload = json.loads(result.stdout)
+    assert payload["rollover_candidate"] is None
+    assert payload["rollover_candidate_blocker"] == "no_explicit_open_accepting_successor"
+    assert payload["rollover_candidate_diagnostics"] == {
+        "successor_count": 2,
+        "open_successor_count": 1,
+        "accepting_orders_count": 0,
+        "explicit_open_accepting_count": 0,
+        "current_market_id": "1517836",
+        "sample_successors": [
+            {
+                "market_id": "ambiguous-1518002",
+                "market_slug": "ambiguous-successor",
+                "market_question": "Ambiguous successor market",
+                "market_yes_probability": 0.41,
+                "market_closed": False,
+                "market_accepting_orders": None,
+            },
+            {
+                "market_id": "closed-1518001",
+                "market_slug": "closed-successor",
+                "market_question": "Closed successor market",
+                "market_yes_probability": 0.39,
+                "market_closed": True,
+                "market_accepting_orders": False,
+            },
+        ],
+    }
+    assert (
+        payload["active_target_reselection"]["rollover_candidate_diagnostics"]
+        == payload["rollover_candidate_diagnostics"]
+    )
+
+
 def test_verify_runtime_ops_health_rejects_malformed_rollover_candidate_identity(tmp_path: Path):
     state_path = tmp_path / "STATE.yaml"
     state_path.write_text('dq_status: "pass"\n', encoding="utf-8")
@@ -1429,6 +1716,29 @@ def test_verify_runtime_ops_health_fails_when_runtime_source_path_is_missing(tmp
     assert result.returncode == 1
     assert result.stdout == ""
     assert result.stderr.strip() == "missing runtime_source payload"
+
+
+def test_verify_runtime_ops_health_rejects_malformed_runtime_source_json(tmp_path: Path):
+    state_path = tmp_path / "STATE.yaml"
+    state_path.write_text('dq_status: "pass"\n', encoding="utf-8")
+    db_path = tmp_path / "intelligence_store.sqlite"
+    write_db(db_path, "2099-01-01T00:00:00+00:00")
+    latest_ngi_path = tmp_path / "latest_ngi.json"
+    write_latest_ngi(
+        latest_ngi_path,
+        first_principles_probability=0.52,
+        market_yes_probability=0.60,
+        market_closed=True,
+        market_accepting_orders=False,
+    )
+    runtime_source_path = tmp_path / "polymarket-runtime.json"
+    runtime_source_path.write_text("{", encoding="utf-8")
+
+    result = run_cli(state_path, db_path, latest_ngi_path, runtime_source_path)
+
+    assert result.returncode == 1
+    assert result.stdout == ""
+    assert result.stderr.strip() == "runtime_source payload must be valid JSON"
 
 
 def test_verify_runtime_ops_health_fails_when_runtime_source_is_not_an_object(tmp_path: Path):
@@ -1664,7 +1974,7 @@ def test_verify_runtime_ops_health_reports_missing_probability_fields(tmp_path: 
     state_path = tmp_path / "STATE.yaml"
     state_path.write_text('dq_status: "pass"\n', encoding="utf-8")
     db_path = tmp_path / "intelligence_store.sqlite"
-    write_db(db_path, "2099-01-01T00:00:00")
+    write_db(db_path, "2099-01-01T00:00:00+00:00")
     latest_ngi_path = tmp_path / "latest_ngi.json"
     latest_ngi_path.write_text(json.dumps({"timestamp_utc": "2099-01-01T00:00:00+00:00", "target_detail": {}}), encoding="utf-8")
 
@@ -1906,6 +2216,100 @@ def test_verify_runtime_ops_health_fails_when_runtime_source_item_timestamp_is_m
             result.stderr.strip()
             == f"runtime_source evidence.items[0].{key} must be an ISO-8601 timestamp"
         )
+
+
+def test_verify_runtime_ops_health_rejects_date_only_runtime_source_timestamp(
+    tmp_path: Path,
+):
+    state_path = tmp_path / "STATE.yaml"
+    state_path.write_text('dq_status: "pass"\n', encoding="utf-8")
+    db_path = tmp_path / "intelligence_store.sqlite"
+    write_db(db_path, "2099-01-01T00:00:00+00:00")
+    latest_ngi_path = tmp_path / "latest_ngi.json"
+    write_latest_ngi(
+        latest_ngi_path,
+        first_principles_probability=0.52,
+        market_yes_probability=0.60,
+        market_closed=True,
+        market_accepting_orders=False,
+    )
+    runtime_source_path = tmp_path / "polymarket-runtime.json"
+    write_runtime_source(
+        runtime_source_path,
+        items=[
+            {
+                "external_id": "rollover-1518000",
+                "title": "Open successor market",
+                "url": "open-successor",
+                "collected_at_utc": "2099-01-01",
+                "metadata": {
+                    "market_id": "rollover-1518000",
+                    "slug": "open-successor",
+                    "yes_probability": 0.42,
+                    "active": True,
+                    "closed": False,
+                    "accepting_orders": True,
+                    "source_config": {"label": "Open successor market"},
+                },
+            }
+        ],
+    )
+
+    result = run_cli(state_path, db_path, latest_ngi_path, runtime_source_path)
+
+    assert result.returncode == 1
+    assert result.stdout == ""
+    assert (
+        result.stderr.strip()
+        == "runtime_source evidence.items[0].collected_at_utc must be an ISO-8601 timestamp"
+    )
+
+
+def test_verify_runtime_ops_health_rejects_timezone_less_runtime_source_timestamp(
+    tmp_path: Path,
+):
+    state_path = tmp_path / "STATE.yaml"
+    state_path.write_text('dq_status: "pass"\n', encoding="utf-8")
+    db_path = tmp_path / "intelligence_store.sqlite"
+    write_db(db_path, "2099-01-01T00:00:00+00:00")
+    latest_ngi_path = tmp_path / "latest_ngi.json"
+    write_latest_ngi(
+        latest_ngi_path,
+        first_principles_probability=0.52,
+        market_yes_probability=0.60,
+        market_closed=True,
+        market_accepting_orders=False,
+    )
+    runtime_source_path = tmp_path / "polymarket-runtime.json"
+    write_runtime_source(
+        runtime_source_path,
+        items=[
+            {
+                "external_id": "rollover-1518000",
+                "title": "Open successor market",
+                "url": "open-successor",
+                "collected_at_utc": "2099-01-01T00:00:00",
+                "metadata": {
+                    "market_id": "rollover-1518000",
+                    "slug": "open-successor",
+                    "yes_probability": 0.42,
+                    "active": True,
+                    "closed": False,
+                    "accepting_orders": True,
+                    "source_config": {"label": "Open successor market"},
+                },
+            }
+        ],
+    )
+
+    result = run_cli(state_path, db_path, latest_ngi_path, runtime_source_path)
+
+    assert result.returncode == 1
+    assert result.stdout == ""
+    assert (
+        result.stderr.strip()
+        == "runtime_source evidence.items[0].collected_at_utc must be an ISO-8601 timestamp"
+    )
 
 
 def test_verify_runtime_ops_health_fails_when_latest_ngi_target_detail_is_not_an_object(

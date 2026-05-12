@@ -41,6 +41,11 @@
    - 2026-05-03 00:04+08:00：已收緊 ops-health rollover candidate eligibility，只有 runtime source 明確回報 `closed=false` 且 `accepting_orders=true` 的 successor 才會輸出成 machine-readable candidate；只有 ambiguous successor 時會保留 blocked 狀態但不建議切換目標。
    - 2026-05-03 01:03+08:00：已加固 ops-health active-target status guard；當 `target_detail.market_closed` 或 `market_accepting_orders` 明確存在但值為 ambiguous（例如 `"unknown"`）時會 fail closed，要求重新選 active target，不再輸出健康摘要。
    - 2026-05-03 02:03+08:00：已加固 ops-health runtime-source 輸入邊界；operator 明確傳入 polymarket runtime-source 檔案時，缺檔或非 JSON object 會直接 fail closed，不再靜默降級成「沒有 rollover evidence」。
+   - 2026-05-05 09:03+08:00：已補齊 ops-health runtime-source JSON parser guard；`runtime_source_polymarket.json` 若不是 valid JSON 會 fail closed 並輸出穩定 schema error，不再把底層 JSONDecodeError 洩漏給 operator。
+   - 2026-05-05 10:03+08:00：已補齊 ops-health runtime-source event metadata projection；Polymarket `event_sibling` successor 的 `relationship` / `event_id` / `event_slug` / `event_title` 通過 schema 後會以 canonical string 進入 `rollover_candidate`，讓 operator 能直接審核 successor 來源。
+   - 2026-05-05 11:03+08:00：已補齊 ops-health rollover candidate diagnostics；需要 reselection 但沒有明確 open/accepting successor 時，blocking output 會輸出 `rollover_candidate_diagnostics.successor_count` / `explicit_open_accepting_count` / `current_market_id`，讓 operator 能審核 null candidate 的依據。
+   - 2026-05-05 12:04+08:00：已把同一份 `rollover_candidate_diagnostics` 投影到 live progress sync 的 `blocking_summary` / `active_target` / `contract_action`，讓 downstream 摘要層也能直接審核 null candidate 的候選池依據。
+   - 2026-05-05 19:05+08:00：已同步 PR #61 的 rollover diagnostics merge conflict resolution；`active_target_reselection`、live-sync `blocking_summary` / `active_target` / `contract_action` 會在 actionable successor 存在時也保留 candidate-pool diagnostics，讓 operator 能同時審核 selected candidate 與候選池計數。
    - 2026-05-03 03:03+08:00：已加固 ops-health runtime-source schema 邊界；明確傳入 tracker payload 時，`evidence.items` 必須是 list，不能用 malformed object 靜默變成 `rollover_candidate=null` 的健康摘要。
    - 2026-05-03 04:03+08:00：已加固 ops-health runtime-source item schema 邊界；`evidence.items` 內每個 item 與其 `metadata` 必須是 JSON object，避免 malformed tracker item 被靜默略過或以不清楚的 AttributeError 中斷。
    - 2026-05-03 05:03+08:00：已加固 ops-health latest NGI schema 邊界；`latest_ngi.market_target` 與 `target_detail` 必須是 JSON object，避免 malformed active-target payload 以 Python AttributeError 中斷。
@@ -49,14 +54,18 @@
    - 2026-05-03 08:04+08:00：已讓 ops-health 與 live progress sync 在 `rollover_candidate=null` 時輸出 machine-readable `rollover_candidate_blocker`，讓 active-target reselection 摘要能明確說明沒有可執行 successor 的原因。
    - 2026-05-03 09:03+08:00：已補齊 live progress sync 的 latest NGI top-level schema guard；`latest_ngi.json` 本身不是 JSON object 時會 fail closed 並輸出明確 schema error，而不是誤報缺少第一個 required key。
    - 2026-05-05 00:03+08:00：已補齊 live progress sync 的 latest NGI JSON parser guard；`latest_ngi.json` 若不是 valid JSON 會 fail closed 並輸出穩定 schema error，不再把底層 JSONDecodeError 洩漏給 operator。
+   - 2026-05-05 08:04+08:00：已補齊 ops-health 的 latest NGI JSON parser guard；`latest_ngi.json` 若不是 valid JSON 會 fail closed 並輸出穩定 schema error，不再把底層 JSONDecodeError 洩漏給 operator。
    - 2026-05-03 10:02+08:00：已補齊 live progress sync 的 latest NGI nested object schema guard；`market_target`、`target_detail`、`alert_disposition` 若存在但不是 JSON object，會 fail closed 並輸出明確 schema error，而不是誤報 missing 欄位。
    - 2026-05-03 11:03+08:00：已補齊 live progress sync 的 delivery proof schema guard；即使不是 positive delivery，只要 `delivery_proof` 欄位存在就必須是 JSON object，避免 malformed proof 被靜默丟掉。
    - 2026-05-03 19:04+08:00：已加固 ops-health 的 probability schema guard；`first_principles_probability` 與 `target_detail.market_yes_probability` 必須是 0..1 的 JSON number，boolean、字串或超界值會 fail closed，不再被轉型成健康摘要。
    - 2026-05-03 20:03+08:00：已加固 ops-health runtime-source rollover candidate probability schema guard；successor tracker item 若帶 `metadata.yes_probability`，該值必須是 0..1 的 JSON number，避免 malformed candidate probability 被投影給 operator。
    - 2026-05-03 21:04+08:00：已加固 ops-health runtime-source timestamp schema guard；successor tracker item 若帶 `collected_at_utc` 或 `published_at_utc`，該值必須是 ISO-8601 timestamp，避免 malformed timestamp 被投影進 operator rollover guidance。
+   - 2026-05-05 18:03+08:00：已收緊 ops-health runtime-source timestamp schema；date-only 值（例如 `2099-01-01`）不再被 Python `datetime.fromisoformat()` 當成可投影 timestamp，必須提供含時間部分的 ISO datetime。
    - 2026-05-03 22:04+08:00：已加固 ops-health latest NGI timestamp schema guard；`latest_ngi` 的 timestamp 欄位若存在就必須是 ISO-8601 timestamp，避免 malformed timestamp 以底層 parser error 中斷 operator 摘要。
    - 2026-05-03 23:03+08:00：已加固 ops-health SQLite freshness timestamp schema guard；`market_snapshots.snapshot_at_utc` 必須是 ISO-8601 timestamp，避免 malformed store freshness timestamp 以底層 parser error 中斷 operator 摘要。
    - 2026-05-04 01:03+08:00：已加固 ops-health runtime-source rollover candidate identity schema guard；successor tracker item 的 `external_id`、`title`、`url`、`metadata.market_id`、`metadata.slug` 與 `metadata.source_config.label` 若存在就必須是 non-empty string，避免 malformed identity/display 欄位被投影成 operator-facing rollover guidance。
+   - 2026-05-05 13:04+08:00：已加固 ops-health runtime-source rollover candidate identity projection；selected successor 的 `market_id`、`market_slug`、`market_name` 與 `market_question` 通過 schema 後會以 canonical non-empty string 投影，避免 tracker identity/display 前後空白流入 operator-facing reselection evidence。
+   - 2026-05-05 16:04+08:00：已加固 ops-health runtime-source current-market exclusion；successor selection、null-candidate blocker 與 diagnostics 會用 canonical market id 比對 current target，避免 padded current market 被誤選成 rollover candidate 或誤計入 successor pool。
    - 2026-05-04 02:03+08:00：已加固 ops-health runtime-source run timestamp schema guard；tracker payload 的 top-level `ran_at_utc` 若存在就必須是 ISO-8601 timestamp，避免 malformed source run timestamp 被接受進 operator 摘要。
    - 2026-05-04 03:02+08:00：已加固 ops-health latest NGI probability-mode schema guard；`target_detail.probability_mode` 與 top-level `latest_ngi.probability_mode` 若存在就必須是 non-empty string，避免 malformed mode 欄位被投影成 operator-facing 摘要。
    - 2026-05-04 04:03+08:00：已加固 ops-health latest NGI active-target identity schema guard；`market_target.market_id`、`market_target.market_name`、`target_detail.market_id` 與 `target_detail.market_question` 若存在就必須是 non-empty string，避免 malformed target identity/display 欄位被投影進 operator 摘要。
@@ -87,6 +96,7 @@
    - **Owner：姨太**（核心）
    - 2026-05-02 20:04+08:00：已加固 live progress sync 的 positive-delivery 分流邊界，`should_send=true` 或 positive decision 只有在 `target_contract_match` 明確為 true 時才接受 delivery proof；serialized `"false"` 會被視為 contract mismatch 並 fail closed。
    - 2026-05-02 22:04+08:00：已收緊 live progress sync 的 contract-match parser，positive delivery 只接受明確 true/false 等價值；`target_contract_match="unknown"` 這類 ambiguous truthy 字串會 fail closed。
+   - 2026-05-05 17:04+08:00：已補齊 positive-delivery contract-match parser error boundary；`target_contract_match="unknown"` 這類 ambiguous 值會回報 boolean-equivalent schema error，而不是混成 explicit false 的 `must be true` mismatch。
    - 2026-05-03 14:03+08:00：已收緊 live progress sync 的 positive-delivery 偵測；`should_send="true"` 這類 serialized true 值會被視為 positive delivery，必須同時通過 delivery proof 與 active-target contract match gates。
    - 2026-05-03 15:03+08:00：已修正 live progress sync delivery proof identifier fallback；當 `proof_id` 是空白但同份 proof 帶有效 `sink_message_id` 時，仍接受 `sink_message_id` 作為 machine-readable proof id，不再誤擋有效交付證明。
    - 2026-05-03 16:02+08:00：已收緊 live progress sync 的 `should_send` parser；欄位存在但不是明確 true/false 等價值（例如 `"unknown"`）時會 fail closed，不再被當成 non-positive summary 輸出。
@@ -97,8 +107,10 @@
    - 2026-05-04 10:04+08:00：已補齊 live progress sync 的 alert decision schema guard；`alert_disposition.decision` 必須是 non-empty string，避免 malformed decision JSON 被投影進 operator sync payload。
    - 2026-05-04 11:03+08:00：已收緊 non-positive live sync 的 contract-match schema guard；suppressed payload 若仍攜帶 `target_contract_match`，該值必須是明確 boolean-equivalent，避免 ambiguous contract evidence 被投影給 operator。
    - 2026-05-05 01:02+08:00：已補齊 live progress sync 的 operator target display canonicalization；`target_detail.market_question` 通過 non-empty schema 後會以 stripped string 投影到 `blocking_summary` / `market_target`，避免 operator-facing 摘要帶前後空白。
+   - 2026-05-05 15:03+08:00：已補齊 live progress sync 的 operator target identity guard；`market_target.market_id` 與 `market_name` 必須是 non-empty string，且投影使用 canonical 值，避免 sync payload 用 fallback/空 target identity 進入 operator 摘要。
    - 2026-05-05 02:02+08:00：已補齊 live progress sync 的 delivery proof canonicalization；`boundary`、`proof_id` 與 `sink_message_id` 通過 schema 後會以 stripped string 投影，避免 operator-facing machine-readable proof 帶前後空白。
    - 2026-05-05 05:02+08:00：已補齊 live progress sync 的 delivery proof blank-field canonicalization；`proof_id` 空白但 `sink_message_id` 有效時，payload 會保留可審計 sink id 並省略空白 `proof_id`，避免 operator-facing proof 帶無意義空欄位。
+   - 2026-05-05 14:02+08:00：已補齊 live progress sync 的 delivery proof allowlist projection；operator-facing payload 只輸出 canonical `boundary` / `proof_id` / `sink_message_id`，避免 raw proof metadata 或 developer-local path 流入同步摘要。
    - 2026-05-05 03:03+08:00：已補齊 live progress sync 的 alert boolean canonicalization；`should_send` 與 `target_contract_match` 先通過 boolean-equivalent parser，再以 JSON boolean 投影到 operator-facing payload，避免字串旗標流出。
 
 ### Phase C｜可擴展性與回歸（第 3–4 週）
@@ -130,6 +142,7 @@
 - positive delivery 不能繞過 active-target contract match。
   - 2026-05-02 20:04+08:00：已加固 `build_live_progress_sync_payload.py`，positive delivery 必須有 true-equivalent `alert_disposition.target_contract_match` 才能進入 sync payload；`"false"`/`0`/`no`/`off` 這類 serialized false 值會阻斷輸出。
   - 2026-05-02 22:04+08:00：已補上 ambiguous contract-match 邊界，`"unknown"` 或其他非明確 true/false 的值不再被 Python truthiness 接受為 positive delivery contract match。
+  - 2026-05-05 17:04+08:00：已補齊 ambiguous contract-match 的 operator-facing error boundary；positive delivery 遇到 `"unknown"` 會回報 boolean-equivalent schema error，讓 operator 能分辨 parser 輸入不明與 explicit contract mismatch。
 - active-target contract mismatch 與 outward reason 映射邊界。
   - 2026-05-02 12:04+08:00：已加固 `repair_latest_ngi_contract.py`，避免既有 `target_contract_match="false"` 被 Python truthiness 轉成 `True`，並以 regression test 覆蓋 outward reason mapping 仍保留 internal runtime reason。
 - live progress sync 不能輸出 stale `latest_ngi.json` 摘要。
@@ -143,11 +156,14 @@
 - tracker runtime source 的 boolean 欄位若非明確 true/false，ops-health 會以 unknown 處理；後續插件接線需維持同一 parser 契約。
 - rollover candidate 必須是明確 open 且 accepting-orders 的 tracker item，不能把 ambiguous successor 投影成可執行建議。
 - active target 自身若回報 ambiguous closed/accepting-orders 狀態，ops-health 必須視為需要 reselection，不能只因欄位存在就當成健康目標。
-- ops-health 若明確收到 runtime-source path，該 payload 必須存在且為 JSON object；缺檔、malformed top-level payload、非 list 的 `evidence.items`、非 object item、非 object `metadata`，或非 object `metadata.source_config` 不能靜默省略 rollover evidence。
+- ops-health 若明確收到 runtime-source path，該 payload 必須存在、為 valid JSON 且為 JSON object；缺檔、malformed JSON、malformed top-level payload、非 list 的 `evidence.items`、非 object item、非 object `metadata`，或非 object `metadata.source_config` 不能靜默省略 rollover evidence，也不能洩漏底層 parser error。
 - latest NGI 的 payload 必須維持 object schema；top-level、`market_target` 或 `target_detail` 不是 JSON object 時，ops-health 必須 fail closed 並回報明確 schema error。
+- ops-health 的 latest NGI parser 也必須維持穩定 schema boundary；malformed `latest_ngi.json` 不能把底層 JSONDecodeError 直接洩漏給 operator。
 - live progress sync 也必須沿用 same latest NGI parser/object schema；malformed JSON、top-level 或 nested object malformed payload 不能洩漏底層 parser error，也不能被 required-key fallback 誤報成缺欄位。
 - live progress sync 若收到 `alert_disposition.delivery_proof`，該欄位必須是 JSON object；malformed proof 不能被靜默省略，即使該 alert 不是 positive delivery。
 - active-target reselection 摘要若 `rollover_candidate=null`，必須同時提供 `rollover_candidate_blocker`，避免 operator 只看到空 candidate 而不知道是缺 runtime source、沒有 successor，或 successor 不符合明確 open/accepting-orders 條件。
+- active-target reselection 摘要若 `rollover_candidate=null` 且 runtime source 已提供，也必須輸出 `rollover_candidate_diagnostics`，至少包含 successor 總數、明確 open/accepting successor 數量與 current market id，避免 operator 只能靠 blocker code 推測候選池狀態。
+- live progress sync 的摘要層也必須保留 `rollover_candidate_diagnostics`；`blocking_summary`、`active_target` 與 `contract_action` 不能只投影 blocker/candidate 而遺失 null candidate 的候選池計數。
 - live progress sync 的 positive-delivery 偵測必須接受 explicit serialized booleans；`should_send="true"` 不能被當成 suppressed/non-positive 而繞過 delivery proof 或 contract-match gates。
 - live progress sync 的 delivery proof identifier 需支援 `proof_id` 或 `sink_message_id` 任一有效值；空白 `proof_id` 不能遮蔽同份 proof 裡可審計的 `sink_message_id`。
 - live progress sync 若收到 `alert_disposition.should_send`，該值必須是明確 boolean-equivalent；ambiguous send flag 不能被當成 suppressed/non-positive payload。
@@ -159,15 +175,22 @@
 - live progress sync 若收到 `alert_disposition.target_contract_match`，即使 payload 是 suppressed/non-positive，也必須是明確 boolean-equivalent；ambiguous contract evidence 不能被投影進 operator-facing sync payload。
 - live progress sync 的 operator target display 欄位必須維持 string schema；`target_detail.market_question` 不能缺失或空白，避免 `blocking_summary` / `market_target` 輸出不可審核的空 question。
 - live progress sync 的 operator target display 欄位通過 schema 後也必須 canonicalize；`target_detail.market_question` 的前後空白不能原樣投影進 `blocking_summary` / `market_target`。
+- live progress sync 的 operator target identity 欄位也必須維持 required string schema；`market_target.market_id` 與 `market_name` 不能缺失後由 fallback 值補成看似完整的 operator-facing target。
 - live progress sync 的 delivery proof 欄位通過 schema 後也必須 canonicalize；`boundary`、`proof_id` 與 `sink_message_id` 的前後空白不能原樣投影進 operator-facing machine-readable proof。
 - live progress sync 的 delivery proof 空白欄位不能原樣投影；當 `proof_id` 空白且 `sink_message_id` 有效時，operator-facing proof 必須省略空白 `proof_id` 並保留可審計 sink id。
 - 2026-05-05 07:02+08:00：已補齊 live progress sync non-positive delivery proof projection；suppressed/non-positive payload 若只帶空白 proof 欄位，canonicalization 會把空 proof 整體省略，避免 operator-facing `delivery_proof={}` 被誤認為可審計證據。
+- live progress sync 的 delivery proof projection 必須維持 allowlist；operator-facing payload 只能輸出 canonical `boundary`、`proof_id` 與 `sink_message_id`，不能把 raw proof extras、暫存路徑或 developer-local metadata 同步出去。
 - ops-health 的 probability 欄位必須維持 JSON number schema 且落在 0..1；boolean、字串數字或超界值不能被 Python 轉型後繼續輸出健康摘要。
 - ops-health runtime-source rollover candidate 的 `metadata.yes_probability` 若存在，也必須維持 0..1 JSON number schema，不能把字串、boolean 或超界值投影到 machine-readable successor 建議。
 - ops-health runtime-source rollover candidate 的 `collected_at_utc` / `published_at_utc` 若存在，也必須維持 ISO-8601 timestamp schema，不能把 malformed timestamp 投影到 operator-facing rollover guidance。
+- ops-health runtime-source timestamp 不能只提供 date-only 值；`collected_at_utc` / `published_at_utc` 必須是含時間部分的 ISO datetime，避免 date-only artifact 被排序並投影成 rollover evidence。
+- ops-health 的 UTC timestamp 欄位也必須帶 `Z` 或 timezone offset；不能把 timezone-less datetime 隱性當成 UTC 後排序或投影到 operator-facing evidence。
 - ops-health runtime-source rollover candidate 的 identity/display 欄位若存在，也必須維持 non-empty string schema，不能把 malformed target id、slug、title、url 或 label 投影到 operator-facing rollover guidance。
+- ops-health runtime-source rollover candidate 的 identity/display 欄位通過 schema 後也必須 canonicalize；selected successor 的 `market_id`、`market_slug`、`market_name` 與 `market_question` 不能保留 tracker artifact 前後空白。
+- ops-health runtime-source successor selection 也必須使用 canonical current-market id 比對；帶前後空白的 current market id 不能被誤判為 successor，也不能污染 `rollover_candidate_blocker` 或 `rollover_candidate_diagnostics`。
 - ops-health selected rollover candidate 的 projected identity/display 欄位必須解析為 non-empty string；即使 tracker item 本身通過 optional schema guard，也不能輸出缺少 `market_question` 等關鍵 acceptance 欄位的 candidate。
 - ops-health runtime-source payload 的 top-level `ran_at_utc` 若存在，也必須維持 ISO-8601 timestamp schema，不能把 malformed tracker run timestamp 帶進 operator 摘要。
+- ops-health runtime-source successor 的 event metadata 若存在，也必須維持 canonical non-empty string schema，並投影到 `rollover_candidate`，避免 `event_sibling` 來源證據只停在原始 tracker artifact。
 - ops-health latest NGI 的 `probability_mode` 若存在，也必須維持 non-empty string schema，不能把 malformed mode 欄位投影到 operator-facing 摘要。
 - ops-health latest NGI 的 active-target identity/display 欄位若存在，也必須維持 non-empty string schema，不能把 malformed `market_target` / `target_detail` target id、name 或 question 投影到 operator-facing 摘要。
 - ops-health blocking output 必須提供 dedicated `active_target_reselection` object，讓 stale/closed/divergent target 狀態也能直接供 heartbeat / review / upstream 驗收，不必由 operator 重新拼接零散欄位。
